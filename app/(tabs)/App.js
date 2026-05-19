@@ -31,7 +31,7 @@ const seedData = {
       targetGrade: "28",
       actualGrade: "",
       materials: "Dispense, Script in linguaggio R, Appunti",
-      notes: "Priorita alta: progetto e orale a fine sessione."
+      notes: "Priorità alta: progetto e orale a fine sessione."
     },
     {
       id: "course-2",
@@ -447,7 +447,7 @@ function CourseDetail({ selectedCourseId, setSelectedCourseId, data, helpers, se
             <Text style={styles.bodyText}>{course.notes}</Text>
             <Text style={styles.detailLine}>Materiali: {course.materials || "Non indicati"}</Text>
             <Text style={styles.detailLine}>
-              Voto target: {course.targetGrade || "-"} · Voto ottenuto: {course.actualGrade || "-"}
+              Voto desiderato: {course.targetGrade || "-"} · Voto ottenuto: {course.actualGrade || "-"}
             </Text>
             <Panel title="Collegamenti">
               <Text style={styles.bodyText}>Esami collegati: {exams.length}</Text>
@@ -504,7 +504,7 @@ function ExamsScreen({ data, helpers, upsert, remove, addSuggestedSession }) {
           <Text style={styles.bodyText}>{exam.notes}</Text>
           <View style={styles.actions}>
             <Pressable style={styles.secondaryButton} onPress={() => addSuggestedSession(exam)}>
-              <Text style={styles.secondaryButtonText}>Suggerisci studio</Text>
+              <Text style={styles.secondaryButtonText}>Suggerisci sessione di studio</Text>
             </Pressable>
             <Pressable style={styles.secondaryButton} onPress={() => setEditing(exam)}>
               <Text style={styles.secondaryButtonText}>Modifica</Text>
@@ -542,7 +542,7 @@ function PlannerScreen({ data, helpers, upsert, remove }) {
 
   return (
     <View>
-      <ScreenTop title="Planner settimanale" button="Nuova attivita" onPress={() => setEditing({ ...emptySession })} />
+      <ScreenTop title="Planner settimanale" button="Nuova attività" onPress={() => setEditing({ ...emptySession })} />
       <View style={styles.weekBar}>
         <Pressable style={styles.iconButton} onPress={() => setWeekStart(addDays(weekStart, -7))}>
           <Text style={styles.iconButtonText}>‹</Text>
@@ -589,13 +589,13 @@ function PlannerScreen({ data, helpers, upsert, remove }) {
             <Pressable style={styles.secondaryButton} onPress={() => setEditing(session)}>
               <Text style={styles.secondaryButtonText}>Modifica</Text>
             </Pressable>
-            <DangerButton onPress={() => confirmRemove("attivita", () => remove("sessions", session.id))} />
+            <DangerButton onPress={() => confirmRemove("attività", () => remove("sessions", session.id))} />
           </View>
         </View>
       ))}
       <EntityModal
         visible={Boolean(editing)}
-        title={editing?.id ? "Modifica attivita" : "Nuova attivita"}
+        title={editing?.id ? "Modifica attività" : "Nuova attività"}
         value={editing}
         fields={sessionFields}
         onChange={setEditing}
@@ -623,7 +623,7 @@ function GoalsScreen({ data, helpers, upsert, remove }) {
 
   return (
     <View>
-      <ScreenTop title="Attivita e obiettivi" button="Nuovo obiettivo" onPress={() => setEditing({ ...emptyGoal })} />
+      <ScreenTop title="Attività e obiettivi" button="Nuovo obiettivo" onPress={() => setEditing({ ...emptyGoal })} />
       <Segmented options={priorities} value={priority} onChange={setPriority} />
       <View style={styles.filterRow}>
         <Text style={styles.bodyText}>Mostra completati</Text>
@@ -698,7 +698,7 @@ function PomodoroScreen() {
 
   return (
     <View>
-      <Text style={styles.sectionTitle}>Pomodoro</Text>
+      <Text style={styles.sectionTitle}>Pomodoro Timer</Text>
       <View style={styles.timerPanel}>
         <Text style={styles.timerMode}>{mode}</Text>
         <Text style={styles.timer}>{formatTimer(secondsLeft)}</Text>
@@ -708,17 +708,19 @@ function PomodoroScreen() {
             <Text style={styles.primaryButtonText}>{running ? "Pausa" : "Avvia"}</Text>
           </Pressable>
           <Pressable style={styles.secondaryButton} onPress={() => reset("Studio")}>
-            <Text style={styles.secondaryButtonText}>Reset</Text>
+            <Text style={styles.secondaryButtonText}>Ripristina</Text>
           </Pressable>
           <Pressable style={styles.secondaryButton} onPress={() => reset("Pausa")}>
             <Text style={styles.secondaryButtonText}>Pausa breve</Text>
           </Pressable>
         </View>
       </View>
-      <Panel title="Metodo">
+      <Panel title="Che cos'è il Pomodoro Timer?">
         <Text style={styles.bodyText}>
-          Il timer alterna blocchi da 25 minuti e pause da 5 minuti. La funzione e integrata nel planner:
-          lo studente puo usare il timer durante le sessioni pianificate e registrare le ore effettive svolte.
+          Il Pomodoro Timer è un ingegnoso e simpatico strumento di computazione temporale che viene in aiuto agli studenti
+          nel momento in cui ci si vuole concentrare in uno studio ben organizzato: saranno alternate sessioni da 25 minuti di 
+          massima attenzione e di piena operatività e sessioni da 5 minuti di meritato riposo.
+          Le ore effettive svolte saranno normalmente registrate, giacché la funzione è integrata nel planner.
         </Text>
       </Panel>
     </View>
