@@ -288,12 +288,11 @@ export default function App() {
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.kicker}>Study Planner</Text>
-          <Text style={styles.title}>Exam Tracker</Text>
+          <Text style={styles.title}>Study Planner & Exam Tracker</Text>
         </View>
         <View style={styles.headerBadge}>
           <Text style={styles.headerBadgeText}>{helpers.weekHours.planned}h</Text>
-          <Text style={styles.headerBadgeSmall}>settimana</Text>
+          <Text style={styles.headerBadgeSmall}>a settimana</Text>
         </View>
       </View>
       <View style={styles.tabs}>
@@ -349,7 +348,7 @@ function Dashboard({ data, helpers, setActiveTab, addSuggestedSession }) {
         ))}
       </Panel>
 
-      <Panel title="Tempo per corso">
+      <Panel title="Ripartizione per corso delle ore settimanali">
         {topCourses.map((entry) => (
           <View key={entry.courseId} style={styles.chartRow}>
             <Text style={styles.chartLabel}>{entry.name}</Text>
@@ -364,11 +363,11 @@ function Dashboard({ data, helpers, setActiveTab, addSuggestedSession }) {
       {helpers.nextCriticalExam && (
         <Panel title="Suggerimento automatico">
           <Text style={styles.bodyText}>
-            L'esame piu vicino ad alta priorita e {helpers.nextCriticalExam.title}. Conviene pianificare un
-            ripasso breve domani.
+            L'esame più vicino con priorità alta è {helpers.nextCriticalExam.title}. Conviene pianificare un
+            ripasso per domani.
           </Text>
           <Pressable style={styles.primaryButton} onPress={() => addSuggestedSession(helpers.nextCriticalExam)}>
-            <Text style={styles.primaryButtonText}>Crea attivita suggerita</Text>
+            <Text style={styles.primaryButtonText}>Crea attività</Text>
           </Pressable>
         </Panel>
       )}
