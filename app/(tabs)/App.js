@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Modal,
@@ -12,7 +13,6 @@ import {
   TextInput,
   View
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const STORAGE_KEY = "study-planner-v1";
 
@@ -23,39 +23,39 @@ const seedData = {
   courses: [
     {
       id: "course-1",
-      name: "Programmazione Mobile",
-      teacher: "Prof.ssa Rinaldi",
+      name: "Statistica Applicata",
+      teacher: "Prof. Addesso/Postiglione",
       semester: "2 semestre",
-      credits: "9",
+      credits: "6",
       status: "In corso",
       targetGrade: "28",
       actualGrade: "",
-      materials: "Dispense, esempi React Native, repository lezioni",
+      materials: "Dispense, Script in linguaggio R, Appunti",
       notes: "Priorita alta: progetto e orale a fine sessione."
     },
     {
       id: "course-2",
       name: "Basi di Dati",
-      teacher: "Prof. Martini",
+      teacher: "Prof. Gaeta",
       semester: "1 semestre",
-      credits: "6",
-      status: "Da ripassare",
+      credits: "9",
+      status: "In corso",
       targetGrade: "27",
       actualGrade: "",
-      materials: "Slide SQL, esercizi su normalizzazione",
+      materials: "Slide SQL, Libro di testo, Dispense teoriche",
       notes: "Ripassare join, trigger e transazioni."
     },
     {
       id: "course-3",
-      name: "Interazione Uomo-Macchina",
-      teacher: "Prof.ssa Leone",
-      semester: "2 semestre",
-      credits: "6",
+      name: "Analisi Dei Segnali",
+      teacher: "Prof. Restaino",
+      semester: "1 semestre",
+      credits: "9",
       status: "Completato",
       targetGrade: "30",
       actualGrade: "29",
-      materials: "Libro Nielsen, casi studio",
-      notes: "Esame superato, conservare appunti per progetto finale."
+      materials: "Dispense, Esercizi svolti, Casi di studio",
+      notes: "Esame superato, conservare appunti di probabilità per Statistica Applicata."
     }
   ],
   exams: [
