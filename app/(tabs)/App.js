@@ -19,6 +19,20 @@ const STORAGE_KEY = "study-planner-v1";
 const today = new Date();
 const isoToday = today.toISOString().slice(0, 10);
 
+function isValidDateStrict(dateString) {
+  const regex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!regex.test(dateString)) return false;
+
+  const [year, month, day] = dateString.split("-").map(Number);
+
+  if (month < 1 || month > 12) return false;
+  if (day < 1 || day > 31) return false;
+  if (year < 1900 || year > 2100) return false;
+
+  const date = new Date(dateString);
+  return date.getMonth() + 1 === month && date.getDate() === day;
+}
+
 const seedData = {
   courses: [
     {
@@ -240,16 +254,23 @@ export default function App() {
   const helpers = useMemo(() => createHelpers(data), [data]);
 
   const upsert = (collection, item) => {
-    setData((current) => {
-      const exists = current[collection].some((entry) => entry.id === item.id);
-      return {
-        ...current,
-        [collection]: exists
-          ? current[collection].map((entry) => (entry.id === item.id ? item : entry))
-          : [{ ...item, id: `${collection}-${Date.now()}` }, ...current[collection]]
-      };
-    });
-  };
+  // Validazione data (solo se il campo esiste)
+  if (item.date && !isValidDateStrict(item.date)) {
+    alert("La data inserita non è valida.");
+    return;
+  }
+
+  setData((current) => {
+    const exists = current[collection].some((entry) => entry.id === item.id);
+    return {
+      ...current,
+      [collection]: exists
+        ? current[collection].map((entry) => (entry.id === item.id ? item : entry))
+        : [{ ...item, id: `${collection}-${Date.now()}` }, ...current[collection]]
+    };
+  });
+};
+
 
   const remove = (collection, id) => {
     setData((current) => ({
