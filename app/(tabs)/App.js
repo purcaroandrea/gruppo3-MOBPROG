@@ -52,8 +52,8 @@ const seedData = {
       semester: "1 semestre",
       credits: "9",
       status: "Completato",
-      targetGrade: "30",
-      actualGrade: "29",
+      targetGrade: "28",
+      actualGrade: "27",
       materials: "Dispense, Esercizi svolti, Casi di studio",
       notes: "Esame superato, conservare appunti di probabilità per Statistica Applicata."
     }
@@ -61,25 +61,25 @@ const seedData = {
   exams: [
     {
       id: "exam-1",
-      title: "Appello Programmazione Mobile",
+      title: "Progetto Statistica Applicata",
       courseId: "course-1",
-      date: "2026-06-18",
+      date: "2026-07-20",
       type: "Esame",
       priority: "Alta",
       status: "Programmato",
       result: "",
-      notes: "Portare demo funzionante e slide."
+      notes: "Studiare la teoria e lavorare in team al progetto."
     },
     {
       id: "exam-2",
-      title: "Consegna progetto HCI",
+      title: "Prova scritta di Analisi dei Segnali",
       courseId: "course-3",
-      date: "2026-05-20",
+      date: "2025-02-17",
       type: "Consegna",
       priority: "Media",
-      status: "Futuro",
+      status: "Completato",
       result: "",
-      notes: "Revisionare wireframe e relazione."
+      notes: "Fare tanti esercizi e simulazioni d'esame."
     },
     {
       id: "exam-3",
@@ -96,15 +96,15 @@ const seedData = {
   sessions: [
     {
       id: "session-1",
-      title: "Implementare CRUD corsi",
+      title: "Studiare Teoria della Stima",
       courseId: "course-1",
       examId: "exam-1",
       date: isoToday,
       kind: "Progetto",
       plannedHours: "2",
-      actualHours: "1.5",
+      actualHours: "2",
       completed: true,
-      notes: "Chiudere inserimento e modifica."
+      notes: "Capire i concetti e le relative applicazioni."
     },
     {
       id: "session-2",
@@ -120,7 +120,7 @@ const seedData = {
     },
     {
       id: "session-3",
-      title: "Preparare slide demo",
+      title: "Preparare relazione",
       courseId: "course-1",
       examId: "exam-1",
       date: addDays(isoToday, 3),
@@ -128,33 +128,33 @@ const seedData = {
       plannedHours: "1.5",
       actualHours: "",
       completed: false,
-      notes: "Mostrare calendario, statistiche e Pomodoro."
+      notes: "Iniziare a coprire la prima parte del programma."
     }
   ],
   goals: [
     {
       id: "goal-1",
-      title: "Completare progetto mobile",
-      description: "Arrivare a una demo coerente con dati persistenti.",
+      title: "Avanzamento Statistica Applicata",
+      description: "Arrivare a una buona conoscenza della teoria e ad un progetto quasi in ultimazione.",
       courseId: "course-1",
-      period: "Settimana corrente",
-      priority: "Alta",
-      completed: false,
-      estimatedHours: "8",
-      actualHours: "3",
-      notes: "Prima app, poi relazione e slide."
-    },
-    {
-      id: "goal-2",
-      title: "Superare due esami nella sessione estiva",
-      description: "Programmazione Mobile e Basi di Dati.",
-      courseId: "",
       period: "Giugno-Luglio",
       priority: "Media",
       completed: false,
+      estimatedHours: "8",
+      actualHours: "3",
+      notes: "Avanzamento parallelo di studio individuale e progetto in gruppo."
+    },
+    {
+      id: "goal-2",
+      title: "Superare l'esame di Basi di Dati",
+      description: "Dare il tutto per tutto.",
+      courseId: "course-2",
+      period: "Giugno-Luglio",
+      priority: "Alta",
+      completed: false,
       estimatedHours: "42",
       actualHours: "6",
-      notes: "Bilanciare progetto e teoria."
+      notes: "Sostenere almeno un'ora giornaliera di SQL."
     }
   ]
 };
