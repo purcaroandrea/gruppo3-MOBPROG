@@ -525,7 +525,7 @@ function ExamsScreen({ data, helpers, upsert, remove, addSuggestedSession }) {
           <Text style={styles.bodyText}>{exam.notes}</Text>
           <View style={styles.actions}>
             <Pressable style={styles.secondaryButton} onPress={() => addSuggestedSession(exam)}>
-              <Text style={styles.secondaryButtonText}>Suggerisci sessione di studio</Text>
+              <Text style={styles.secondaryButtonText}>Vai al Planner</Text>
             </Pressable>
             <Pressable style={styles.secondaryButton} onPress={() => setEditing(exam)}>
               <Text style={styles.secondaryButtonText}>Modifica</Text>
