@@ -1,0 +1,85 @@
+import { View, Text, Pressable, ScrollView } from "react-native";
+import styles from "../styles/styles";
+import ScreenTop from "../components/ScreenTop";
+import SearchBox from "../components/SearchBox";
+import Segmented from "../components/Segmented";
+import StatusBadge from "../components/StatusBadge";
+import DangerButton from "../components/DangerButton";
+import EntityModal from "../components/EntityModal";
+import { emptyCourse } from "../data/emptyTemplates";
+
+const courseStates = ["Tutti", "Da iniziare", "In corso", "Da ripassare", "Completato", "Superato"];
+
+export default function CoursesScreen(props) {
+  const { data, helpers, upsert, remove, setSelectedCourseId } = props;
+
+  const [query, setQuery] = React.useState("");
+  const [filter, setFilter] = React.useState("Tutti");
+  const [editing, setEditing] = React.useState(null);
+
+  const courses = data.courses.filter((course) => {
+    const matchesQuery = course.name.toLowerCase().includes(query.toLowerCase());
+    const matchesState = filter === "Tutti" || course.status === filter;
+    return matchesQuery && matchesState;
+  });
+
+  return (
+    <View>
+      <ScreenTop title="Corsi" button="Nuovo corso" onPress={() => setEditing({ ...emptyCourse })} />
+
+      <SearchBox value={query} onChangeText={setQuery} placeholder="Cerca corso" />
+
+      <Segmented options={courseStates} value={filter} onChange={setFilter} />
+
+      {courses.map((course) => (
+        <Pressable
+          key={course.id}
+          style={styles.card}
+          onPress={() => setSelectedCourseId(course.id)}
+        >
+          <View style={styles.cardHeader}>
+            <View style={styles.cardHeaderText}>
+              <Text style={styles.cardTitle}>{course.name}</Text>
+              <Text style={styles.rowMeta}>
+                {course.teacher} · {course.semester} · {course.credits} CFU
+              </Text>
+            </View>
+            <StatusBadge value={course.status} />
+          </View>
+
+          <Text style={styles.bodyText}>{course.notes}</Text>
+
+          <View style={styles.actions}>
+            <Pressable style={styles.secondaryButton} onPress={() => setEditing(course)}>
+              <Text style={styles.secondaryButtonText}>Modifica</Text>
+            </Pressable>
+
+            <DangerButton onPress={() => remove("courses", course.id)} />
+          </View>
+        </Pressable>
+      ))}
+
+      <EntityModal
+        visible={Boolean(editing)}
+        title={editing?.id ? "Modifica corso" : "Nuovo corso"}
+        value={editing}
+        fields={[
+          { key: "name", label: "Nome", required: true },
+          { key: "teacher", label: "Docente" },
+          { key: "semester", label: "Semestre" },
+          { key: "credits", label: "Crediti", numeric: true },
+          { key: "status", label: "Stato", options: courseStates.slice(1) },
+          { key: "materials", label: "Materiali", multiline: true },
+          { key: "notes", label: "Note", multiline: true },
+        ]}
+        onChange={setEditing}
+        onClose={() => setEditing(null)}
+        onSave={(item) => {
+          upsert("courses", item);
+          setEditing(null);
+        }}
+        helpers={helpers}
+      />
+    </View>
+  );
+}
