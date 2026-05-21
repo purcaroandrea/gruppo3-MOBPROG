@@ -1,3 +1,4 @@
+import React from "react";
 import { ScrollView, Pressable, Text } from "react-native";
 import styles from "../styles/styles";
 

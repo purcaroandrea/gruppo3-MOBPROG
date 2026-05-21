@@ -1,3 +1,4 @@
+import React from "react";
 import { View, Text, TextInput, Switch } from "react-native";
 import styles from "../styles/styles";
 import Segmented from "./Segmented";

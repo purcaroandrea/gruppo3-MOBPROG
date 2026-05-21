@@ -1,3 +1,4 @@
+import React from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
 import styles from "../styles/styles";
 import ScreenTop from "../components/ScreenTop";

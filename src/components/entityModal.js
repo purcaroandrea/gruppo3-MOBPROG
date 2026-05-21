@@ -1,3 +1,4 @@
+import React from "react";
 import { Modal, View, ScrollView, Text, Pressable } from "react-native";
 import styles from "../styles/styles";
 import Field from "./Field";

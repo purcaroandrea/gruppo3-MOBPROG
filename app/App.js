@@ -1,25 +1,27 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useMemo, useState } from "react";
-import { SafeAreaView, ScrollView, View, Text } from "react-native";
+import { SafeAreaView, ScrollView, View, Text, Pressable } from "react-native"; // Aggiunto Pressable
 
-import styles from "./src/styles/styles";
-import { seedData } from "./src/data/seedData";
-import { emptyCourse, emptyExam, emptySession, emptyGoal } from "./src/data/emptyTemplates";
-import { createHelpers } from "./src/helpers/createHelpers";
-import { isValidDateStrict } from "./src/helpers/date";
+import styles from "../src/styles/styles";
+import { seedData } from "../src/data/seedData";
+import { emptyCourse, emptyExam, emptySession, emptyGoal } from "../src/data/emptyTemplates";
+import { createHelpers } from "../src/helpers/createHelpers";
+import { isValidDateStrict } from "../src/helpers/date";
 
-import Dashboard from "./src/screens/Dashboard";
-import CoursesScreen from "./src/screens/CoursesScreen";
-import ExamsScreen from "./src/screens/ExamsScreen";
-import PlannerScreen from "./src/screens/PlannerScreen";
-import GoalsScreen from "./src/screens/GoalsScreen";
-import PomodoroScreen from "./src/screens/PomodoroScreen";
+import Dashboard from "../src/screens/Dashboard";
+import CoursesScreen from "../src/screens/CoursesScreen";
+import ExamsScreen from "../src/screens/ExamsScreen";
+import PlannerScreen from "../src/screens/PlannerScreen";
+import GoalsScreen from "../src/screens/GoalsScreen";
+import PomodoroScreen from "../src/screens/PomodoroScreen";
 
 export default function App() {
   const [data, setData] = useState(seedData);
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [loaded, setLoaded] = useState(false);
+
+  const tabs = ["Dashboard", "Corsi", "Esami", "Planner", "Obiettivi", "Pomodoro"];
 
   useEffect(() => {
     async function load() {
@@ -90,10 +92,35 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      {/* 1. HEADER */}
       <View style={styles.header}>
-        <Text style={styles.title}>Study Planner & Exam Tracker</Text>
+        <View>
+          <Text style={styles.title}>Study Planner & Exam Tracker</Text>
+        </View>
+        <View style={styles.headerBadge}>
+          <Text style={styles.headerBadgeText}>{helpers.weekHours?.planned || 0}h</Text>
+          <Text style={styles.headerBadgeSmall}>a settimana</Text>
+        </View>
       </View>
 
+      {/* 2. BARRA DELLE TAB RIPRISTINATA (SOPRA E IN ORIZZONTALE) */}
+      <View style={styles.tabs}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {tabs.map((tab) => (
+            <Pressable
+              key={tab}
+              onPress={() => setActiveTab(tab)}
+              style={[styles.tabButton, activeTab === tab && styles.tabButtonActive]}
+            >
+              <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
+                {tab}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* 3. CONTENUTO DELLE SCHERMATE */}
       <ScrollView contentContainerStyle={styles.content}>
         {activeTab === "Dashboard" && <Dashboard {...screenProps} />}
         {activeTab === "Corsi" && <CoursesScreen {...screenProps} />}
@@ -102,21 +129,6 @@ export default function App() {
         {activeTab === "Obiettivi" && <GoalsScreen {...screenProps} />}
         {activeTab === "Pomodoro" && <PomodoroScreen />}
       </ScrollView>
-
-      <View style={styles.tabBar}>
-        {["Dashboard", "Corsi", "Esami", "Planner", "Obiettivi", "Pomodoro"].map((tab) => (
-          <Text
-            key={tab}
-            style={[
-              styles.tabItem,
-              activeTab === tab && styles.tabItemActive,
-            ]}
-            onPress={() => setActiveTab(tab)}
-          >
-            {tab}
-          </Text>
-        ))}
-      </View>
     </SafeAreaView>
   );
 }
