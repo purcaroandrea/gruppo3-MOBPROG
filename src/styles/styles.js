@@ -376,4 +376,31 @@ export default StyleSheet.create({
     marginVertical: 10,
     color: colors.primaryDark,
   },
+
+  tabBar: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    paddingVertical: 12,
+    backgroundColor: colors.card,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+
+  tabItem: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: colors.textMuted,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+
+  tabItemActive: {
+    color: colors.primaryDark,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.primaryDark,
+  },
 });
+
+
+  
