@@ -26,6 +26,7 @@ export const emptyExam = {
   notes: ""
 };
 
+/*
 export const emptySession = {
   id: undefined,
   title: "",
@@ -38,6 +39,22 @@ export const emptySession = {
   completed: false,
   notes: ""
 };
+*/
+export const emptySession = {
+  id: undefined,
+  title: "",
+  courseId: "",
+  examId: "",
+  date: isoToday,
+  startTime: "09:00",
+  endTime: "10:00",
+  kind: "Studio",
+  plannedHours: "1",
+  actualHours: "",
+  completed: false,
+  notes: ""
+};
+
 
 export const emptyGoal = {
   id: undefined,

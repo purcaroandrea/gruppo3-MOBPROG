@@ -107,6 +107,10 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
           { key: "courseId", label: "Corso", type: "course" },
           { key: "examId", label: "Esame", type: "exam" },
           { key: "date", label: "Data (YYYY-MM-DD)", required: true },
+          // aggiunta
+          { key: "startTime", label: "Ora inizio (HH:MM)" },
+          { key: "endTime", label: "Ora fine (HH:MM)" },
+          // fine aggiunta
           { key: "kind", label: "Tipo", options: ["Studio", "Ripasso", "Progetto", "Presentazione"] },
           { key: "plannedHours", label: "Ore previste", numeric: true },
           { key: "actualHours", label: "Ore svolte", numeric: true },
