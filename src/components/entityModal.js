@@ -14,10 +14,27 @@ export default function EntityModal({
   helpers,
 }) {
   if (!value) return null;
-
+  
+  /*
   const valid = fields.every(
     (field) => !field.required || String(value[field.key] || "").trim()
   );
+  */
+
+  const valid = fields.every((field) => {
+  const v = String(value[field.key] || "").trim();
+
+  if (field.required && !v) return false;
+
+  if (field.key === "teacherName" && v && !/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/.test(v))
+    return false;
+
+  if (field.key === "credits" && v && (v < 1 || v > 20))
+    return false;
+
+  return true;
+  });
+
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>

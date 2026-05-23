@@ -59,23 +59,34 @@ export default function CoursesScreen(props) {
           </View>
         </Pressable>
       ))}
-
+      
+      
       <EntityModal
         visible={Boolean(editing)}
         title={editing?.id ? "Modifica corso" : "Nuovo corso"}
         value={editing}
         fields={[
           { key: "name", label: "Nome", required: true },
-          { key: "teacher", label: "Docente" },
-          { key: "semester", label: "Semestre" },
-          { key: "credits", label: "Crediti", numeric: true },
-          { key: "status", label: "Stato", options: courseStates.slice(1) },
+          // commento
+          { key: "prefix", label: "Titolo docente", options: ["Prof.", "Prof.ssa"] },
+          { key: "teacherName", label: "Nome docente", placeholder: "Es. Rossi" },
+          // commento
+          // { key: "teacher", label: "Docente" },
+          { key: "semester", label: "Semestre", options: ["1 semestre", "2 semestre"] },
+          { key: "credits", label: "Crediti  (min 1 - max 20)", numeric: true },
+          // VOTI
+          { key: "targetGrade", label: "Voto desiderato", options: ["18","19","20","21","22","23","24","25","26","27","28","29","30","30L"] },
+          { key: "actualGrade", label: "Voto ottenuto", options: ["","18","19","20","21","22","23","24","25","26","27","28","29","30","30L"] },
+          // fine voti
+           { key: "status", label: "Stato", options: ["Da iniziare", "In corso", "Completato"] },
+          // { key: "status", label: "Stato", options: courseStates.slice(1) },
           { key: "materials", label: "Materiali", multiline: true },
           { key: "notes", label: "Note", multiline: true },
         ]}
         onChange={setEditing}
         onClose={() => setEditing(null)}
         onSave={(item) => {
+          item.teacher = `${item.prefix} ${item.teacherName}`;   // aggiunta, eventualmente togli
           upsert("courses", item);
           setEditing(null);
         }}
@@ -83,4 +94,5 @@ export default function CoursesScreen(props) {
       />
     </View>
   );
+   
 }

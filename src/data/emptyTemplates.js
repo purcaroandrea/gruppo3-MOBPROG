@@ -1,6 +1,7 @@
 const today = new Date();
 const isoToday = today.toISOString().slice(0, 10);
 
+/*
 export const emptyCourse = {
   id: undefined,
   name: "",
@@ -13,6 +14,23 @@ export const emptyCourse = {
   materials: "",
   notes: ""
 };
+*/
+
+export const emptyCourse = {
+  id: undefined,
+  name: "",
+  prefix: "Prof.",          
+  teacherName: "",         
+  teacher: "",              
+  semester: "",
+  credits: "",
+  status: "Da iniziare",
+  targetGrade: "",         
+  actualGrade: "",          
+  materials: "",
+  notes: ""
+};
+
 
 export const emptyExam = {
   id: undefined,

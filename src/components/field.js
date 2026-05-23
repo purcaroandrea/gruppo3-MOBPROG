@@ -63,6 +63,44 @@ export default function Field({ field, value, onChange, helpers }) {
     );
   }
 
+  // Validazione nome docente
+if (field.key === "teacherName") {
+  return (
+    <View style={styles.field}>
+      <Text style={styles.label}>{field.label}</Text>
+      <TextInput
+        style={styles.input}
+        value={current}
+        onChangeText={(txt) => {
+          const clean = txt.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ\s]/g, "");
+          set(clean);
+        }}
+        placeholder="Es. Rossi"
+      />
+    </View>
+  );
+}
+
+// Validazione CFU
+if (field.key === "credits") {
+  return (
+    <View style={styles.field}>
+      <Text style={styles.label}>{field.label}</Text>
+      <TextInput
+        style={styles.input}
+        value={String(current || "")}
+        onChangeText={(txt) => {
+          let n = parseInt(txt) || "";
+          if (n !== "" && (n < 1 || n > 20)) return;
+          set(String(n));
+        }}
+        keyboardType="numeric"
+      />
+    </View>
+  );
+}
+
+
   // Campo testo / multilinea
   return (
     <View style={styles.field}>

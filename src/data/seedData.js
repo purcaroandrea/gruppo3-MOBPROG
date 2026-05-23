@@ -12,6 +12,10 @@ export const seedData = {
     {
       id: "course-1",
       name: "Statistica Applicata",
+      // commento
+      prefix: "Prof.",              
+      teacherName: "Addesso/Postiglione",
+      // commento
       teacher: "Prof. Addesso/Postiglione",
       semester: "2 semestre",
       credits: "6",
