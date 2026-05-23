@@ -25,7 +25,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
     <View>
       <ScreenTop
         title="Esami e scadenze"
-        button="Nuova scadenza"
+        button="Nuovo esame"
         onPress={() => setEditing({ ...emptyExam })}
       />
 
@@ -72,15 +72,15 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
 
       <EntityModal
         visible={Boolean(editing)}
-        title={editing?.id ? "Modifica scadenza" : "Nuova scadenza"}
+        title={editing?.id ? "Modifica esame" : "Nuovo esame"}
         value={editing}
         fields={[
           { key: "title", label: "Titolo", required: true },
-          { key: "courseId", label: "Corso", type: "course" },
+          { key: "courseId", label: "Corso associato", type: "course" },
           { key: "date", label: "Data (YYYY-MM-DD)", required: true },
-          { key: "type", label: "Tipo", options: ["Esame", "Consegna"] },
+          { key: "type", label: "Tipo", options: ["Consegna", "Prova intercorso", "Prova orale", "Prova scritta"] },
           { key: "priority", label: "Priorità", options: ["Alta", "Media", "Bassa"] },
-          { key: "status", label: "Stato", options: ["Futuro", "Programmato", "Completato", "Annullato"] },
+          { key: "status", label: "Stato", options: ["Futuro", "Completato", "Annullato"] },
           { key: "notes", label: "Note", multiline: true },
         ]}
         onChange={setEditing}
