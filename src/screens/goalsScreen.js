@@ -51,6 +51,12 @@ export default function GoalsScreen({ data, helpers, upsert, remove }) {
 
           <Text style={styles.bodyText}>{goal.description}</Text>
 
+           {goal.notes && (
+            <Text style={styles.bodyText}>
+              Note: {goal.notes}
+            </Text>
+          )}
+
           <Progress
             actual={parseFloat(goal.actualHours) || 0}
             total={parseFloat(goal.estimatedHours) || 0}

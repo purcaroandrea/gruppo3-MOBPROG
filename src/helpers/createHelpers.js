@@ -8,6 +8,14 @@ export function createHelpers(data) {
   const courseById = (id) =>
     data.courses.find((course) => course.id === id);
 
+  // nuove
+  const examById = (id) =>
+  data.exams.find((exam) => exam.id === id);
+
+ const goalById = (id) =>
+  data.goals.find((goal) => goal.id === id);
+  // chiusura
+
   const futureExams = data.exams.filter(
     (exam) =>
       exam.status !== "Completato" &&
@@ -55,6 +63,8 @@ export function createHelpers(data) {
 
   return {
     courseById,
+    examById,     
+    goalById,     
     futureExams,
     upcomingExams,
     nextCriticalExam:

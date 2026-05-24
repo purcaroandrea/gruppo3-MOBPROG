@@ -88,9 +88,29 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
                  : ""}
               </Text>
             </View>
+           
+
 
             <Switch value={session.completed} onValueChange={() => toggleComplete(session)} />
           </View>
+
+                        {session.examId && (
+                <Text style={styles.rowMeta}>
+                  Esame: {helpers.examById(session.examId)?.title}
+                </Text>
+              )}
+
+              {session.goalId && (
+                <Text style={styles.rowMeta}>
+                  Obiettivo: {helpers.goalById(session.goalId)?.title}
+                </Text>
+              )}
+
+              {session.notes && (
+                <Text style={styles.bodyText}>
+                  Note: {session.notes}
+                </Text>
+)}
 
           <Text style={styles.bodyText}>
             Previsto {session.plannedHours || 0} h · Svolto {session.actualHours || 0} h
