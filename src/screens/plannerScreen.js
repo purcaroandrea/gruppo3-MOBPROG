@@ -62,7 +62,12 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
                   onPress={() => setEditing(session)}
                 >
                   <Text style={styles.miniSessionText}>{session.title}</Text>
-                  <Text style={styles.miniSessionMeta}>{session.plannedHours}h</Text>
+                  <Text style={styles.miniSessionMeta}>
+                  {session.startTime && session.endTime
+                  ? `${session.startTime}–${session.endTime}`
+                  : `${session.plannedHours}h`}
+                </Text>
+
                 </Pressable>
               ))}
             </View>
@@ -88,7 +93,7 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
           </View>
 
           <Text style={styles.bodyText}>
-            Previsto {session.plannedHours || "0h"} · Svolto {session.actualHours || "0h"}
+            Previsto {session.plannedHours || 0} h · Svolto {session.actualHours || 0} h
           </Text>
 
           <View style={styles.actions}>
@@ -124,41 +129,36 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
           { key: "notes", label: "Note", multiline: true },
         ]}
 
-                  onChange={(next) => {
-            // aggiorna normalmente
-            setEditing(next);
+                    onChange={(next) => {
+  setEditing(next);
 
-            // se abbiamo start e end → calcolo immediato
-            if (next.startTime && next.endTime) {
-              const [sh, sm] = next.startTime.split(":").map(Number);
-              const [eh, em] = next.endTime.split(":").map(Number);
+  if (next.startTime && next.endTime) {
+    const [sh, sm] = next.startTime.split(":").map(Number);
+    const [eh, em] = next.endTime.split(":").map(Number);
 
-              const start = sh * 60 + sm;
-              const end = eh * 60 + em;
+    const start = sh * 60 + sm;
+    const end = eh * 60 + em;
 
-              if (end > start) {
-                const diffMin = end - start;
+    if (end > start) {
+      const diffMin = end - start;
+      const hours = Math.round((diffMin / 60) * 10) / 10; // max 1 decimale
+      setEditing({ ...next, plannedHours: hours });
+    }
+  }
+}}
 
-                // formattazione pulita
-                let formatted;
-                if (diffMin < 60) {
-                  formatted = `${diffMin}m`;
-                } else {
-                  const h = Math.floor(diffMin / 60);
-                  const m = diffMin % 60;
-                  formatted = m === 0 ? `${h}h` : `${h}h ${m}m`;
-                }
 
-                setEditing({ ...next, plannedHours: formatted });
-              }
-            }
-          }}
 
         onClose={() => setEditing(null)}
         onSave={(item) => {
-          upsert("sessions", item);
-          setEditing(null);
-        }}
+       if (!item.startTime || !item.endTime) {
+     alert("Inserisci ora di inizio e ora di fine");
+    return;
+  }
+  upsert("sessions", item);
+  setEditing(null);
+}}
+
         helpers={helpers}
       />
     </View>
