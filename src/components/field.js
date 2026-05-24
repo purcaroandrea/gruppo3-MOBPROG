@@ -43,6 +43,24 @@ export default function Field({ field, value, onChange, helpers }) {
     );
   }
 
+  if (field.type === "goal") {
+  return (
+    <View style={styles.field}>
+      <Text style={styles.label}>{field.label}</Text>
+      <Segmented
+        options={["", ...helpers.goalOptions.map((g) => g.id)]}
+        labels={{
+          "": "Nessuno",
+          ...Object.fromEntries(helpers.goalOptions.map((g) => [g.id, g.title])),
+        }}
+        value={current || ""}
+        onChange={set}
+      />
+    </View>
+  );
+}
+
+
   // Campo: opzioni predefinite
   if (field.options) {
     return (
@@ -100,11 +118,12 @@ if (field.key === "credits") {
   );
 }
 
-
+   {/*
   // Campo testo / multilinea
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{field.label}</Text>
+    
       <TextInput
         style={[styles.input, field.multiline && styles.textarea]}
         value={String(current || "")}
@@ -113,6 +132,30 @@ if (field.key === "credits") {
         multiline={field.multiline}
         keyboardType={field.numeric ? "decimal-pad" : "default"}
       />
+
+
     </View>
   );
+*/}
+
+    // Campo testo / multilinea
+const isAutoCalculated =
+  field.key === "plannedHours" &&
+  value.startTime &&
+  value.endTime;
+
+return (
+  <View style={styles.field}>
+    <Text style={styles.label}>{field.label}</Text>
+    <TextInput
+      style={[styles.input, field.multiline && styles.textarea]}
+      value={String(current || "")}
+      onChangeText={set}
+      placeholder={field.placeholder || field.label}
+      multiline={field.multiline}
+      keyboardType={field.numeric ? "decimal-pad" : "default"}
+      editable={!isAutoCalculated}   
+    />
+  </View>
+);
 }

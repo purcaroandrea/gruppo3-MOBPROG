@@ -68,6 +68,10 @@ export function createHelpers(data) {
       id: exam.id,
       title: exam.title,
     })),
+    goalOptions: data.goals.map((goal) => ({
+    id: goal.id,
+    title: goal.title,
+    })),
     openSessions: data.sessions.filter((s) => !s.completed).length,
     openGoals: data.goals.filter((g) => !g.completed).length,
     weekHours,

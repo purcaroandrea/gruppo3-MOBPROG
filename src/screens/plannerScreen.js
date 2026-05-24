@@ -78,6 +78,9 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
               <Text style={styles.rowMeta}>
                 {helpers.courseById(session.courseId)?.name || "Senza corso"} ·{" "}
                 {session.kind} · {formatDate(session.date)}
+                 {session.startTime && session.endTime
+                 ? ` · ${session.startTime}–${session.endTime}`
+                 : ""}
               </Text>
             </View>
 
@@ -85,7 +88,7 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
           </View>
 
           <Text style={styles.bodyText}>
-            Previsto {session.plannedHours || 0}h · Svolto {session.actualHours || 0}h
+            Previsto {session.plannedHours || "0h"} · Svolto {session.actualHours || "0h"}
           </Text>
 
           <View style={styles.actions}>
@@ -103,21 +106,54 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
         title={editing?.id ? "Modifica attività" : "Nuova attività"}
         value={editing}
         fields={[
-          { key: "title", label: "Titolo", required: true },
+          { key: "title", label: "Nome", required: true },
           { key: "courseId", label: "Corso", type: "course" },
           { key: "examId", label: "Esame", type: "exam" },
+          // aggiunta
+          { key: "goalId", label: "Obiettivo", type: "goal" },
+          // aggiunta
           { key: "date", label: "Data (YYYY-MM-DD)", required: true },
           // aggiunta
           { key: "startTime", label: "Ora inizio (HH:MM)" },
           { key: "endTime", label: "Ora fine (HH:MM)" },
           // fine aggiunta
-          { key: "kind", label: "Tipo", options: ["Studio", "Ripasso", "Progetto", "Presentazione"] },
+          { key: "kind", label: "Tipo", options: ["Avanzamento sul progetto", "Completamento di consegne", "Esercitazione", "Lettura di materiale", "Ripasso"] },
           { key: "plannedHours", label: "Ore previste", numeric: true },
           { key: "actualHours", label: "Ore svolte", numeric: true },
           { key: "completed", label: "Completata", type: "boolean" },
           { key: "notes", label: "Note", multiline: true },
         ]}
-        onChange={setEditing}
+
+                  onChange={(next) => {
+            // aggiorna normalmente
+            setEditing(next);
+
+            // se abbiamo start e end → calcolo immediato
+            if (next.startTime && next.endTime) {
+              const [sh, sm] = next.startTime.split(":").map(Number);
+              const [eh, em] = next.endTime.split(":").map(Number);
+
+              const start = sh * 60 + sm;
+              const end = eh * 60 + em;
+
+              if (end > start) {
+                const diffMin = end - start;
+
+                // formattazione pulita
+                let formatted;
+                if (diffMin < 60) {
+                  formatted = `${diffMin}m`;
+                } else {
+                  const h = Math.floor(diffMin / 60);
+                  const m = diffMin % 60;
+                  formatted = m === 0 ? `${h}h` : `${h}h ${m}m`;
+                }
+
+                setEditing({ ...next, plannedHours: formatted });
+              }
+            }
+          }}
+
         onClose={() => setEditing(null)}
         onSave={(item) => {
           upsert("sessions", item);
