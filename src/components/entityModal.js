@@ -15,12 +15,6 @@ export default function EntityModal({
 }) {
   if (!value) return null;
   
-  /*
-  const valid = fields.every(
-    (field) => !field.required || String(value[field.key] || "").trim()
-  );
-  */
-
   const valid = fields.every((field) => {
   const v = String(value[field.key] || "").trim();
 

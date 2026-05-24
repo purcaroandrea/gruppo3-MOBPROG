@@ -8,6 +8,24 @@ import Progress from "../components/Progress";
 import EntityModal from "../components/EntityModal";
 import { emptyGoal } from "../data/emptyTemplates";
 
+const months = [
+  "Gennaio",
+  "Febbraio",
+  "Marzo",
+  "Aprile",
+  "Maggio",
+  "Giugno",
+  "Luglio",
+  "Agosto",
+  "Settembre",
+  "Ottobre",
+  "Novembre",
+  "Dicembre"
+];
+
+
+
+
 const priorities = ["Tutte", "Alta", "Media", "Bassa"];
 
 export default function GoalsScreen({ data, helpers, upsert, remove }) {
@@ -43,7 +61,11 @@ export default function GoalsScreen({ data, helpers, upsert, remove }) {
               <Text style={styles.cardTitle}>{goal.title}</Text>
               <Text style={styles.rowMeta}>
                 {helpers.courseById(goal.courseId)?.name || "Obiettivo personale"} ·{" "}
-                {goal.period || "Senza periodo"}
+                {goal.periodStart && goal.periodEnd
+             ? `${goal.periodStart} – ${goal.periodEnd}`
+            : "Senza periodo"}
+
+
               </Text>
             </View>
             <Text style={styles.badge}>{goal.priority}</Text>
@@ -92,7 +114,10 @@ export default function GoalsScreen({ data, helpers, upsert, remove }) {
           { key: "title", label: "Titolo", required: true },
           { key: "description", label: "Descrizione", multiline: true },
           { key: "courseId", label: "Corso", type: "course" },
-          { key: "period", label: "Periodo" },
+
+          { key: "periodStart", label: "Mese iniziale", type: "select", options: months },
+          { key: "periodEnd", label: "Mese finale", type: "select", options: months },
+
           { key: "priority", label: "Priorità", options: ["Alta", "Media", "Bassa"] },
           { key: "estimatedHours", label: "Ore stimate", numeric: true },
           { key: "actualHours", label: "Ore svolte", numeric: true },
@@ -101,6 +126,11 @@ export default function GoalsScreen({ data, helpers, upsert, remove }) {
         onChange={setEditing}
         onClose={() => setEditing(null)}
         onSave={(item) => {
+          if (item.periodStart && item.periodEnd && item.periodEnd < item.periodStart) {
+            alert("Il mese finale deve essere successivo o uguale al mese iniziale");
+          return;
+         }
+
           upsert("goals", item);
           setEditing(null);
         }}

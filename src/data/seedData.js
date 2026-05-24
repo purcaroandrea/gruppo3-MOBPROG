@@ -126,6 +126,7 @@ export const seedData = {
     }
   ],
 
+  /*
   goals: [
     {
       id: "goal-1",
@@ -153,4 +154,42 @@ export const seedData = {
       notes: "Sostenere almeno un'ora giornaliera di SQL."
     }
   ]
+    */
+
+  goals: [
+  {
+    id: "goal-1",
+    title: "Avanzamento Statistica Applicata",
+    description:
+      "Arrivare a una buona conoscenza della teoria e ad un progetto quasi in ultimazione.",
+    courseId: "course-1",
+
+    // 🔥 NUOVI CAMPI
+    periodStart: "06",
+    periodEnd: "07",
+
+    priority: "Media",
+    completed: false,
+    estimatedHours: "8",
+    actualHours: "3",
+    notes: "Avanzamento parallelo di studio individuale e progetto in gruppo."
+  },
+  {
+    id: "goal-2",
+    title: "Superare l'esame di Basi di Dati",
+    description: "Dare il tutto per tutto.",
+    courseId: "course-2",
+
+    // 🔥 NUOVI CAMPI
+    periodStart: "Giugno",
+    periodEnd: "Luglio",
+
+    priority: "Alta",
+    completed: false,
+    estimatedHours: "42",
+    actualHours: "6",
+    notes: "Sostenere almeno un'ora giornaliera di SQL."
+  }
+]
+
 };

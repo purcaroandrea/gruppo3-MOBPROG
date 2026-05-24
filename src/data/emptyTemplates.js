@@ -73,13 +73,28 @@ export const emptySession = {
   notes: ""
 };
 
-
+/*
 export const emptyGoal = {
   id: undefined,
   title: "",
   description: "",
   courseId: "",
   period: "",
+  priority: "Media",
+  completed: false,
+  estimatedHours: "",
+  actualHours: "",
+  notes: ""
+};
+*/
+
+export const emptyGoal = {
+  id: undefined,
+  title: "",
+  description: "",
+  courseId: "",
+  periodStart: "",   // default: Gennaio
+  periodEnd: "",     // default: Dicembre
   priority: "Media",
   completed: false,
   estimatedHours: "",
