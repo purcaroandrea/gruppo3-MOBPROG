@@ -182,6 +182,73 @@ return (
 
 */
 
+// 🔥 Gestione ore stimate e ore svolte SOLO per gli obiettivi
+const isGoalEstimated = field.key === "estimatedHours" && "estimatedHours" in value;
+const isGoalActual = field.key === "actualHours" && "estimatedHours" in value;
+
+if (isGoalEstimated || isGoalActual) {
+  const isEstimated = isGoalEstimated;
+  const isActual = isGoalActual;
+
+  const n = parseInt(current) || 0;
+  const canEditActual = value.completed === true;
+
+  const increment = () => {
+    if (isEstimated) {
+      if (n < 500) set(String(n + 1));
+    } else {
+      if (!canEditActual) return;
+      const max = parseInt(value.estimatedHours || "0");
+      if (n < max) set(String(n + 1));
+    }
+  };
+
+  const decrement = () => {
+    if (n > 0) set(String(n - 1));
+  };
+
+  return (
+    <View style={styles.field}>
+      <Text style={styles.label}>{field.label}</Text>
+
+      <View style={styles.row}>
+        <Text style={styles.counterButton} onPress={decrement}>–</Text>
+
+        <TextInput
+          style={[styles.input, { textAlign: "center", width: 80 }]}
+          value={String(current ?? "")}
+          keyboardType="numeric"
+          editable={isEstimated || (isActual && canEditActual)}
+          onChangeText={(txt) => {
+            if (!/^\d*$/.test(txt)) return;
+            const num = parseInt(txt || "0");
+
+            if (isEstimated) {
+              if (num >= 1 && num <= 500) set(String(num));
+            } else {
+              if (!canEditActual) return;
+              const max = parseInt(value.estimatedHours || "0");
+              if (num >= 0 && num <= max) set(String(num));
+            }
+          }}
+        />
+
+        <Text
+          style={[
+            styles.counterButton,
+            isActual && !canEditActual && { opacity: 0.3 }
+          ]}
+          onPress={increment}
+        >
+          +
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+
+
 
 /* Campo testo / multilinea abbastanza buono
 const isPlanned = field.key === "plannedHours";
@@ -232,8 +299,16 @@ return (
 const isPlanned = field.key === "plannedHours";
 const isActual = field.key === "actualHours";
 
-// actualHours editabile solo se completata
+/* actualHours editabile solo se completata
 const canEditActual = value.completed === true;
+*/
+// 🔥 ATTIVITÀ: riconosciute perché NON hanno estimatedHours
+const isActivity = !("estimatedHours" in value);
+
+// 🔥 Negli obiettivi la logica è gestita sopra (stepper)
+// 🔥 Nelle attività actualHours editabile solo se completed = true
+const canEditActual = isActivity ? value.completed === true : true;
+
 
 return (
   <View style={styles.field}>
@@ -252,37 +327,44 @@ return (
         (!isActual || canEditActual)
       }
 
-      onChangeText={(txt) => {
-        // 🔹 Caso: plannedHours → NON editabile, quindi ignoriamo
-        if (isPlanned) return;
 
-        // 🔹 Caso: actualHours
-        if (isActual) {
-          if (!canEditActual) return;
+     onChangeText={(txt) => {
+  // 🔹 Caso: plannedHours → NON editabile
+  if (isPlanned) return;
 
-          // accetta solo numeri con max 1 decimale
-          const regex = /^\d+(\.\d)?$/;
-          if (!regex.test(txt)) return;
+  // 🔹 Caso: actualHours delle attività
+  if (isActual && isActivity) {
+    if (!canEditActual) return;
 
-          const n = parseFloat(txt);
-          if (isNaN(n)) return;
+    // solo numeri interi
+    if (!/^\d*$/.test(txt)) return;
 
-          // range valido: 0.1 → plannedHours
-          if (n < 0.1) return;
-          if (value.plannedHours != null && n > value.plannedHours) return;
+    const num = parseInt(txt || "0");
 
-          set(n);
-          return;
-        }
+    // limite: 0 ≤ actual ≤ plannedHours
+    const max = parseInt(value.plannedHours || "0");
+    if (num >= 0 && num <= max) {
+      set(String(num));
+    }
 
-        // 🔹 Tutti gli altri campi → comportamento normale
-        set(txt);
-      }}
+    return;
+  }
+
+  // 🔹 Caso: actualHours degli obiettivi → NON gestito qui
+  // (lo gestisce il blocco stepper sopra)
+  if (isActual && !isActivity) return;
+
+  // 🔹 Tutti gli altri campi → comportamento normale
+  set(txt);
+}}
+
     />
   </View>
 );
 
 
+
+     
 
 
 }

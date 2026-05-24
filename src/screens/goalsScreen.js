@@ -119,7 +119,7 @@ export default function GoalsScreen({ data, helpers, upsert, remove }) {
           { key: "periodEnd", label: "Mese finale", type: "select", options: months },
 
           { key: "priority", label: "Priorità", options: ["Alta", "Media", "Bassa"] },
-          { key: "estimatedHours", label: "Ore stimate", numeric: true },
+          { key: "estimatedHours", label: "Ore stimate (max 500)", numeric: true },
           { key: "actualHours", label: "Ore svolte", numeric: true },
           { key: "notes", label: "Note", multiline: true },
         ]}
