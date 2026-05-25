@@ -12,11 +12,8 @@ export const seedData = {
     {
       id: "course-1",
       name: "Statistica Applicata",
-      // commento
       prefix: "Prof.",              
-      teacherName: "Addesso/Postiglione",
-      // commento
-      teacher: "Prof. Addesso/Postiglione",
+      teacher: "Addesso",
       semester: "2 semestre",
       credits: "6",
       status: "In corso",
@@ -28,7 +25,8 @@ export const seedData = {
     {
       id: "course-2",
       name: "Basi di Dati",
-      teacher: "Prof. Gaeta",
+      prefix: "Prof.",
+      teacher: "Gaeta",
       semester: "2 semestre",
       credits: "9",
       status: "In corso",
@@ -40,7 +38,8 @@ export const seedData = {
     {
       id: "course-3",
       name: "Analisi Dei Segnali",
-      teacher: "Prof. Restaino",
+      prefix: "Prof.",
+      teacher: "Restaino",
       semester: "1 semestre",
       credits: "9",
       status: "Completato",
@@ -57,10 +56,9 @@ export const seedData = {
       title: "Progetto Statistica Applicata",
       courseId: "course-1",
       date: "2026-07-20",
-      type: "Esame",
+      type: "Consegna",
       priority: "Alta",
-      status: "Programmato",
-      result: "",
+      status: "Futuro",
       notes: "Studiare la teoria e lavorare in team al progetto."
     },
     {
@@ -68,10 +66,9 @@ export const seedData = {
       title: "Prova scritta di Analisi dei Segnali",
       courseId: "course-3",
       date: "2025-02-17",
-      type: "Consegna",
+      type: "Prova Scritta",
       priority: "Media",
       status: "Completato",
-      result: "",
       notes: "Fare tanti esercizi e simulazioni d'esame."
     },
     {
@@ -79,10 +76,9 @@ export const seedData = {
       title: "Prova scritta Basi di Dati",
       courseId: "course-2",
       date: "2026-07-02",
-      type: "Esame",
+      type: "Prova Scritta",
       priority: "Alta",
       status: "Futuro",
-      result: "",
       notes: "Simulare almeno tre prove complete."
     }
   ],
@@ -94,7 +90,7 @@ export const seedData = {
       courseId: "course-1",
       examId: "exam-1",
       date: isoToday,
-      kind: "Progetto",
+      kind: "Avanzamento sul progetto",
       plannedHours: "2",
       actualHours: "2",
       completed: true,
@@ -107,7 +103,7 @@ export const seedData = {
       examId: "exam-3",
       date: addDays(isoToday, 1),
       kind: "Ripasso",
-      plannedHours: "2.5",
+      plannedHours: "3",
       actualHours: "",
       completed: false,
       notes: "Join, group by, vincoli."
@@ -118,43 +114,13 @@ export const seedData = {
       courseId: "course-1",
       examId: "exam-1",
       date: addDays(isoToday, 3),
-      kind: "Presentazione",
-      plannedHours: "1.5",
+      kind: "Completamento di consegne",
+      plannedHours: "2",
       actualHours: "",
       completed: false,
       notes: "Iniziare a coprire la prima parte del programma."
     }
   ],
-
-  /*
-  goals: [
-    {
-      id: "goal-1",
-      title: "Avanzamento Statistica Applicata",
-      description:
-        "Arrivare a una buona conoscenza della teoria e ad un progetto quasi in ultimazione.",
-      courseId: "course-1",
-      period: "Giugno-Luglio",
-      priority: "Media",
-      completed: false,
-      estimatedHours: "8",
-      actualHours: "3",
-      notes: "Avanzamento parallelo di studio individuale e progetto in gruppo."
-    },
-    {
-      id: "goal-2",
-      title: "Superare l'esame di Basi di Dati",
-      description: "Dare il tutto per tutto.",
-      courseId: "course-2",
-      period: "Giugno-Luglio",
-      priority: "Alta",
-      completed: false,
-      estimatedHours: "42",
-      actualHours: "6",
-      notes: "Sostenere almeno un'ora giornaliera di SQL."
-    }
-  ]
-    */
 
   goals: [
   {
@@ -164,9 +130,9 @@ export const seedData = {
       "Arrivare a una buona conoscenza della teoria e ad un progetto quasi in ultimazione.",
     courseId: "course-1",
 
-    // 🔥 NUOVI CAMPI
-    periodStart: "06",
-    periodEnd: "07",
+    
+    periodStart: "Giugno",
+    periodEnd: "Luglio",
 
     priority: "Media",
     completed: false,
@@ -180,15 +146,15 @@ export const seedData = {
     description: "Dare il tutto per tutto.",
     courseId: "course-2",
 
-    // 🔥 NUOVI CAMPI
-    periodStart: "Giugno",
-    periodEnd: "Luglio",
+    
+    periodStart: "Luglio",
+    periodEnd: "Settembre",
 
     priority: "Alta",
     completed: false,
     estimatedHours: "42",
     actualHours: "6",
-    notes: "Sostenere almeno un'ora giornaliera di SQL."
+    notes: "Esercitarsi con SQL."
   }
 ]
 

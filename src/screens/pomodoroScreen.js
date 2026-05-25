@@ -10,12 +10,12 @@ export default function PomodoroScreen() {
   const [running, setRunning] = React.useState(false);
   const [sessions, setSessions] = React.useState(0);
 
-  // Suono
+
   const soundRef = React.useRef(null);
   async function playSound() {
     if (!soundRef.current) {
       const { sound } = await Audio.Sound.createAsync(
-        require("../../assets/images/pomodoro-end.mp3")   // ← percorso corretto
+        require("../../assets/images/pomodoro-end.mp3")   
       );
       soundRef.current = sound;
     }
@@ -29,7 +29,7 @@ export default function PomodoroScreen() {
       setSecondsLeft((value) => {
         if (value > 1) return value - 1;
 
-        // Fine ciclo → suono + vibrazione
+        
         playSound();
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
@@ -94,7 +94,7 @@ export default function PomodoroScreen() {
       <View style={styles.panel}>
         <Text style={styles.panelTitle}>Che cos'è il Pomodoro Timer?</Text>
         <Text style={styles.bodyText}>
-          Il Pomodoro Timer alterna sessioni da 25 minuti di concentrazione a pause da 5 minuti.
+          Il Pomodoro Timer alterna continuativamente sessioni da 25 minuti di studio a pause da 5 minuti.
           Le sessioni completate vengono registrate automaticamente.
         </Text>
       </View>

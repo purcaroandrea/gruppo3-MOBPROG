@@ -15,7 +15,7 @@ export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSes
       <Text style={styles.sectionTitle}>Panoramica</Text>
 
       <View style={styles.metricGrid}>
-        <Metric label="Corsi" value={data.courses.length} />
+        <Metric label="Corsi inseriti" value={data.courses.length} />
         <Metric label="Esami futuri" value={helpers.futureExams.length} />
         <Metric label="Attività e Obiettivi da completare" value={helpers.openGoals + helpers.openSessions} />
         <Metric label="Ore svolte" value={`${helpers.weekHours.actual}h`} />

@@ -1,26 +1,11 @@
 const today = new Date();
 const isoToday = today.toISOString().slice(0, 10);
 
-/*
-export const emptyCourse = {
-  id: undefined,
-  name: "",
-  teacher: "",
-  semester: "",
-  credits: "",
-  status: "Da iniziare",
-  targetGrade: "",
-  actualGrade: "",
-  materials: "",
-  notes: ""
-};
-*/
 
 export const emptyCourse = {
   id: undefined,
   name: "",
-  prefix: "Prof.",          
-  teacherName: "",         
+  prefix: "Prof.",                   
   teacher: "",              
   semester: "",
   credits: "",
@@ -40,24 +25,10 @@ export const emptyExam = {
   type: "Esame",
   priority: "Media",
   status: "Futuro",
-  result: "",
   notes: ""
 };
 
-/*
-export const emptySession = {
-  id: undefined,
-  title: "",
-  courseId: "",
-  examId: "",
-  date: isoToday,
-  kind: "Studio",
-  plannedHours: "1",
-  actualHours: "",
-  completed: false,
-  notes: ""
-};
-*/
+
 export const emptySession = {
   id: undefined,
   title: "",
@@ -66,35 +37,22 @@ export const emptySession = {
   date: isoToday,
   startTime: "09:00",
   endTime: "10:00",
-  kind: "Studio",
+  kind: "",
   plannedHours: "1",
   actualHours: "",
   completed: false,
   notes: ""
 };
 
-/*
-export const emptyGoal = {
-  id: undefined,
-  title: "",
-  description: "",
-  courseId: "",
-  period: "",
-  priority: "Media",
-  completed: false,
-  estimatedHours: "",
-  actualHours: "",
-  notes: ""
-};
-*/
+
 
 export const emptyGoal = {
   id: undefined,
   title: "",
   description: "",
   courseId: "",
-  periodStart: "",   // default: Gennaio
-  periodEnd: "",     // default: Dicembre
+  periodStart: "",   
+  periodEnd: "",     
   priority: "Media",
   completed: false,
   estimatedHours: "",
