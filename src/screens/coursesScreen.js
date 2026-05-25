@@ -1,13 +1,13 @@
 import React from "react";
-import { View, Text, Pressable, ScrollView } from "react-native";
-import styles from "../styles/styles";
+import { Pressable, Text, View } from "react-native";
+import DangerButton from "../components/DangerButton";
+import EntityModal from "../components/EntityModal";
 import ScreenTop from "../components/ScreenTop";
 import SearchBox from "../components/SearchBox";
 import Segmented from "../components/Segmented";
 import StatusBadge from "../components/StatusBadge";
-import DangerButton from "../components/DangerButton";
-import EntityModal from "../components/EntityModal";
 import { emptyCourse } from "../data/emptyTemplates";
+import styles from "../styles/styles";
 
 const courseStates = ["Tutti", "Da iniziare", "In corso", "Completato"];
 

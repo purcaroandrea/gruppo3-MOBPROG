@@ -1,10 +1,9 @@
-import React from "react";
-import { View, Text, Pressable } from "react-native";
-import styles from "../styles/styles";
-import Panel from "../components/Panel";
+import { Pressable, Text, View } from "react-native";
 import Metric from "../components/Metric";
+import Panel from "../components/Panel";
 import PriorityBadge from "../components/PriorityBadge";
 import { formatDate } from "../helpers/date";
+import styles from "../styles/styles";
 
 export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSession }) {
   const upcoming = helpers.upcomingExams.slice(0, 3);
