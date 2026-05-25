@@ -9,7 +9,7 @@ import DangerButton from "../components/DangerButton";
 import EntityModal from "../components/EntityModal";
 import { emptyCourse } from "../data/emptyTemplates";
 
-const courseStates = ["Tutti", "Da iniziare", "In corso", "Da ripassare", "Completato", "Superato"];
+const courseStates = ["Tutti", "Da iniziare", "In corso", "Completato"];
 
 export default function CoursesScreen(props) {
   const { data, helpers, upsert, remove, setSelectedCourseId } = props;

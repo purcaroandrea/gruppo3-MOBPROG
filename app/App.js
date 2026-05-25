@@ -217,7 +217,7 @@ export default function App() {
         </View>
         <View style={styles.headerBadge}>
           <Text style={styles.headerBadgeText}>{helpers.weekHours?.planned || 0}h</Text>
-          <Text style={styles.headerBadgeSmall}>a settimana</Text>
+          <Text style={styles.headerBadgeSmall}>Questa settimana!</Text>
         </View>
       </View>
 

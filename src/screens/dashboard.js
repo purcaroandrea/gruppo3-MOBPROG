@@ -21,7 +21,7 @@ export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSes
         <Metric label="Ore svolte" value={`${helpers.weekHours.actual}h`} />
       </View>
 
-      <Panel title="Scadenze imminenti" action="Vedi esami" onAction={() => setActiveTab("Esami")}>
+      <Panel title="Esami imminenti" action="Vedi esami" onAction={() => setActiveTab("Esami")}>
         {upcoming.map((exam) => (
           <View key={exam.id} style={styles.rowCard}>
             <View style={styles.rowMain}>

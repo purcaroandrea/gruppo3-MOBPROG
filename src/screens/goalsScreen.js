@@ -125,12 +125,7 @@ export default function GoalsScreen({ data, helpers, upsert, remove }) {
         ]}
         onChange={setEditing}
         onClose={() => setEditing(null)}
-        onSave={(item) => {
-          if (item.periodStart && item.periodEnd && item.periodEnd < item.periodStart) {
-            alert("Il mese finale deve essere successivo o uguale al mese iniziale");
-          return;
-         }
-
+        onSave={(item) => {        
           upsert("goals", item);
           setEditing(null);
         }}

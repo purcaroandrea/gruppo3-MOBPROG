@@ -12,7 +12,7 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
   const [weekStart, setWeekStart] = React.useState(startOfWeek(new Date().toISOString().slice(0, 10)));
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  const visibleSessions = data.sessions.filter((s) => days.includes(s.date));
+  const visibleSessions = data.sessions.filter((session) => days.includes(session.date)).sort((a, b) => new Date(a.date) - new Date(b.date));
 
   const toggleComplete = (session) => {
     upsert("sessions", {
@@ -46,7 +46,7 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
 
       <View style={styles.calendar}>
         {days.map((day) => {
-          const daily = visibleSessions.filter((s) => s.date === day);
+          const daily = visibleSessions.filter((session) => session.date === day).sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
           return (
             <View key={day} style={styles.dayColumn}>
               <Text style={styles.dayLabel}>{weekday(day)}</Text>
