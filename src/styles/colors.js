@@ -9,3 +9,5 @@ export default {
   panel: "#FAE3D2",
   border: "#E8D4C8",
 };
+
+

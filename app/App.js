@@ -37,32 +37,6 @@ export default function App() {
   }, [data, loaded]);
 
   const helpers = useMemo(() => createHelpers(data), [data]);
-
-/*
-  const upsert = (collection, item) => {
-    if (item.date && !isValidDateStrict(item.date)) {
-      alert("La data inserita non è valida.");
-      return;
-    }
-
-    setData((current) => {
-      const exists = current[collection].some((e) => e.id === item.id);
-      return {
-        ...current,
-        [collection]: exists
-          ? current[collection].map((e) => (e.id === item.id ? item : e))
-          : [{ ...item, id: `${collection}-${Date.now()}` }, ...current[collection]],
-      };
-    });
-  };
-
-  const remove = (collection, id) => {
-    setData((current) => ({
-      ...current,
-      [collection]: current[collection].filter((e) => e.id !== id),
-    }));
-  };
-  */
   
   const upsert = (collection, item) => {
   // Validazione data 
@@ -132,7 +106,7 @@ export default function App() {
   let updated = { ...current };
 
     // 1) Rimuovi l'elemento principale
-    updated[collection] = updated[collection].filter((e) => e.id !== id);
+updated[collection] = updated[collection].filter((e) => e.id !== id);
 
     // 2) Eliminazione a cascata
     if (collection === "courses") {
