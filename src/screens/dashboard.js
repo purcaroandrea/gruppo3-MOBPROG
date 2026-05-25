@@ -1,3 +1,4 @@
+import React from "react";
 import { Pressable, Text, View } from "react-native";
 import Metric from "../components/Metric";
 import Panel from "../components/Panel";
