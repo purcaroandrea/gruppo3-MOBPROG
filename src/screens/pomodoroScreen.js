@@ -3,15 +3,31 @@ import { View, Text, Pressable } from "react-native";
 import styles from "../styles/styles";
 import * as Haptics from "expo-haptics";
 import { Audio } from "expo-av";
+import Segmented from "../components/Segmented"; // Importiamo il selettore
 
-export default function PomodoroScreen() {
+export default function PomodoroScreen({ data, upsert }) {
   const [mode, setMode] = React.useState("Studio");
   const [secondsLeft, setSecondsLeft] = React.useState(25 * 60);
   const [running, setRunning] = React.useState(false);
-  const [sessions, setSessions] = React.useState(0);
-
+  
+  // Usiamo questo contatore per triggerare il salvataggio automatico
+  const [completedPomodoros, setCompletedPomodoros] = React.useState(0);
+  
+  // Stato per l'attività selezionata a cui aggiungere il tempo
+  const [selectedSessionId, setSelectedSessionId] = React.useState("");
 
   const soundRef = React.useRef(null);
+
+  // Filtriamo solo le attività di oggi non ancora completate
+  const today = new Date().toISOString().slice(0, 10);
+  const availableSessions = data?.sessions.filter(s => s.date === today && !s.completed) || [];
+  
+  const sessionOptions = ["", ...availableSessions.map((s) => s.id)];
+  const sessionLabels = { "": "Nessuna attività" };
+  availableSessions.forEach((s) => {
+    sessionLabels[s.id] = s.title;
+  });
+
   async function playSound() {
     if (!soundRef.current) {
       const { sound } = await Audio.Sound.createAsync(
@@ -22,6 +38,7 @@ export default function PomodoroScreen() {
     await soundRef.current.replayAsync();
   }
 
+  // Effetto che gestisce il timer
   React.useEffect(() => {
     if (!running) return;
 
@@ -29,12 +46,16 @@ export default function PomodoroScreen() {
       setSecondsLeft((value) => {
         if (value > 1) return value - 1;
 
-        
+        // Il timer è arrivato a zero
         playSound();
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
         const nextMode = mode === "Studio" ? "Pausa" : "Studio";
-        if (mode === "Studio") setSessions((count) => count + 1);
+        
+        // Se era un timer di studio, incrementiamo il contatore dei pomodori completati
+        if (mode === "Studio") {
+          setCompletedPomodoros((count) => count + 1);
+        }
 
         setMode(nextMode);
         return nextMode === "Studio" ? 25 * 60 : 5 * 60;
@@ -43,6 +64,20 @@ export default function PomodoroScreen() {
 
     return () => clearInterval(timer);
   }, [running, mode]);
+
+  // 🔥 NUOVA LOGICA: Quando completi un pomodoro, salva 25 minuti sull'attività
+  React.useEffect(() => {
+    if (completedPomodoros > 0 && selectedSessionId) {
+      const session = data.sessions.find(s => s.id === selectedSessionId);
+      
+      if (session) {
+        const currentActual = parseInt(session.actualHours || "0", 10);
+        const newActual = currentActual + 25; // Aggiunge 25 minuti
+        
+        upsert("sessions", { ...session, actualHours: String(newActual) });
+      }
+    }
+  }, [completedPomodoros]); // Questo useEffect scatta solo quando il contatore si aggiorna
 
   const reset = (nextMode = mode) => {
     setRunning(false);
@@ -60,10 +95,25 @@ export default function PomodoroScreen() {
     <View>
       <Text style={styles.sectionTitle}>Pomodoro Timer</Text>
 
+      {/* Selettore dell'attività */}
+      <View style={{ marginBottom: 20 }}>
+        <Text style={styles.label}>Associa il tempo a un'attività di oggi:</Text>
+        {availableSessions.length > 0 ? (
+          <Segmented 
+            options={sessionOptions} 
+            labels={sessionLabels} 
+            value={selectedSessionId} 
+            onChange={setSelectedSessionId} 
+          />
+        ) : (
+          <Text style={styles.bodyText}>Non hai attività pianificate (o non completate) per oggi.</Text>
+        )}
+      </View>
+
       <View style={styles.timerPanel}>
         <Text style={styles.timerMode}>{mode}</Text>
         <Text style={styles.timer}>{formatTimer(secondsLeft)}</Text>
-        <Text style={styles.rowMeta}>Sessioni completate oggi: {sessions}</Text>
+        <Text style={styles.rowMeta}>Sessioni completate oggi: {completedPomodoros}</Text>
 
         <View style={styles.actionsCentered}>
           <Pressable
@@ -94,11 +144,10 @@ export default function PomodoroScreen() {
       <View style={styles.panel}>
         <Text style={styles.panelTitle}>Che cos'è il Pomodoro Timer?</Text>
         <Text style={styles.bodyText}>
-          Il Pomodoro Timer alterna continuativamente sessioni da 25 minuti di studio a pause da 5 minuti.
-          Le sessioni completate vengono registrate automaticamente.
+          Il Pomodoro Timer alterna continuativamente sessioni da 25 minuti di studio a pause da 5 minuti. 
+          Se selezioni un'attività prima di iniziare, verranno aggiunti automaticamente 25 minuti allo "svolto" al termine di ogni timer di studio.
         </Text>
       </View>
     </View>
   );
 }
-

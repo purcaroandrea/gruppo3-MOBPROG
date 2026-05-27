@@ -205,7 +205,7 @@ export default function App() {
         {activeTab === "Esami" && <ExamsScreen {...screenProps} />}
         {activeTab === "Planner" && <PlannerScreen {...screenProps} />}
         {activeTab === "Obiettivi" && <GoalsScreen {...screenProps} />}
-        {activeTab === "Pomodoro" && <PomodoroScreen />}
+        {activeTab === "Pomodoro" && <PomodoroScreen {...screenProps} />}
       </ScrollView>
     </SafeAreaView>
   );
