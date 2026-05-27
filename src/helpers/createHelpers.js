@@ -1,21 +1,16 @@
 import { addDays, startOfWeek } from "./date.js";
-import { toNumber, round1 } from "./format.js";
+import { toNumber, minutesToDecimalHours } from "./format.js";
 
 const today = new Date();
 const isoToday = today.toISOString().slice(0, 10);
 
 export function createHelpers(data) {
-  const courseById = (id) =>
-    data.courses.find((course) => course.id === id);
+  // Helpers di base per recuperare entità tramite ID
+  const courseById = (id) => data.courses.find((course) => course.id === id);
+  const examById = (id) => data.exams.find((exam) => exam.id === id);
+  const goalById = (id) => data.goals.find((goal) => goal.id === id);
 
-  // nuove
-  const examById = (id) =>
-  data.exams.find((exam) => exam.id === id);
-
- const goalById = (id) =>
-  data.goals.find((goal) => goal.id === id);
-  // chiusura
-
+  // Filtraggio esami futuri e imminenti
   const futureExams = data.exams.filter(
     (exam) =>
       exam.status !== "Completato" &&
@@ -27,6 +22,7 @@ export function createHelpers(data) {
     a.date.localeCompare(b.date)
   );
 
+  // Calcolo delle date per la settimana corrente
   const weekStart = startOfWeek(isoToday);
   const weekEnd = addDays(weekStart, 6);
 
@@ -34,14 +30,15 @@ export function createHelpers(data) {
     (session) => session.date >= weekStart && session.date <= weekEnd
   );
 
+  // 🔥 Calcolo delle ore settimanali (somma i minuti e li converte in ore decimali per l'UI)
   const weekHours = {
-    planned: round1(
+    planned: minutesToDecimalHours(
       weekSessions.reduce(
         (sum, session) => sum + toNumber(session.plannedHours),
         0
       )
     ),
-    actual: round1(
+    actual: minutesToDecimalHours(
       weekSessions.reduce(
         (sum, session) => sum + toNumber(session.actualHours),
         0
@@ -49,13 +46,15 @@ export function createHelpers(data) {
     ),
   };
 
+  // 🔥 Calcolo delle ore totali per singolo corso (converte i minuti in ore decimali)
   const hoursForCourse = (courseId) =>
-    round1(
+    minutesToDecimalHours(
       data.sessions
         .filter((session) => session.courseId === courseId)
         .reduce((sum, session) => sum + toNumber(session.plannedHours), 0)
     );
 
+  // Trova il valore massimo di ore tra tutti i corsi (per scalare le progress bar)
   const maxCourseHours = Math.max(
     1,
     ...data.courses.map((course) => hoursForCourse(course.id))
@@ -63,13 +62,14 @@ export function createHelpers(data) {
 
   return {
     courseById,
-    examById,     
-    goalById,     
+    examById,
+    goalById,
     futureExams,
     upcomingExams,
     nextCriticalExam:
-      upcomingExams.find((exam) => exam.priority === "Alta") ||
-      upcomingExams[0],
+      upcomingExams.find((exam) => exam.priority === "Alta") || upcomingExams[0],
+    
+    // Generazione delle opzioni per i menu a tendina (Segmented/Picker)
     courseOptions: data.courses.map((course) => ({
       id: course.id,
       name: course.name,
@@ -79,11 +79,15 @@ export function createHelpers(data) {
       title: exam.title,
     })),
     goalOptions: data.goals.map((goal) => ({
-    id: goal.id,
-    title: goal.title,
+      id: goal.id,
+      title: goal.title,
     })),
+    
+    // Contatori per attività in sospeso
     openSessions: data.sessions.filter((s) => !s.completed).length,
     openGoals: data.goals.filter((g) => !g.completed).length,
+    
+    // Esportazione dei dati calcolati
     weekHours,
     hoursForCourse,
     studyByCourse: data.courses
@@ -99,6 +103,6 @@ export function createHelpers(data) {
           ),
         };
       })
-      .sort((a, b) => b.hours - a.hours),
+      .sort((a, b) => b.hours - a.hours), // Ordina i corsi dal più studiato al meno studiato
   };
 }

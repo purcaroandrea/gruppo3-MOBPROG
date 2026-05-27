@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useMemo, useState } from "react";
-import { SafeAreaView, ScrollView, View, Text, Pressable } from "react-native"; // Aggiunto Pressable
+import { SafeAreaView, ScrollView, View, Text, Pressable } from "react-native";
 
 import styles from "../src/styles/styles";
 import { seedData } from "../src/data/seedData";
@@ -23,136 +23,122 @@ export default function App() {
 
   const tabs = ["Dashboard", "Corsi", "Esami", "Planner", "Obiettivi", "Pomodoro"];
 
+  // Caricamento dei dati con gestione degli errori ottimizzata
   useEffect(() => {
     async function load() {
-      const saved = await AsyncStorage.getItem("study-planner-v1");
-      if (saved) setData(JSON.parse(saved));
-      setLoaded(true);
+      try {
+        const saved = await AsyncStorage.getItem("study-planner-v1");
+        if (saved) setData(JSON.parse(saved));
+      } catch (error) {
+        console.error("Errore nel caricamento del database locale:", error);
+      } finally {
+        setLoaded(true);
+      }
     }
     load();
   }, []);
 
+  // Salvataggio dei dati ogni volta che lo stato 'data' cambia
   useEffect(() => {
-    if (loaded) AsyncStorage.setItem("study-planner-v1", JSON.stringify(data));
+    if (loaded) {
+      AsyncStorage.setItem("study-planner-v1", JSON.stringify(data)).catch((error) => {
+        console.error("Errore durante il salvataggio dei dati:", error);
+      });
+    }
   }, [data, loaded]);
 
   const helpers = useMemo(() => createHelpers(data), [data]);
   
   const upsert = (collection, item) => {
-  // Validazione data 
-  if (item.date && !isValidDateStrict(item.date)) {
-    alert("La data inserita non è valida.");
-    return;
-  }
+    // Validazione data 
+    if (item.date && !isValidDateStrict(item.date)) {
+      alert("La data inserita non è valida.");
+      return;
+    }
 
-  // Validazione orari
-  if (collection === "sessions") {
-  if (item.startTime && !isValidTime(item.startTime)) {
-    alert("L'ora di inizio non è valida.");
-    return;
-  }
-  if (item.endTime && !isValidTime(item.endTime)) {
-    alert("L'ora di fine non è valida.");
-    return;
-  }
-
-  // Impedisce durata zero
-  if (item.startTime === item.endTime) {
-    alert("L'ora di fine non può essere uguale all'ora di inizio.");
-    return;
-  }
-}
-
-
-
-  setData((current) => {
-    const exists = current[collection].some((e) => e.id === item.id);
-
-    // Normalizzazione ID
-    let newItem = exists
-      ? item
-      : { ...item, id: `${collection}-${Date.now()}` };
-
-    // 🔥 Calcolo automatico durata sessione 
-    if (collection === "sessions" && newItem.startTime && newItem.endTime) {
-      const [sh, sm] = newItem.startTime.split(":").map(Number);
-      const [eh, em] = newItem.endTime.split(":").map(Number);
-
-      let start = sh * 60 + sm;
-      let end = eh * 60 + em;
-
-      // Caso overnight (es. 23:00 → 01:00)
-      if (end < start) {
-        end += 24 * 60;
+    // Validazione orari
+    if (collection === "sessions") {
+      if (item.startTime && !isValidTime(item.startTime)) {
+        alert("L'ora di inizio non è valida.");
+        return;
+      }
+      if (item.endTime && !isValidTime(item.endTime)) {
+        alert("L'ora di fine non è valida.");
+        return;
       }
 
-      const diffHours = (end - start) / 60;
-      newItem.plannedHours = diffHours.toFixed(1);
+      // Impedisce durata zero (solo se i campi sono effettivamente compilati)
+      if (item.startTime === item.endTime && item.startTime !== "") {
+        alert("L'ora di fine non può essere uguale all'ora di inizio.");
+        return;
+      }
     }
 
-    return {
-      ...current,
-      [collection]: exists
-        ? current[collection].map((e) => (e.id === item.id ? newItem : e))
-        : [newItem, ...current[collection]],
-    };
-  });
-};
+    setData((current) => {
+      const exists = current[collection].some((e) => e.id === item.id);
 
+      // Normalizzazione ID
+      let newItem = exists
+        ? item
+        : { ...item, id: `${collection}-${Date.now()}` };
 
-    
+      // 🔥 NUOVA LOGICA: Calcolo automatico della durata convertito rigorosamente in MINUTI TOTALI 
+      if (collection === "sessions" && newItem.startTime && newItem.endTime) {
+        const [sh, sm] = newItem.startTime.split(":").map(Number);
+        const [eh, em] = newItem.endTime.split(":").map(Number);
+
+        let start = sh * 60 + sm;
+        let end = eh * 60 + em;
+
+        // Caso overnight (es. 23:00 → 01:00)
+        if (end < start) {
+          end += 24 * 60;
+        }
+
+        const diffMinutes = end - start;
+        // Salviamo i minuti totali come stringa per mantenere la compatibilità con i TextInput
+        newItem.plannedHours = String(diffMinutes); 
+      }
+
+      return {
+        ...current,
+        [collection]: exists
+          ? current[collection].map((e) => (e.id === item.id ? newItem : e))
+          : [newItem, ...current[collection]],
+      };
+    });
+  };
+
   const remove = (collection, id) => {
-  setData((current) => {
-  let updated = { ...current };
+    setData((current) => {
+      let updated = { ...current };
 
-    // 1) Rimuovi l'elemento principale
-updated[collection] = updated[collection].filter((e) => e.id !== id);
+      // 1) Rimuovi l'elemento principale
+      updated[collection] = updated[collection].filter((e) => e.id !== id);
 
-    // 2) Eliminazione a cascata
-    if (collection === "courses") {
-      // elimina esami del corso
-      const examIds = updated.exams
-        .filter((ex) => ex.courseId === id)
-        .map((ex) => ex.id);
+      // 2) Eliminazione a cascata ottimizzata e pulita
+      if (collection === "courses") {
+        const examIds = updated.exams
+          .filter((ex) => ex.courseId === id)
+          .map((ex) => ex.id);
 
-      updated.exams = updated.exams.filter((ex) => ex.courseId !== id);
+        updated.exams = updated.exams.filter((ex) => ex.courseId !== id);
+        updated.goals = updated.goals.filter((g) => g.courseId !== id);
+        
+        // Rimuove le sessioni associate sia al corso che agli esami eliminati
+        updated.sessions = updated.sessions.filter(
+          (s) => s.courseId !== id && !examIds.includes(s.examId)
+        );
+      }
 
-      // elimina sessioni legate al corso
-      updated.sessions = updated.sessions.filter(
-        (s) => s.courseId !== id
-      );
+      if (collection === "exams") {
+        updated.sessions = updated.sessions.filter((s) => s.examId !== id);
+        updated.goals = updated.goals.filter((g) => g.examId !== id);
+      }
 
-      // elimina obiettivi legati al corso
-      updated.goals = updated.goals.filter((g) => g.courseId !== id);
-
-      // elimina sessioni legate agli esami eliminati
-      updated.sessions = updated.sessions.filter(
-        (s) => !examIds.includes(s.examId)
-      );
-    }
-
-    if (collection === "exams") {
-      // elimina sessioni legate all'esame
-      updated.sessions = updated.sessions.filter(
-        (s) => s.examId !== id
-      );
-
-      // elimina obiettivi legati all'esame
-      updated.goals = updated.goals.filter((g) => g.examId !== id);
-    }
-
-    if (collection === "sessions") {
-      // nessuna cascata aggiuntiva
-    }
-
-    if (collection === "goals") {
-      // nessuna cascata aggiuntiva
-    }
-
-    return updated;
-  });
-};
-
+      return updated;
+    });
+  };
 
   const addSuggestedSession = (exam) => {
     const tomorrow = new Date();
@@ -164,7 +150,7 @@ updated[collection] = updated[collection].filter((e) => e.id !== id);
       courseId: exam.courseId,
       examId: exam.id,
       date: tomorrow.toISOString().slice(0, 10),
-      plannedHours: "1.5",
+      plannedHours: "90", // 🔥 Aggiornato: ora registra 90 minuti invece di "1.5"
       kind: "Ripasso",
     });
 
@@ -195,7 +181,7 @@ updated[collection] = updated[collection].filter((e) => e.id !== id);
         </View>
       </View>
 
-      {/* 2. BARRA DELLE TAB RIPRISTINATA (SOPRA E IN ORIZZONTALE) */}
+      {/* 2. BARRA DELLE TAB RIPRISTINATA */}
       <View style={styles.tabs}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {tabs.map((tab) => (
