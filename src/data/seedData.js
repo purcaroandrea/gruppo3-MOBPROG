@@ -13,7 +13,8 @@ export const seedData = {
       id: "course-1",
       name: "Statistica Applicata",
       prefix: "Prof.",              
-      teacher: "Addesso",
+      teacherName: "Addesso",
+      teacher: "Prof. Addesso",
       semester: "2 semestre",
       credits: "6",
       status: "In corso",
@@ -26,7 +27,8 @@ export const seedData = {
       id: "course-2",
       name: "Basi di Dati",
       prefix: "Prof.",
-      teacher: "Gaeta",
+      teacherName: "Gaeta",
+      teacher: "Prof. Gaeta",
       semester: "2 semestre",
       credits: "9",
       status: "In corso",
@@ -39,7 +41,8 @@ export const seedData = {
       id: "course-3",
       name: "Analisi Dei Segnali",
       prefix: "Prof.",
-      teacher: "Restaino",
+      teacherName: "Restaino",
+      teacher: "Prof. Restaino",
       semester: "1 semestre",
       credits: "9",
       status: "Completato",
@@ -55,7 +58,7 @@ export const seedData = {
       id: "exam-1",
       title: "Progetto Statistica Applicata",
       courseId: "course-1",
-      date: "2026-07-20",
+      date: addDays(isoToday, 12),
       type: "Consegna",
       priority: "Alta",
       status: "Futuro",
@@ -65,7 +68,7 @@ export const seedData = {
       id: "exam-2",
       title: "Prova scritta di Analisi dei Segnali",
       courseId: "course-3",
-      date: "2025-02-17",
+      date: addDays(isoToday, -45), // Esame completato
       type: "Prova Scritta",
       priority: "Media",
       status: "Completato",
@@ -75,7 +78,7 @@ export const seedData = {
       id: "exam-3",
       title: "Prova scritta Basi di Dati",
       courseId: "course-2",
-      date: "2026-07-02",
+      date: addDays(isoToday, 4), // Esame imminente per la Dashboard
       type: "Prova Scritta",
       priority: "Alta",
       status: "Futuro",
@@ -89,11 +92,13 @@ export const seedData = {
       title: "Studiare Teoria della Stima",
       courseId: "course-1",
       examId: "exam-1",
-      date: isoToday,
+      date: isoToday, 
+      startTime: "", // Lasciato vuoto
+      endTime: "",   // Lasciato vuoto
       kind: "Avanzamento sul progetto",
-      plannedHours: "2",
-      actualHours: "2",
-      completed: true,
+      plannedHours: "0", // Ometto le ore (imposto a 0 minuti)
+      actualHours: "0",  // Ometto le ore
+      completed: false,
       notes: "Capire i concetti e le relative applicazioni."
     },
     {
@@ -101,10 +106,12 @@ export const seedData = {
       title: "Ripasso SQL avanzato",
       courseId: "course-2",
       examId: "exam-3",
-      date: addDays(isoToday, 1),
+      date: addDays(isoToday, -1),
+      startTime: "",
+      endTime: "",
       kind: "Ripasso",
-      plannedHours: "3",
-      actualHours: "",
+      plannedHours: "0",
+      actualHours: "0",
       completed: false,
       notes: "Join, group by, vincoli."
     },
@@ -113,49 +120,43 @@ export const seedData = {
       title: "Preparare relazione",
       courseId: "course-1",
       examId: "exam-1",
-      date: addDays(isoToday, 3),
+      date: addDays(isoToday, 2),
+      startTime: "",
+      endTime: "",
       kind: "Completamento di consegne",
-      plannedHours: "2",
-      actualHours: "",
+      plannedHours: "0",
+      actualHours: "0",
       completed: false,
       notes: "Iniziare a coprire la prima parte del programma."
     }
   ],
 
   goals: [
-  {
-    id: "goal-1",
-    title: "Avanzamento Statistica Applicata",
-    description:
-      "Arrivare a una buona conoscenza della teoria e ad un progetto quasi in ultimazione.",
-    courseId: "course-1",
-
-    
-    periodStart: "Giugno",
-    periodEnd: "Luglio",
-
-    priority: "Media",
-    completed: false,
-    estimatedHours: "8",
-    actualHours: "3",
-    notes: "Avanzamento parallelo di studio individuale e progetto in gruppo."
-  },
-  {
-    id: "goal-2",
-    title: "Superare l'esame di Basi di Dati",
-    description: "Dare il tutto per tutto.",
-    courseId: "course-2",
-
-    
-    periodStart: "Luglio",
-    periodEnd: "Settembre",
-
-    priority: "Alta",
-    completed: false,
-    estimatedHours: "42",
-    actualHours: "6",
-    notes: "Esercitarsi con SQL."
-  }
-]
-
+    {
+      id: "goal-1",
+      title: "Avanzamento Statistica Applicata",
+      description: "Arrivare a una buona conoscenza della teoria e ad un progetto quasi in ultimazione.",
+      courseId: "course-1",
+      periodStart: "Maggio", 
+      periodEnd: "Giugno",
+      priority: "Media",
+      completed: false,
+      estimatedHours: "0", // Ometto le ore (0 minuti)
+      actualHours: "0",    // Ometto le ore (0 minuti)
+      notes: "Avanzamento parallelo di studio individuale e progetto in gruppo."
+    },
+    {
+      id: "goal-2",
+      title: "Superare l'esame di Basi di Dati",
+      description: "Dare il tutto per tutto.",
+      courseId: "course-2",
+      periodStart: "Giugno",
+      periodEnd: "Luglio",
+      priority: "Alta",
+      completed: false,
+      estimatedHours: "0",
+      actualHours: "0",
+      notes: "Esercitarsi con SQL."
+    }
+  ]
 };
