@@ -19,6 +19,17 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
   const toggleComplete = (session) => {
+    // 1. Troviamo la data di oggi in formato YYYY-MM-DD
+    const today = new Date().toISOString().slice(0, 10);
+
+    // 2. Se l'utente tenta di spuntare un'attività non completata e la data è nel futuro...
+    if (!session.completed && session.date > today) {
+      // 👇 INSERISCI QUI LA TUA FRASE PERSONALIZZATA 👇
+      alert("Ehi, non correre! Non puoi completare un'attività pianificata nel futuro. ⏳");
+      return; // Questo blocca l'esecuzione ed evita che venga salvata come completata
+    }
+
+    // 3. Se il controllo viene superato, procede normalmente
     upsert("sessions", {
       ...session,
       completed: !session.completed,
