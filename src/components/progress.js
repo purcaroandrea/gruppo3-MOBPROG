@@ -1,9 +1,11 @@
 import React from "react";
 import { View, Text } from "react-native";
-import styles from "../styles/styles";
+// INSERISCI QUESTA (aggiustando il percorso se necessario, ad es. "./hooks/useStyles" da App.js):
+import { useStyles } from "../../hooks/useStyles";
 import { minutesToHM } from "../helpers/format";
 
 export default function Progress({ actual, total }) {
+  const { styles } = useStyles();
   // Calcola la percentuale basandosi sui minuti totali
   // Math.min assicura che la barra non superi il 100% se si studia più del previsto
   const percent = total ? Math.min(100, Math.round((actual / total) * 100)) : 0;

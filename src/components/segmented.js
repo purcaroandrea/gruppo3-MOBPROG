@@ -1,8 +1,10 @@
 import React from "react";
 import { ScrollView, Pressable, Text } from "react-native";
-import styles from "../styles/styles";
+// INSERISCI QUESTA (aggiustando il percorso se necessario, ad es. "./hooks/useStyles" da App.js):
+import { useStyles } from "../../hooks/useStyles";
 
 export default function Segmented({ options, labels = {}, value, onChange }) {
+  const { styles } = useStyles();
   return (
     <ScrollView
       horizontal

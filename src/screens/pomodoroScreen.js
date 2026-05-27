@@ -1,11 +1,13 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
-import styles from "../styles/styles";
+// INSERISCI QUESTA (aggiustando il percorso se necessario, ad es. "./hooks/useStyles" da App.js):
+import { useStyles } from "../../hooks/useStyles";
 import * as Haptics from "expo-haptics";
 import { Audio } from "expo-av";
 import Segmented from "../components/Segmented"; // Importiamo il selettore
 
 export default function PomodoroScreen({ data, upsert }) {
+  const { styles } = useStyles();
   const [mode, setMode] = React.useState("Studio");
   const [secondsLeft, setSecondsLeft] = React.useState(25 * 60);
   const [running, setRunning] = React.useState(false);

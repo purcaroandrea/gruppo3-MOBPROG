@@ -1,8 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { SafeAreaView, ScrollView, View, Text, Pressable } from "react-native";
 
-import styles from "../src/styles/styles";
+// 👉 I NOSTRI NUOVI IMPORT PER IL TEMA
+import { useStyles } from "../hooks/useStyles";
+import { ThemeProvider } from "../src/contexts/ThemeContext";
+
 import { seedData } from "../src/data/seedData";
 import { emptyCourse, emptyExam, emptySession, emptyGoal } from "../src/data/emptyTemplates";
 import { createHelpers } from "../src/helpers/createHelpers";
@@ -15,7 +18,11 @@ import PlannerScreen from "../src/screens/PlannerScreen";
 import GoalsScreen from "../src/screens/GoalsScreen";
 import PomodoroScreen from "../src/screens/PomodoroScreen";
 
-export default function App() {
+// 1. RINOMINATA DA "App" A "MainApp"
+function MainApp() {
+  // 👉 INSERIMENTO DELL'HOOK COME PRIMA RIGA
+  const { styles } = useStyles();
+
   const [data, setData] = useState(seedData);
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [selectedCourseId, setSelectedCourseId] = useState(null);
@@ -124,7 +131,7 @@ export default function App() {
 
         updated.exams = updated.exams.filter((ex) => ex.courseId !== id);
         updated.goals = updated.goals.filter((g) => g.courseId !== id);
-        
+
         // Rimuove le sessioni associate sia al corso che agli esami eliminati
         updated.sessions = updated.sessions.filter(
           (s) => s.courseId !== id && !examIds.includes(s.examId)
@@ -150,7 +157,7 @@ export default function App() {
       courseId: exam.courseId,
       examId: exam.id,
       date: tomorrow.toISOString().slice(0, 10),
-      plannedHours: "90", // 🔥 Aggiornato: ora registra 90 minuti invece di "1.5"
+      plannedHours: "90", // 🔥 Registra 90 minuti invece di "1.5"
       kind: "Ripasso",
     });
 
@@ -181,7 +188,7 @@ export default function App() {
         </View>
       </View>
 
-      {/* 2. BARRA DELLE TAB RIPRISTINATA */}
+      {/* 2. BARRA DELLE TAB */}
       <View style={styles.tabs}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {tabs.map((tab) => (
@@ -208,5 +215,14 @@ export default function App() {
         {activeTab === "Pomodoro" && <PomodoroScreen {...screenProps} />}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+// 2. NUOVA FUNZIONE PRINCIPALE CHE AVVOLGE TUTTO NEL TEMA
+export default function App() {
+  return (
+    <ThemeProvider>
+      <MainApp />
+    </ThemeProvider>
   );
 }

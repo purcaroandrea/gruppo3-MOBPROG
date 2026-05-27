@@ -1,10 +1,10 @@
 import { StyleSheet, Platform } from "react-native";
 
-const styles = StyleSheet.create({
+export const getStyles = (themeColors) => StyleSheet.create({
   
   safe: {
     flex: 1,
-    backgroundColor: "#FDFBF7", 
+    backgroundColor: themeColors.background, 
   },
   header: {
     flexDirection: "row",
@@ -13,29 +13,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: Platform.OS === "android" ? 40 : 20,
     paddingBottom: 15,
-    backgroundColor: "#F9F5EB", 
+    backgroundColor: themeColors.surface, 
     borderBottomWidth: 1,
-    borderBottomColor: "#EAE3D2",
+    borderBottomColor: themeColors.border,
   },
   title: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#2C2A29", 
+    color: themeColors.textTitle, 
   },
   headerBadge: {
-    backgroundColor: "#E28743", 
+    backgroundColor: themeColors.primary, 
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 12,
     alignItems: "center",
   },
   headerBadgeText: {
-    color: "#FFFFFF",
+    color: themeColors.textOnPrimary,
     fontWeight: "bold",
     fontSize: 14,
   },
   headerBadgeSmall: {
-    color: "#FDFBF7",
+    color: themeColors.textOnPrimary,
     fontSize: 10,
     opacity: 0.9,
   },
@@ -46,29 +46,29 @@ const styles = StyleSheet.create({
 
   // --- Navigazione Tab Superiore ---
   tabs: {
-    backgroundColor: "#F9F5EB",
+    backgroundColor: themeColors.surface,
     paddingVertical: 10,
     paddingHorizontal: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#EAE3D2",
+    borderBottomColor: themeColors.border,
   },
   tabButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 20,
     marginRight: 8,
-    backgroundColor: "#EEE6D3",
+    backgroundColor: themeColors.surfaceAlt,
   },
   tabButtonActive: {
-    backgroundColor: "#EEB76B", 
+    backgroundColor: themeColors.primaryLight, 
   },
   tabText: {
-    color: "#605C58",
+    color: themeColors.textBody,
     fontWeight: "600",
     fontSize: 14,
   },
   tabTextActive: {
-    color: "#2C2A29",
+    color: themeColors.textTitle,
     fontWeight: "700",
   },
 
@@ -82,12 +82,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#2C2A29",
+    color: themeColors.textTitle,
     marginBottom: 12,
   },
   bodyText: {
     fontSize: 14,
-    color: "#4A4643",
+    color: themeColors.textBody,
     lineHeight: 20,
     marginBottom: 12,
   },
@@ -100,14 +100,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   metric: {
-    backgroundColor: "#FFFDF9",
+    backgroundColor: themeColors.card,
     width: "48%",
     padding: 16,
     borderRadius: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: "#EAE3D2",
-    shadowColor: "#2C2A29", 
+    borderColor: themeColors.border,
+    shadowColor: "#000000", 
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
@@ -117,23 +117,23 @@ const styles = StyleSheet.create({
   metricValue: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#E28743", 
+    color: themeColors.primary, 
   },
   metricLabel: {
     fontSize: 12,
-    color: "#7C7570",
+    color: themeColors.textMuted,
     marginTop: 4,
     fontWeight: "500",
   },
 
   // --- Card, Pannelli e Righe ---
   panel: {
-    backgroundColor: "#FFFDF9",
+    backgroundColor: themeColors.card,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#EAE3D2",
+    borderColor: themeColors.border,
   },
   panelTop: {
     flexDirection: "row",
@@ -144,20 +144,20 @@ const styles = StyleSheet.create({
   panelTitle: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#2C2A29",
+    color: themeColors.textTitle,
   },
   linkText: {
-    color: "#E28743",
+    color: themeColors.primary,
     fontSize: 14,
     fontWeight: "600",
   },
   card: {
-    backgroundColor: "#FFFDF9",
+    backgroundColor: themeColors.card,
     borderRadius: 16,
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: "#EAE3D2",
+    borderColor: themeColors.border,
   },
   cardHeader: {
     flexDirection: "row",
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#2C2A29",
+    color: themeColors.textTitle,
     marginBottom: 4,
   },
   rowCard: {
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#F4ECE1",
+    borderBottomColor: themeColors.borderLight,
   },
   rowMain: {
     flex: 1,
@@ -189,29 +189,29 @@ const styles = StyleSheet.create({
   rowTitle: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#2C2A29",
+    color: themeColors.textTitle,
   },
   rowMeta: {
     fontSize: 12,
-    color: "#7C7570",
+    color: themeColors.textMuted,
     marginTop: 2,
   },
   detailLine: {
     fontSize: 14,
-    color: "#4A4643",
+    color: themeColors.textBody,
     marginBottom: 6,
   },
 
   // --- Input, Form e Ricerca ---
   input: {
-    backgroundColor: "#FFFDF9",
-    color: "#2C2A29",
+    backgroundColor: themeColors.card,
+    color: themeColors.textTitle,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
     borderWidth: 1,
-    borderColor: "#D2C9B1",
+    borderColor: themeColors.borderDark,
     marginBottom: 14,
   },
   textarea: {
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#2C2A29",
+    color: themeColors.textTitle,
     marginBottom: 6,
   },
   filterRow: {
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   primaryButton: {
-    backgroundColor: "#E28743", 
+    backgroundColor: themeColors.primary, 
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 12,
@@ -257,12 +257,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   primaryButtonText: {
-    color: "#FFFFFF",
+    color: themeColors.textOnPrimary,
     fontWeight: "700",
     fontSize: 14,
   },
   secondaryButton: {
-    backgroundColor: "#EEE6D3", 
+    backgroundColor: themeColors.surfaceAlt, 
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 12,
@@ -270,12 +270,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   secondaryButtonText: {
-    color: "#4A4643",
+    color: themeColors.textBody,
     fontWeight: "600",
     fontSize: 14,
   },
   dangerButton: {
-    backgroundColor: "#FADBD8", 
+    backgroundColor: themeColors.dangerBg, 
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 12,
@@ -283,16 +283,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   dangerButtonText: {
-    color: "#C0392B",
+    color: themeColors.dangerText,
     fontWeight: "600",
     fontSize: 14,
   },
   disabledButton: {
-    backgroundColor: "#EAE3D2",
+    backgroundColor: themeColors.border,
     opacity: 0.6,
   },
   iconButton: {
-    backgroundColor: "#EEE6D3",
+    backgroundColor: themeColors.surfaceAlt,
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   iconButtonText: {
-    color: "#2C2A29",
+    color: themeColors.textTitle,
     fontSize: 20,
     fontWeight: "bold",
   },
@@ -315,20 +315,20 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   statusBadge: {
-    backgroundColor: "#EAE3D2",
-    color: "#4A4643",
+    backgroundColor: themeColors.border,
+    color: themeColors.textBody,
   },
   highBadge: {
-    backgroundColor: "#F5C6AA", 
-    color: "#7E3D11",
+    backgroundColor: themeColors.badgeHighBg, 
+    color: themeColors.badgeHighText,
   },
   mediumBadge: {
-    backgroundColor: "#F7E6C4", 
-    color: "#7D5A13",
+    backgroundColor: themeColors.badgeMedBg, 
+    color: themeColors.badgeMedText,
   },
   lowBadge: {
-    backgroundColor: "#D5F5E3", 
-    color: "#1E8449",
+    backgroundColor: themeColors.badgeLowBg, 
+    color: themeColors.badgeLowText,
   },
 
   // --- Grafici e Progress Bar ---
@@ -340,26 +340,26 @@ const styles = StyleSheet.create({
   chartLabel: {
     width: "35%",
     fontSize: 13,
-    color: "#4A4643",
+    color: themeColors.textBody,
   },
   chartTrack: {
     flex: 1,
     height: 8,
-    backgroundColor: "#F4ECE1",
+    backgroundColor: themeColors.borderLight,
     borderRadius: 4,
     marginHorizontal: 10,
     overflow: "hidden",
   },
   chartFill: {
     height: "100%",
-    backgroundColor: "#EEB76B", 
+    backgroundColor: themeColors.primaryLight, 
     borderRadius: 4,
   },
   chartValue: {
     width: "12%",
     fontSize: 13,
     fontWeight: "600",
-    color: "#2C2A29",
+    color: themeColors.textTitle,
     textAlign: "right",
   },
   progressBlock: {
@@ -367,14 +367,14 @@ const styles = StyleSheet.create({
   },
   progressTrack: {
     height: 6,
-    backgroundColor: "#F4ECE1",
+    backgroundColor: themeColors.borderLight,
     borderRadius: 3,
     marginBottom: 4,
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
-    backgroundColor: "#E28743", 
+    backgroundColor: themeColors.primary, 
     borderRadius: 3,
   },
 
@@ -388,23 +388,23 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 10,
-    backgroundColor: "#FFFDF9",
+    backgroundColor: themeColors.card,
     borderWidth: 1,
-    borderColor: "#EAE3D2",
+    borderColor: themeColors.border,
     minWidth: 70,
     alignItems: "center",
   },
   segmentActive: {
-    backgroundColor: "#E28743",
-    borderColor: "#E28743",
+    backgroundColor: themeColors.primary,
+    borderColor: themeColors.primary,
   },
   segmentText: {
-    color: "#7C7570",
+    color: themeColors.textMuted,
     fontSize: 12,
     fontWeight: "600",
   },
   segmentTextActive: {
-    color: "#FFFFFF",
+    color: themeColors.textOnPrimary,
   },
 
   // --- Planner Settimanale & Calendario ---
@@ -412,27 +412,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#F9F5EB",
+    backgroundColor: themeColors.surface,
     padding: 12,
     borderRadius: 14,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: "#EAE3D2",
+    borderColor: themeColors.border,
   },
   weekTitle: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#2C2A29",
+    color: themeColors.textTitle,
   },
   calendar: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 16,
-    backgroundColor: "#F9F5EB",
+    backgroundColor: themeColors.surface,
     padding: 10,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "#EAE3D2",
+    borderColor: themeColors.border,
   },
   dayColumn: {
     alignItems: "center",
@@ -440,55 +440,55 @@ const styles = StyleSheet.create({
   },
   dayLabel: {
     fontSize: 11,
-    color: "#7C7570",
+    color: themeColors.textMuted,
     fontWeight: "600",
   },
   dayDate: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#2C2A29",
+    color: themeColors.textTitle,
     marginVertical: 4,
   },
   miniSession: {
-    backgroundColor: "#FFFDF9",
+    backgroundColor: themeColors.card,
     borderRadius: 6,
     padding: 4,
     width: "100%",
     marginTop: 2,
     borderWidth: 1,
-    borderColor: "#EAE3D2",
+    borderColor: themeColors.border,
     borderLeftWidth: 3,
-    borderLeftColor: "#EEB76B",
+    borderLeftColor: themeColors.primaryLight,
   },
   miniSessionDone: {
     opacity: 0.5,
-    backgroundColor: "#F4ECE1",
-    borderLeftColor: "#7C7570",
+    backgroundColor: themeColors.borderLight,
+    borderLeftColor: themeColors.textMuted,
   },
   miniSessionText: {
     fontSize: 8,
-    color: "#2C2A29",
+    color: themeColors.textTitle,
     fontWeight: "500",
   },
   miniSessionMeta: {
     fontSize: 7,
-    color: "#7C7570",
+    color: themeColors.textMuted,
   },
 
   // --- Pomodoro Screen ---
   timerPanel: {
-    backgroundColor: "#F9F5EB",
+    backgroundColor: themeColors.surface,
     borderRadius: 24,
     padding: 30,
     alignItems: "center",
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#EAE3D2",
+    borderColor: themeColors.border,
   },
   timerMode: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#E28743",
+    color: themeColors.primary,
     letterSpacing: 1,
     textTransform: "uppercase",
     marginBottom: 10,
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
   timer: {
     fontSize: 64,
     fontWeight: "bold",
-    color: "#2C2A29",
+    color: themeColors.textTitle,
     fontVariant: ["tabular-nums"],
     marginVertical: 10,
   },
@@ -504,32 +504,22 @@ const styles = StyleSheet.create({
   // --- Modali e Fogli di Dettaglio ---
   modalBackdrop: {
     flex: 1,
-    backgroundColor: "rgba(44, 42, 41, 0.4)", 
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Trasparenza fissa nera ottimale sia per light che dark
     justifyContent: "flex-end",
   },
   modalSheet: {
-    backgroundColor: "#FFFDF9",
+    backgroundColor: themeColors.card,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
     maxHeight: "85%",
     borderWidth: 1,
-    borderColor: "#EAE3D2",
+    borderColor: themeColors.border,
   },
   modalTitle: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#2C2A29",
+    color: themeColors.textTitle,
     marginBottom: 6,
   },
 });
-
-export default styles;
-
-
-
-
-
-
-
-

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
-import styles from "../styles/styles";
+// INSERISCI QUESTA (aggiustando il percorso se necessario, ad es. "./hooks/useStyles" da App.js):
+import { useStyles } from "../../hooks/useStyles";
 import ScreenTop from "../components/ScreenTop";
 import Segmented from "../components/Segmented";
 import PriorityBadge from "../components/PriorityBadge";
@@ -10,6 +11,7 @@ import { emptyExam } from "../data/emptyTemplates";
 import { formatDate } from "../helpers/date";
 
 export default function ExamsScreen({ data, helpers, upsert, remove, addSuggestedSession }) {
+  const { styles } = useStyles();
   const [filter, setFilter] = React.useState("Futuri");
   const [editing, setEditing] = React.useState(null);
 

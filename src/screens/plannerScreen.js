@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable, Switch } from "react-native";
-import styles from "../styles/styles";
+// INSERISCI QUESTA (aggiustando il percorso se necessario, ad es. "./hooks/useStyles" da App.js):
+import { useStyles } from "../../hooks/useStyles";
 import ScreenTop from "../components/ScreenTop";
 import DangerButton from "../components/DangerButton";
 import EntityModal from "../components/EntityModal";
@@ -9,6 +10,7 @@ import { addDays, startOfWeek, weekday, formatDate } from "../helpers/date";
 import { minutesToHM } from "../helpers/format"; // 🔥 Importata la nuova formattazione del tempo
 
 export default function PlannerScreen({ data, helpers, upsert, remove }) {
+  const { styles } = useStyles();
   const [editing, setEditing] = React.useState(null);
   const [weekStart, setWeekStart] = React.useState(startOfWeek(new Date().toISOString().slice(0, 10)));
 

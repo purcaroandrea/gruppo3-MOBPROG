@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal, View, ScrollView, Text, Pressable } from "react-native";
-import styles from "../styles/styles";
+// Ottimo l'import qui!
+import { useStyles } from "../../hooks/useStyles";
 import Field from "./Field";
 
 export default function EntityModal({
@@ -13,6 +14,10 @@ export default function EntityModal({
   onSave,
   helpers,
 }) {
+  // 👉 INSERISCILO ESATTAMENTE QUI: come primissima riga della funzione
+  const { styles } = useStyles();
+
+  // ⚠️ Questo return condizionale deve venire DOPO la chiamata all'hook
   if (!value) return null;
   
   const valid = fields.every((field) => {
@@ -28,7 +33,6 @@ export default function EntityModal({
 
   return true;
   });
-
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>

@@ -7,11 +7,13 @@ import SearchBox from "../components/SearchBox";
 import Segmented from "../components/Segmented";
 import StatusBadge from "../components/StatusBadge";
 import { emptyCourse } from "../data/emptyTemplates";
-import styles from "../styles/styles";
+// INSERISCI QUESTA (aggiustando il percorso se necessario, ad es. "./hooks/useStyles" da App.js):
+import { useStyles } from "../../hooks/useStyles";
 
 const courseStates = ["Tutti", "Da iniziare", "In corso", "Completato"];
 
 export default function CoursesScreen(props) {
+  const { styles } = useStyles();
   const { data, helpers, upsert, remove, setSelectedCourseId } = props;
 
   const [query, setQuery] = React.useState("");

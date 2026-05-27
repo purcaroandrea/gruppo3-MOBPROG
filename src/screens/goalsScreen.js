@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Pressable, Switch } from "react-native";
-import styles from "../styles/styles";
+// INSERISCI QUESTA (aggiustando il percorso se necessario, ad es. "./hooks/useStyles" da App.js):
+import { useStyles } from "../../hooks/useStyles";
 import ScreenTop from "../components/ScreenTop";
 import Segmented from "../components/Segmented";
 import DangerButton from "../components/DangerButton";
@@ -29,6 +30,7 @@ const months = [
 const priorities = ["Tutte", "Alta", "Media", "Bassa"];
 
 export default function GoalsScreen({ data, helpers, upsert, remove }) {
+  const { styles } = useStyles();
   const [priority, setPriority] = React.useState("Tutte");
   const [showDone, setShowDone] = React.useState(false);
   const [editing, setEditing] = React.useState(null);

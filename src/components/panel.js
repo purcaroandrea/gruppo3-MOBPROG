@@ -1,8 +1,10 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
-import styles from "../styles/styles";
+// INSERISCI QUESTA (aggiustando il percorso se necessario, ad es. "./hooks/useStyles" da App.js):
+import { useStyles } from "../../hooks/useStyles";
 
 export default function Panel({ title, action, onAction, children }) {
+  const { styles } = useStyles();
   return (
     <View style={styles.panel}>
       <View style={styles.panelTop}>

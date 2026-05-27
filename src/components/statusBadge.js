@@ -1,7 +1,9 @@
 import React from "react";
 import { Text } from "react-native";
-import styles from "../styles/styles";
+// INSERISCI QUESTA (aggiustando il percorso se necessario, ad es. "./hooks/useStyles" da App.js):
+import { useStyles } from "../../hooks/useStyles";
 
 export default function StatusBadge({ value }) {
+  const { styles } = useStyles();
   return <Text style={[styles.badge, styles.statusBadge]}>{value}</Text>;
 }

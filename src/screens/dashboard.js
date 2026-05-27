@@ -1,15 +1,22 @@
-import React from "react";
-import { Pressable, Text, View, Dimensions } from "react-native";
+import React, { useContext } from "react";
+import { Pressable, Text, View, Dimensions, Switch } from "react-native";
 import Metric from "../components/Metric";
 import Panel from "../components/Panel";
 import PriorityBadge from "../components/PriorityBadge";
 import { formatDate } from "../helpers/date";
-import styles from "../styles/styles";
-
-// Importiamo il grafico a linee
 import { LineChart } from "react-native-chart-kit";
 
+// 👉 I NOSTRI NUOVI IMPORT
+import { useStyles } from "../../hooks/useStyles";
+import { ThemeContext } from "../contexts/ThemeContext";
+
 export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSession }) {
+  // 👉 1. Estraiamo gli stili e i colori attuali
+  const { styles, themeColors } = useStyles();
+  
+  // 👉 2. Estraiamo il tema attivo e la funzione per cambiarlo
+  const { activeTheme, toggleTheme } = useContext(ThemeContext);
+
   const upcoming = helpers.upcomingExams.slice(0, 3);
   const topCourses = helpers.studyByCourse.slice(0, 4);
   
@@ -30,6 +37,17 @@ export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSes
     <View>
       <Text style={styles.sectionTitle}>Panoramica</Text>
 
+      {/* 👉 INTERRUTTORE MODALITÀ NOTTURNA */}
+      <View style={[styles.panel, styles.filterRow, { marginBottom: 20 }]}>
+        <Text style={styles.label}>Modalità Notturna 🌙</Text>
+        <Switch 
+          value={activeTheme === 'dark'} 
+          onValueChange={toggleTheme} 
+          trackColor={{ false: themeColors.border, true: themeColors.primary }}
+          thumbColor={themeColors.card}
+        />
+      </View>
+
       {/* METRICHE PRINCIPALI */}
       <View style={styles.metricGrid}>
         <Metric label="Corsi inseriti" value={data.courses.length} />
@@ -46,27 +64,28 @@ export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSes
             width={screenWidth - 64} // Larghezza schermo meno padding laterali
             height={220}
             chartConfig={{
-              backgroundColor: "#FFFDF9",
-              backgroundGradientFrom: "#FFFDF9",
-              backgroundGradientTo: "#FFFDF9",
-              decimalPlaces: 1, // Mostra i decimali per le ore (es. 1.5h)
-              color: (opacity = 1) => `rgba(226, 135, 67, ${opacity})`, // Colore primario arancione
-              labelColor: (opacity = 1) => `rgba(124, 117, 112, ${opacity})`, // Colore testo
+              // 👉 COLORI DEL GRAFICO DINAMICI
+              backgroundColor: themeColors.card,
+              backgroundGradientFrom: themeColors.card,
+              backgroundGradientTo: themeColors.card,
+              decimalPlaces: 1, 
+              color: (opacity = 1) => `rgba(226, 135, 67, ${opacity})`, // Linea arancione
+              labelColor: (opacity = 1) => themeColors.textMuted, // Testo delle ascisse e ordinate
               style: {
                 borderRadius: 16,
               },
               propsForDots: {
                 r: "5",
                 strokeWidth: "2",
-                stroke: "#E28743"
+                stroke: themeColors.primary // Contorno dei puntini
               }
             }}
-            bezier // Rende la linea curva e morbida
+            bezier 
             style={{
               marginVertical: 8,
               borderRadius: 16,
             }}
-            yAxisSuffix="h" // Aggiunge la "h" di ore ai numeri sull'asse Y
+            yAxisSuffix="h" 
           />
         </View>
       </Panel>
