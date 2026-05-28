@@ -79,7 +79,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
           { key: "title", label: "Titolo *", required: true },
           { key: "courseId", label: "Corso associato", type: "course" },
           { key: "date", label: "Data * (YYYY-MM-DD)", required: true },
-          { key: "type", label: "Tipo", options: ["Consegna", "Prova intercorso", "Prova orale", "Prova scritta"] },
+          { key: "type", label: "Tipo", options: ["Altro", "Consegna", "Prova intercorso", "Prova orale", "Prova scritta"] },
           { key: "priority", label: "Priorità", options: ["Alta", "Media", "Bassa"] },
           { key: "status", label: "Stato", options: ["Futuro", "Completato", "Annullato"] },
           { key: "notes", label: "Note", multiline: true },

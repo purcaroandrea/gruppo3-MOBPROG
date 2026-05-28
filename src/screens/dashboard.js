@@ -6,15 +6,14 @@ import PriorityBadge from "../components/PriorityBadge";
 import { formatDate } from "../helpers/date";
 import { LineChart } from "react-native-chart-kit";
 
-// 👉 I NOSTRI NUOVI IMPORT
 import { useStyles } from "../../hooks/useStyles";
 import { ThemeContext } from "../contexts/ThemeContext";
 
 export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSession }) {
-  // 👉 1. Estraiamo gli stili e i colori attuali
+  // Estraiamo gli stili e i colori attuali
   const { styles, themeColors } = useStyles();
   
-  // 👉 2. Estraiamo il tema attivo e la funzione per cambiarlo
+  // Estraiamo il tema attivo e la funzione per cambiarlo
   const { activeTheme, toggleTheme } = useContext(ThemeContext);
 
   const upcoming = helpers.upcomingExams.slice(0, 3);
@@ -37,7 +36,7 @@ export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSes
     <View>
       <Text style={styles.sectionTitle}>Panoramica</Text>
 
-      {/* 👉 INTERRUTTORE MODALITÀ NOTTURNA */}
+      {/* INTERRUTTORE MODALITÀ NOTTURNA */}
       <View style={[styles.panel, styles.filterRow, { marginBottom: 20 }]}>
         <Text style={styles.label}>Modalità Notturna 🌙</Text>
         <Switch 
@@ -64,7 +63,7 @@ export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSes
             width={screenWidth - 64} // Larghezza schermo meno padding laterali
             height={220}
             chartConfig={{
-              // 👉 COLORI DEL GRAFICO DINAMICI
+              // COLORI DEL GRAFICO DINAMICI
               backgroundColor: themeColors.card,
               backgroundGradientFrom: themeColors.card,
               backgroundGradientTo: themeColors.card,

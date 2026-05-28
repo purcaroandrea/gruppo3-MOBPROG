@@ -1,15 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useMemo, useState } from "react";
 import { SafeAreaView, ScrollView, View, Text, Pressable } from "react-native";
-
 // 👉 I NOSTRI NUOVI IMPORT PER IL TEMA
 import { useStyles } from "../hooks/useStyles";
 import { ThemeProvider } from "../src/contexts/ThemeContext";
-
 import { seedData } from "../src/data/seedData";
 import { emptyCourse, emptyExam, emptySession, emptyGoal } from "../src/data/emptyTemplates";
 import { createHelpers } from "../src/helpers/createHelpers";
-import { isValidDateStrict, isValidTime } from "../src/helpers/date";
+import { isValidDateStrict } from "../src/helpers/date"; 
 
 import Dashboard from "../src/screens/Dashboard";
 import CoursesScreen from "../src/screens/CoursesScreen";
@@ -22,12 +20,10 @@ import PomodoroScreen from "../src/screens/PomodoroScreen";
 function MainApp() {
   // 👉 INSERIMENTO DELL'HOOK COME PRIMA RIGA
   const { styles } = useStyles();
-
   const [data, setData] = useState(seedData);
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [loaded, setLoaded] = useState(false);
-
   const tabs = ["Dashboard", "Corsi", "Esami", "Planner", "Obiettivi", "Pomodoro"];
 
   // Caricamento dei dati con gestione degli errori ottimizzata
@@ -63,23 +59,8 @@ function MainApp() {
       return;
     }
 
-    // Validazione orari
-    if (collection === "sessions") {
-      if (item.startTime && !isValidTime(item.startTime)) {
-        alert("L'ora di inizio non è valida.");
-        return;
-      }
-      if (item.endTime && !isValidTime(item.endTime)) {
-        alert("L'ora di fine non è valida.");
-        return;
-      }
-
-      // Impedisce durata zero (solo se i campi sono effettivamente compilati)
-      if (item.startTime === item.endTime && item.startTime !== "") {
-        alert("L'ora di fine non può essere uguale all'ora di inizio.");
-        return;
-      }
-    }
+    // 🔥 Abbiamo rimosso la validazione e il calcolo forzato su startTime ed endTime
+    // In questo modo le ore manuali che inserisci non verranno più sovrascritte!
 
     setData((current) => {
       const exists = current[collection].some((e) => e.id === item.id);
@@ -88,24 +69,6 @@ function MainApp() {
       let newItem = exists
         ? item
         : { ...item, id: `${collection}-${Date.now()}` };
-
-      // 🔥 NUOVA LOGICA: Calcolo automatico della durata convertito rigorosamente in MINUTI TOTALI 
-      if (collection === "sessions" && newItem.startTime && newItem.endTime) {
-        const [sh, sm] = newItem.startTime.split(":").map(Number);
-        const [eh, em] = newItem.endTime.split(":").map(Number);
-
-        let start = sh * 60 + sm;
-        let end = eh * 60 + em;
-
-        // Caso overnight (es. 23:00 → 01:00)
-        if (end < start) {
-          end += 24 * 60;
-        }
-
-        const diffMinutes = end - start;
-        // Salviamo i minuti totali come stringa per mantenere la compatibilità con i TextInput
-        newItem.plannedHours = String(diffMinutes); 
-      }
 
       return {
         ...current,
@@ -150,17 +113,17 @@ function MainApp() {
   const addSuggestedSession = (exam) => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-
+    
     upsert("sessions", {
       ...emptySession,
       title: `Ripasso per ${exam.title}`,
       courseId: exam.courseId,
       examId: exam.id,
       date: tomorrow.toISOString().slice(0, 10),
-      plannedHours: "90", // 🔥 Registra 90 minuti invece di "1.5"
+      plannedHours: "90", // 🔥 Registra 90 minuti
       kind: "Ripasso",
     });
-
+    
     setActiveTab("Planner");
   };
 

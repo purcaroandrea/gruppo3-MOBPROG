@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TextInput, Switch } from "react-native";
+// INSERISCI QUESTA (aggiustando il percorso se necessario, ad es. "./hooks/useStyles" da App.js):
 import { useStyles } from "../../hooks/useStyles";
 import Segmented from "./Segmented";
 
@@ -62,7 +63,7 @@ export default function Field({ field, value, onChange, helpers }) {
     );
   }
 
-  // Campo: opzioni predefinite 
+  // Campo: opzioni predefinite (Segmented control generico)
   if (field.options) {
     return (
       <View style={styles.field}>
@@ -120,7 +121,7 @@ export default function Field({ field, value, onChange, helpers }) {
     );
   }
 
-
+  // GESTIONE TEMPO (Ore e Minuti separati) - Ora completamente manuale anche per plannedHours
   const isPlanned = field.key === "plannedHours";
   const isActual = field.key === "actualHours";
   const isEstimated = field.key === "estimatedHours";
@@ -161,7 +162,6 @@ export default function Field({ field, value, onChange, helpers }) {
               keyboardType="numeric"
               value={hoursVal > 0 || totalMinutes > 0 ? String(hoursVal) : ""}
               placeholder="Ore"
-              editable={!isPlanned} // isPlanned si calcola in automatico da inizio/fine
               onChangeText={(txt) => handleTimeChange(txt, minutesVal)}
             />
           </View>
@@ -173,10 +173,9 @@ export default function Field({ field, value, onChange, helpers }) {
               value={minutesVal > 0 || totalMinutes > 0 ? String(minutesVal) : ""}
               placeholder="Minuti"
               maxLength={2}
-              editable={!isPlanned}
               onChangeText={(txt) => {
                 let m = parseInt(txt, 10) || 0;
-                if (m > 59) m = 59; // Limita i minuti a 59
+                if (m > 59) m = 59; 
                 handleTimeChange(hoursVal, m);
               }}
             />
