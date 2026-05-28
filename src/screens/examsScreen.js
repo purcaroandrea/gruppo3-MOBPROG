@@ -1,6 +1,5 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
-// INSERISCI QUESTA (aggiustando il percorso se necessario, ad es. "./hooks/useStyles" da App.js):
 import { useStyles } from "../../hooks/useStyles";
 import ScreenTop from "../components/ScreenTop";
 import Segmented from "../components/Segmented";
@@ -77,9 +76,9 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
         title={editing?.id ? "Modifica esame" : "Nuovo esame"}
         value={editing}
         fields={[
-          { key: "title", label: "Titolo", required: true },
+          { key: "title", label: "Titolo *", required: true },
           { key: "courseId", label: "Corso associato", type: "course" },
-          { key: "date", label: "Data (YYYY-MM-DD)", required: true },
+          { key: "date", label: "Data * (YYYY-MM-DD)", required: true },
           { key: "type", label: "Tipo", options: ["Consegna", "Prova intercorso", "Prova orale", "Prova scritta"] },
           { key: "priority", label: "Priorità", options: ["Alta", "Media", "Bassa"] },
           { key: "status", label: "Stato", options: ["Futuro", "Completato", "Annullato"] },

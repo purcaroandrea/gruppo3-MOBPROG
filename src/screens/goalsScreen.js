@@ -1,6 +1,5 @@
 import React from "react";
 import { View, Text, Pressable, Switch } from "react-native";
-// INSERISCI QUESTA (aggiustando il percorso se necessario, ad es. "./hooks/useStyles" da App.js):
 import { useStyles } from "../../hooks/useStyles";
 import ScreenTop from "../components/ScreenTop";
 import Segmented from "../components/Segmented";
@@ -113,7 +112,7 @@ export default function GoalsScreen({ data, helpers, upsert, remove }) {
         title={editing?.id ? "Modifica obiettivo" : "Nuovo obiettivo"}
         value={editing}
         fields={[
-          { key: "title", label: "Titolo", required: true },
+          { key: "title", label: "Titolo *", required: true },
           { key: "description", label: "Descrizione", multiline: true },
           { key: "courseId", label: "Corso", type: "course" },
 

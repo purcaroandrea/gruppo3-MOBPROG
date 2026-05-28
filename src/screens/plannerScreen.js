@@ -1,13 +1,12 @@
 import React from "react";
 import { View, Text, Pressable, Switch } from "react-native";
-// INSERISCI QUESTA (aggiustando il percorso se necessario, ad es. "./hooks/useStyles" da App.js):
 import { useStyles } from "../../hooks/useStyles";
 import ScreenTop from "../components/ScreenTop";
 import DangerButton from "../components/DangerButton";
 import EntityModal from "../components/EntityModal";
 import { emptySession } from "../data/emptyTemplates";
 import { addDays, startOfWeek, weekday, formatDate } from "../helpers/date";
-import { minutesToHM } from "../helpers/format"; // 🔥 Importata la nuova formattazione del tempo
+import { minutesToHM } from "../helpers/format"; 
 
 export default function PlannerScreen({ data, helpers, upsert, remove }) {
   const { styles } = useStyles();
@@ -21,17 +20,15 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
   const toggleComplete = (session) => {
-    // 1. Troviamo la data di oggi in formato YYYY-MM-DD
+    
     const today = new Date().toISOString().slice(0, 10);
 
-    // 2. Se l'utente tenta di spuntare un'attività non completata e la data è nel futuro...
     if (!session.completed && session.date > today) {
-      // 👇 INSERISCI QUI LA TUA FRASE PERSONALIZZATA 👇
       alert("Ehi, non correre! Non puoi completare un'attività pianificata nel futuro. ⏳");
-      return; // Questo blocca l'esecuzione ed evita che venga salvata come completata
+      return; 
     }
 
-    // 3. Se il controllo viene superato, procede normalmente
+
     upsert("sessions", {
       ...session,
       completed: !session.completed,
@@ -65,7 +62,7 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
       {/* CALENDARIO */}
       <View style={styles.calendar}>
         {days.map((day) => {
-          // 🔥 Ordinamento corretto e sicuro degli orari (es. "09:00" vs "10:00")
+          // Ordinamento corretto e sicuro degli orari 
           const daily = visibleSessions
             .filter((session) => session.date === day)
             .sort((a, b) => (a.startTime || "").localeCompare(b.startTime || ""));
@@ -134,7 +131,7 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
           )}
 
           <Text style={styles.bodyText}>
-            {/* 🔥 Mostra le ore formattate tramite minutesToHM */}
+            {/* Mostra le ore formattate tramite minutesToHM */}
             Previsto {minutesToHM(session.plannedHours)} · Svolto {minutesToHM(session.actualHours)}
           </Text>
 
@@ -154,13 +151,13 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
         title={editing?.id ? "Modifica attività" : "Nuova attività"}
         value={editing}
         fields={[
-          { key: "title", label: "Nome", required: true },
+          { key: "title", label: "Nome *", required: true },
           { key: "courseId", label: "Corso", type: "course" },
           { key: "examId", label: "Esame", type: "exam" },
           { key: "goalId", label: "Obiettivo", type: "goal" },
-          { key: "date", label: "Data (YYYY-MM-DD)", required: true },
-          { key: "startTime", label: "Ora inizio (HH:MM)" },
-          { key: "endTime", label: "Ora fine (HH:MM)" },
+          { key: "date", label: "Data * (YYYY-MM-DD)", required: true },
+          { key: "startTime", label: "Ora inizio * (HH:MM)" },
+          { key: "endTime", label: "Ora fine * (HH:MM)" },
           { key: "kind", label: "Tipo", options: ["Avanzamento sul progetto", "Completamento di consegne", "Esercitazione", "Lettura di materiale", "Ripasso"] },
           { key: "plannedHours", label: "Ore previste", numeric: true },
           { key: "actualHours", label: "Ore svolte", numeric: true },
@@ -169,7 +166,7 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
         ]}
         onChange={(next) => {
           setEditing(next);
-          // 🔥 Ricalcola automaticamente i minuti totali se vengono cambiati gli orari
+
           if (next.startTime && next.endTime) {
             const [sh, sm] = next.startTime.split(":").map(Number);
             const [eh, em] = next.endTime.split(":").map(Number);
@@ -177,7 +174,7 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
             let start = sh * 60 + sm;
             let end = eh * 60 + em;
             
-            // Gestione notturna (es. 23:00 -> 01:00)
+            // Gestione notturna
             if (end < start) {
               end += 24 * 60;
             }
