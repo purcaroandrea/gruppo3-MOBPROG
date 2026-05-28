@@ -485,6 +485,24 @@ export const getStyles = (themeColors) => StyleSheet.create({
     borderWidth: 1,
     borderColor: themeColors.border,
   },
+  
+  timerPanelPausa: {
+    backgroundColor: themeColors.badgeLowBg,
+  },
+  
+  timerModePausa: {
+    color: themeColors.badgeLowText,
+  },
+  primaryButtonPausa: {
+    backgroundColor: themeColors.badgeLowText,
+  },
+  secondaryButtonPausa: {
+    backgroundColor: themeColors.badgeLowText,
+    opacity: 0.65, 
+  },
+  secondaryButtonTextPausa: {
+    color: themeColors.textOnPrimary, 
+  },
   timerMode: {
     fontSize: 18,
     fontWeight: "700",
@@ -504,7 +522,7 @@ export const getStyles = (themeColors) => StyleSheet.create({
   // --- Modali e Fogli di Dettaglio ---
   modalBackdrop: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Trasparenza fissa nera ottimale sia per light che dark
+    backgroundColor: "rgba(0, 0, 0, 0.5)", 
     justifyContent: "flex-end",
   },
   modalSheet: {

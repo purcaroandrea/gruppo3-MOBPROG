@@ -112,14 +112,16 @@ export default function PomodoroScreen({ data, upsert }) {
         )}
       </View>
 
-      <View style={styles.timerPanel}>
-        <Text style={styles.timerMode}>{mode}</Text>
+      <View style={[styles.timerPanel, mode === "Pausa" && styles.timerPanelPausa]}>
+        
+        <Text style={[styles.timerMode, mode === "Pausa" && styles.timerModePausa]}>{mode}</Text>
         <Text style={styles.timer}>{formatTimer(secondsLeft)}</Text>
         <Text style={styles.rowMeta}>Sessioni completate oggi: {completedPomodoros}</Text>
 
         <View style={styles.actionsCentered}>
+          {/* Bottone principale */}
           <Pressable
-            style={styles.primaryButton}
+            style={[styles.primaryButton, mode === "Pausa" && styles.primaryButtonPausa]}
             onPress={() => setRunning((v) => !v)}
           >
             <Text style={styles.primaryButtonText}>
@@ -127,18 +129,24 @@ export default function PomodoroScreen({ data, upsert }) {
             </Text>
           </Pressable>
 
+          
           <Pressable
-            style={styles.secondaryButton}
+            style={[styles.secondaryButton, mode === "Pausa" && styles.secondaryButtonPausa]}
             onPress={() => reset("Studio")}
           >
-            <Text style={styles.secondaryButtonText}>Ripristina</Text>
+            <Text style={[styles.secondaryButtonText, mode === "Pausa" && styles.secondaryButtonTextPausa]}>
+              Ripristina
+            </Text>
           </Pressable>
 
+          
           <Pressable
-            style={styles.secondaryButton}
+            style={[styles.secondaryButton, mode === "Pausa" && styles.secondaryButtonPausa]}
             onPress={() => reset("Pausa")}
           >
-            <Text style={styles.secondaryButtonText}>Pausa breve</Text>
+            <Text style={[styles.secondaryButtonText, mode === "Pausa" && styles.secondaryButtonTextPausa]}>
+              Pausa breve
+            </Text>
           </Pressable>
         </View>
       </View>
