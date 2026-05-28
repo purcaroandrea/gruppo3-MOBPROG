@@ -1,3 +1,4 @@
+import React from "react";
 import { Text } from "react-native";
 // INSERISCI QUESTA (aggiustando il percorso se necessario, ad es. "./hooks/useStyles" da App.js):
 import { useStyles } from "../../hooks/useStyles";
