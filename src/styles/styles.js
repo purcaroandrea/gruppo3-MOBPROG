@@ -485,11 +485,9 @@ export const getStyles = (themeColors) => StyleSheet.create({
     borderWidth: 1,
     borderColor: themeColors.border,
   },
-  
   timerPanelPausa: {
     backgroundColor: themeColors.badgeLowBg,
   },
-  
   timerModePausa: {
     color: themeColors.badgeLowText,
   },
@@ -517,6 +515,20 @@ export const getStyles = (themeColors) => StyleSheet.create({
     color: themeColors.textTitle,
     fontVariant: ["tabular-nums"],
     marginVertical: 10,
+  },
+  
+  
+  switchButtonStudio: {
+    backgroundColor: themeColors.badgeLowBg, 
+  },
+  switchButtonTextStudio: {
+    color: themeColors.badgeLowText, 
+  },
+  switchButtonPausa: {
+    backgroundColor: themeColors.badgeMedBg, 
+  },
+  switchButtonTextPausa: {
+    color: themeColors.badgeMedText, 
   },
 
   // --- Modali e Fogli di Dettaglio ---
