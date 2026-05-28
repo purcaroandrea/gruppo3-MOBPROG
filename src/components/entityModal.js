@@ -1,6 +1,5 @@
 import React from "react";
 import { Modal, View, ScrollView, Text, Pressable } from "react-native";
-// Ottimo l'import qui!
 import { useStyles } from "../../hooks/useStyles";
 import Field from "./Field";
 
@@ -14,18 +13,17 @@ export default function EntityModal({
   onSave,
   helpers,
 }) {
-  // 👉 INSERISCILO ESATTAMENTE QUI: come primissima riga della funzione
+
   const { styles } = useStyles();
 
-  // ⚠️ Questo return condizionale deve venire DOPO la chiamata all'hook
   if (!value) return null;
-  
+
   const valid = fields.every((field) => {
   const v = String(value[field.key] || "").trim();
 
   if (field.required && !v) return false;
 
-  if (field.key === "teacherName" && v && !/^[A-Za-zÀ-ÖØ-öø-ÿ\s]+$/.test(v))
+  if (field.key === "teacherName" && v && !/^[A-Za-zÀ-ÖØ-öø-ÿ\s'’\-]+$/.test(v))
     return false;
 
   if (field.key === "credits" && v && (v < 1 || v > 20))
