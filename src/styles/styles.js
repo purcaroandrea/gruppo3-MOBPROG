@@ -494,12 +494,16 @@ export const getStyles = (themeColors) => StyleSheet.create({
   primaryButtonPausa: {
     backgroundColor: themeColors.badgeLowText,
   },
+  primaryButtonTextPausa: {
+    color: themeColors.background, 
+  },
   secondaryButtonPausa: {
-    backgroundColor: themeColors.badgeLowText,
-    opacity: 0.65, 
+    backgroundColor: "transparent", 
+    borderWidth: 1,
+    borderColor: themeColors.badgeLowText, 
   },
   secondaryButtonTextPausa: {
-    color: themeColors.textOnPrimary, 
+    color: themeColors.badgeLowText, 
   },
   timerMode: {
     fontSize: 18,
@@ -517,18 +521,20 @@ export const getStyles = (themeColors) => StyleSheet.create({
     marginVertical: 10,
   },
   
-  
+  // Stili bottone Switch in alto a destra
   switchButtonStudio: {
     backgroundColor: themeColors.badgeLowBg, 
   },
   switchButtonTextStudio: {
     color: themeColors.badgeLowText, 
   },
+  // 🔥 AGGIORNATO: Ora il bottone usa il colore primario del tuo tema
   switchButtonPausa: {
-    backgroundColor: themeColors.badgeMedBg, 
+    backgroundColor: themeColors.primary, 
   },
+  // 🔥 AGGIORNATO: Ora il testo usa il colore di contrasto per i bottoni primari
   switchButtonTextPausa: {
-    color: themeColors.badgeMedText, 
+    color: themeColors.textOnPrimary, 
   },
 
   // --- Modali e Fogli di Dettaglio ---

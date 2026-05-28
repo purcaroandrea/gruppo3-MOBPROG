@@ -122,14 +122,12 @@ export default function PomodoroScreen({ data, upsert }) {
         <Pressable
           style={[
             styles.secondaryButton, 
-            // 🔥 Assegna lo stile verde se siamo in Studio, arancione se siamo in Pausa
             mode === "Studio" ? styles.switchButtonStudio : styles.switchButtonPausa
           ]}
           onPress={() => reset(mode === "Studio" ? "Pausa" : "Studio")}
         >
           <Text style={[
             styles.secondaryButtonText, 
-            // 🔥 Assegna il testo bianco per contrastare con il colore pieno
             mode === "Studio" ? styles.switchButtonTextStudio : styles.switchButtonTextPausa
           ]}>
             {mode === "Studio" ? "Pausa pomodoro" : "Studio"}
@@ -150,12 +148,13 @@ export default function PomodoroScreen({ data, upsert }) {
             style={[styles.primaryButton, mode === "Pausa" && styles.primaryButtonPausa]}
             onPress={() => setRunning((v) => !v)}
           >
-            <Text style={styles.primaryButtonText}>
+            {/* 🔥 Aggiunto primaryButtonTextPausa per invertire il colore del testo! */}
+            <Text style={[styles.primaryButtonText, mode === "Pausa" && styles.primaryButtonTextPausa]}>
               {running ? "Pausa" : "Avvia"}
             </Text>
           </Pressable>
 
-          {/* Tasto per resettare il ciclo corrente (passando 'mode' riavvia il timer attuale) */}
+          {/* Tasto per resettare il ciclo corrente */}
           <Pressable
             style={[styles.secondaryButton, mode === "Pausa" && styles.secondaryButtonPausa]}
             onPress={() => reset(mode)}
