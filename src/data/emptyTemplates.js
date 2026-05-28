@@ -38,7 +38,7 @@ export const emptySession = {
   startTime: "09:00",
   endTime: "10:00",
   kind: "",
-  plannedHours: "1",
+  plannedHours: "",
   actualHours: "",
   completed: false,
   notes: ""
