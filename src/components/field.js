@@ -2,7 +2,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useState } from "react";
 import { Modal, Platform, Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
-import Segmented from "./Segmented";
+import Segmented from "./segmented";
 
 const WebSelect = ({ field, current, set, styles, themeColors }) => {
   const [open, setOpen] = useState(false);

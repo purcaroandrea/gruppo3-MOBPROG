@@ -1,11 +1,11 @@
 import React from "react";
 import { View, Text, Pressable, Switch } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
-import ScreenTop from "../components/ScreenTop";
-import DangerButton from "../components/DangerButton";
-import EntityModal from "../components/EntityModal";
-import SearchBox from "../components/SearchBox";
-import Segmented from "../components/Segmented";
+import ScreenTop from "../components/screen-top";
+import DangerButton from "../components/danger-button";
+import EntityModal from "../components/entity-modal";
+import SearchBox from "../components/searchBox";
+import Segmented from "../components/segmented";
 import { emptySession } from "../data/emptyTemplates";
 import { addDays, startOfWeek, weekday, formatDate } from "../helpers/date";
 import { minutesToHM } from "../helpers/format";

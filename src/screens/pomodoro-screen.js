@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, Pressable, Modal } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
-import Segmented from "../components/Segmented";
+import Segmented from "../components/segmented";
 import Svg, { Circle } from "react-native-svg";
 
 const STUDY_DURATION = 25 * 60;

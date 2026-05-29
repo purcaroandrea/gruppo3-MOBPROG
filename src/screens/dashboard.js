@@ -1,9 +1,9 @@
 import { useContext } from "react";
 import { Dimensions, Pressable, Switch, Text, View } from "react-native";
 import { LineChart } from "react-native-chart-kit";
-import Metric from "../components/Metric";
-import Panel from "../components/Panel";
-import PriorityBadge from "../components/PriorityBadge";
+import Metric from "../components/metric";
+import Panel from "../components/panel";
+import PriorityBadge from "../components/priority-badge";
 import { formatDate } from "../helpers/date";
 
 import { useStyles } from "../../hooks/useStyles";

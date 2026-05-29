@@ -1,6 +1,6 @@
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
-import Field from "./Field";
+import Field from "./field";
 
 export default function EntityModal({
   visible,

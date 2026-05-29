@@ -1,11 +1,11 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
-import ScreenTop from "../components/ScreenTop";
-import Segmented from "../components/Segmented";
-import PriorityBadge from "../components/PriorityBadge";
-import DangerButton from "../components/DangerButton";
-import EntityModal from "../components/EntityModal";
+import ScreenTop from "../components/screen-top";
+import Segmented from "../components/segmented";
+import PriorityBadge from "../components/priority-badge";
+import DangerButton from "../components/danger-button";
+import EntityModal from "../components/entity-modal";
 import { emptyExam } from "../data/emptyTemplates";
 import { formatDate } from "../helpers/date";
 

@@ -11,12 +11,12 @@ import { seedData } from "../src/data/seedData";
 import { createHelpers } from "../src/helpers/createHelpers";
 import { isValidDateStrict } from "../src/helpers/date";
 
-import CoursesScreen from "../src/screens/CoursesScreen";
-import Dashboard from "../src/screens/Dashboard";
-import ExamsScreen from "../src/screens/ExamsScreen";
-import GoalsScreen from "../src/screens/GoalsScreen";
-import PlannerScreen from "../src/screens/PlannerScreen";
-import PomodoroScreen from "../src/screens/PomodoroScreen";
+import CoursesScreen from "../src/screens/courses-screen";
+import Dashboard from "../src/screens/dashboard";
+import ExamsScreen from "../src/screens/exams-screen";
+import GoalsScreen from "../src/screens/goals-screen";
+import PlannerScreen from "../src/screens/planner-screen";
+import PomodoroScreen from "../src/screens/pomodoro-screen";
 
 function MainApp() {
   const { styles, themeColors } = useStyles();

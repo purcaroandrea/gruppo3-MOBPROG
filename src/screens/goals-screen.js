@@ -1,12 +1,12 @@
 import React from "react";
 import { View, Text, Pressable, Switch } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
-import ScreenTop from "../components/ScreenTop";
-import Segmented from "../components/Segmented";
-import DangerButton from "../components/DangerButton";
-import Progress from "../components/Progress";
-import EntityModal from "../components/EntityModal";
-import PriorityBadge from "../components/PriorityBadge";
+import ScreenTop from "../components/screen-top";
+import Segmented from "../components/segmented";
+import DangerButton from "../components/danger-button";
+import Progress from "../components/progress";
+import EntityModal from "../components/entity-modal";
+import PriorityBadge from "../components/priority-badge";
 import { emptyGoal } from "../data/emptyTemplates";
 
 const months = [
