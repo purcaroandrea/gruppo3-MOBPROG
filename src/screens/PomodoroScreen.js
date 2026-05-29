@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, Platform, Modal } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
 import * as Haptics from "expo-haptics";
 import { Audio } from "expo-av";
@@ -14,6 +14,9 @@ export default function PomodoroScreen({ data, upsert }) {
   const [mode, setMode] = useState("Studio");
   const [secondsLeft, setSecondsLeft] = useState(STUDY_DURATION);
   const [running, setRunning] = useState(false);
+  const [isResetModalVisible, setIsResetModalVisible] = useState(false);
+  const [minutesStudied, setMinutesStudied] = useState(0);
+  const [nextModeToSet, setNextModeToSet] = useState("");
 
   // Contatore per tenere traccia delle sessioni finite oggi
   const [completedPomodoros, setCompletedPomodoros] = useState(0);
@@ -22,6 +25,7 @@ export default function PomodoroScreen({ data, upsert }) {
   const [selectedSessionId, setSelectedSessionId] = useState("");
 
   const soundRef = useRef(null);
+  const studyStartTimeRef = useRef(null);
 
   // Filtra le attività di oggi che non sono ancora state completate
   const today = new Date().toISOString().slice(0, 10);
@@ -45,6 +49,16 @@ export default function PomodoroScreen({ data, upsert }) {
     }
     await soundRef.current.replayAsync();
   }
+
+  // Traccia quando inizia lo studio
+  useEffect(() => {
+    if (running && mode === "Studio" && !studyStartTimeRef.current) {
+      studyStartTimeRef.current = Date.now();
+    }
+    if (!running) {
+      studyStartTimeRef.current = null;
+    }
+  }, [running, mode]);
 
   // Gestione principale del conto alla rovescia
   useEffect(() => {
@@ -78,7 +92,7 @@ export default function PomodoroScreen({ data, upsert }) {
   // Salva 25 minuti in automatico sull'attività selezionata
   useEffect(() => {
     if (completedPomodoros > 0 && selectedSessionId) {
-      const session = data.sessions.find((s) => s.id === selectedSessionId);
+      const session = data?.sessions?.find((s) => s.id === selectedSessionId);
 
       if (session) {
         const currentActual = parseInt(session.actualHours || "0", 10);
@@ -89,13 +103,41 @@ export default function PomodoroScreen({ data, upsert }) {
     }
   }, [completedPomodoros]);
 
-  // Resetta il timer e cambia modalità
-  const reset = (nextMode = mode) => {
+  const handleConfirmReset = (save) => {
+    if (save && selectedSessionId) {
+      const session = data?.sessions?.find((s) => s.id === selectedSessionId);
+      if (session) {
+        const currentActual = parseInt(session.actualHours || "0", 10);
+        const newActual = currentActual + minutesStudied;
+        upsert("sessions", { ...session, actualHours: String(newActual) });
+      }
+    }
+    studyStartTimeRef.current = null;
     setRunning(false);
-    setMode(nextMode);
+    setMode(nextModeToSet);
     setSecondsLeft(
-      nextMode === "Studio" ? STUDY_DURATION : BREAK_DURATION
+      nextModeToSet === "Studio" ? STUDY_DURATION : BREAK_DURATION
     );
+    setIsResetModalVisible(false);
+  };
+
+  // Resetta il timer con eventuale alert se c'è tempo trascorso in Studio
+  const reset = (nextMode = mode) => {
+    // Se in modalità Studio e c'è tempo trascorso, mostra alert
+    if (mode === "Studio" && (STUDY_DURATION - secondsLeft) > 0) {
+      const mins = Math.round((STUDY_DURATION - secondsLeft) / 60);
+      setMinutesStudied(mins);
+      setNextModeToSet(nextMode);
+      setIsResetModalVisible(true);
+    } else {
+      // Resetta normalmente se non c'è tempo trascorso o non siamo in Studio
+      studyStartTimeRef.current = null;
+      setRunning(false);
+      setMode(nextMode);
+      setSecondsLeft(
+        nextMode === "Studio" ? STUDY_DURATION : BREAK_DURATION
+      );
+    }
   };
 
   // Formatta i secondi residui in formato minuti:secondi
@@ -286,6 +328,48 @@ export default function PomodoroScreen({ data, upsert }) {
           termine di ogni timer di studio.
         </Text>
       </View>
+
+      {/* Modale per salvare o scartare i minuti studiati */}
+      <Modal visible={isResetModalVisible} transparent={true} animationType="fade">
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Scartare sessione?</Text>
+              <Pressable
+                style={styles.modalCloseButton}
+                onPress={() => setIsResetModalVisible(false)}
+              >
+                <Text style={styles.modalCloseIcon}>✕</Text>
+              </Pressable>
+            </View>
+            <Text style={styles.bodyText}>
+              Hai studiato {minutesStudied} minuti. Vuoi salvarli nel planner o
+              scartarli?
+            </Text>
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginTop: 20,
+              }}
+            >
+              <Pressable
+                style={[styles.dangerButton, { flex: 1, marginRight: 8 }]}
+                onPress={() => handleConfirmReset(false)}
+              >
+                <Text style={styles.dangerButtonText}>Scarta</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.primaryButton, { flex: 1, marginLeft: 8 }]}
+                onPress={() => handleConfirmReset(true)}
+              >
+                <Text style={styles.primaryButtonText}>Salva</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

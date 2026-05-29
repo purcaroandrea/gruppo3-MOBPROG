@@ -16,7 +16,6 @@ import GoalsScreen from "../src/screens/GoalsScreen";
 import PlannerScreen from "../src/screens/PlannerScreen";
 import PomodoroScreen from "../src/screens/PomodoroScreen";
 
-// 1. RINOMINATA DA "App" A "MainApp"
 function MainApp() {
   const { styles, themeColors } = useStyles();
   const [data, setData] = useState(seedData);
@@ -58,8 +57,6 @@ function MainApp() {
       return;
     }
 
-    // 🔥 Abbiamo rimosso la validazione e il calcolo forzato su startTime ed endTime
-    // In questo modo le ore manuali che inserisci non verranno più sovrascritte!
 
     setData((current) => {
       const exists = current[collection].some((e) => e.id === item.id);
@@ -82,10 +79,8 @@ function MainApp() {
     setData((current) => {
       let updated = { ...current };
 
-      // 1) Rimuovi l'elemento principale
       updated[collection] = updated[collection].filter((e) => e.id !== id);
 
-      // 2) Eliminazione a cascata ottimizzata e pulita
       if (collection === "courses") {
         const examIds = updated.exams
           .filter((ex) => ex.courseId === id)
@@ -119,7 +114,7 @@ function MainApp() {
       courseId: exam.courseId,
       examId: exam.id,
       date: tomorrow.toISOString().slice(0, 10),
-      plannedHours: "90", // 🔥 Registra 90 minuti
+      plannedHours: "90", 
       kind: "Ripasso",
     });
     
@@ -139,9 +134,9 @@ function MainApp() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* 1. HEADER */}
+
 <View style={styles.header}>
-  {/* Pulsante Dashboard (home) a sinistra */}
+
   <Pressable
     style={[
       styles.headerIconButton,
@@ -168,15 +163,13 @@ function MainApp() {
     </Text>
   </Pressable>
 
-  {/* Titolo centrale (puoi cambiarlo a piacere) */}
-  {/* <Text style={styles.title}>Study Planner</Text> */}
+
   <Image
   source={require("../assets/images/logo-mobile.png")}
   style={{ height: 60, width: 60 }}
   resizeMode="contain"
 />
 
-  {/* Pulsante Pomodoro a destra */}
   <Pressable
     style={[
       styles.headerIconButton,
@@ -214,7 +207,7 @@ function MainApp() {
         {activeTab === "Obiettivi" && <GoalsScreen {...screenProps} />}
         {activeTab === "Pomodoro" && <PomodoroScreen {...screenProps} />}
       </ScrollView>
-      {/* 3. NAVIGAZIONE IN BASSO */}
+
 <View style={styles.bottomNav}>
   <Pressable
     style={[
@@ -324,7 +317,6 @@ function MainApp() {
   );
 }
 
-// 2. NUOVA FUNZIONE PRINCIPALE CHE AVVOLGE TUTTO NEL TEMA
 export default function App() {
   return (
     <ThemeProvider>
