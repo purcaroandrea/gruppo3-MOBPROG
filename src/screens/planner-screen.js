@@ -4,7 +4,7 @@ import { useStyles } from "../../hooks/useStyles";
 import ScreenTop from "../components/screen-top";
 import DangerButton from "../components/danger-button";
 import EntityModal from "../components/entity-modal";
-import SearchBox from "../components/searchBox";
+import SearchBox from "../components/search-box";
 import Segmented from "../components/segmented";
 import { emptySession } from "../data/emptyTemplates";
 import { addDays, startOfWeek, weekday, formatDate } from "../helpers/date";
@@ -283,7 +283,7 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
           { key: "courseId", label: "Corso", type: "course" },
           { key: "examId", label: "Esame", type: "exam" },
           { key: "goalId", label: "Obiettivo", type: "goal" },
-          { key: "date", label: "Data * (YYYY-MM-DD)", required: true },
+          { key: "date", label: "Data *", required: true },
           { key: "kind", label: "Tipo", options: ["Altro", "Avanzamento sul progetto", "Completamento di consegne", "Esercitazione", "Lettura di materiale", "Ripasso"] },
           { key: "plannedHours", label: "Tempo di studio previsto", numeric: true },
           { key: "actualHours", label: "Tempo di studio impiegato", numeric: true },
