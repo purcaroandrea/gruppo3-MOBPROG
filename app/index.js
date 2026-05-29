@@ -1,15 +1,16 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useMemo, useState, useRef } from "react";
-import { Image, Pressable, SafeAreaView, ScrollView, Text, View, useWindowDimensions } from "react-native";
-import * as Haptics from "expo-haptics";
 import { Audio } from "expo-av";
+import * as Haptics from "expo-haptics";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Image, Pressable, SafeAreaView, ScrollView, Text, View, useWindowDimensions } from "react-native";
 import { useStyles } from "../hooks/useStyles";
 import { ThemeProvider } from "../src/contexts/ThemeContext";
 import { emptySession } from "../src/data/emptyTemplates";
 import { seedData } from "../src/data/seedData";
 import { createHelpers } from "../src/helpers/createHelpers";
 import { isValidDateStrict } from "../src/helpers/date";
+
 import CoursesScreen from "../src/screens/CoursesScreen";
 import Dashboard from "../src/screens/Dashboard";
 import ExamsScreen from "../src/screens/ExamsScreen";
@@ -24,7 +25,7 @@ function MainApp() {
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [loaded, setLoaded] = useState(false);
 
-  // --- Pomodoro Timer Globale ---
+  // Timer Pomodoro
   const STUDY_DURATION = 25 * 60;
   const BREAK_DURATION = 5 * 60;
 
@@ -59,7 +60,6 @@ function MainApp() {
     } else {
       targetEndTimeRef.current = null;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pomodoroRunning]);
 
   // Sincronizza il tempo di fine target se cambia la modalità mentre è in esecuzione
@@ -67,7 +67,6 @@ function MainApp() {
     if (pomodoroRunning) {
       targetEndTimeRef.current = Date.now() + pomodoroSecondsLeft * 1000;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pomodoroMode]);
 
   // Gestione principale del conto alla rovescia globale (timestamp-based)

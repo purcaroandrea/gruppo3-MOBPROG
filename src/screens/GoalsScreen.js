@@ -6,6 +6,7 @@ import Segmented from "../components/Segmented";
 import DangerButton from "../components/DangerButton";
 import Progress from "../components/Progress";
 import EntityModal from "../components/EntityModal";
+import PriorityBadge from "../components/PriorityBadge";
 import { emptyGoal } from "../data/emptyTemplates";
 
 const months = [
@@ -69,7 +70,7 @@ export default function GoalsScreen({ data, helpers, upsert, remove }) {
 
               </Text>
             </View>
-            <Text style={styles.badge}>{goal.priority}</Text>
+            <PriorityBadge value={goal.priority} />
           </View>
 
           <Text style={styles.bodyText}>{goal.description}</Text>

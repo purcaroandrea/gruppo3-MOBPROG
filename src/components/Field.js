@@ -1,8 +1,150 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useState } from "react";
-import { Platform, Pressable, Switch, Text, TextInput, View } from "react-native";
+import { Modal, Platform, Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
 import Segmented from "./Segmented";
+
+const WebSelect = ({ field, current, set, styles, themeColors }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <View style={styles.field}>
+      <Text style={styles.label}>{field.label}</Text>
+      <Pressable
+        style={[
+          styles.input,
+          current ? { borderColor: themeColors.primary } : null,
+          open ? { borderColor: themeColors.primary, borderBottomLeftRadius: 0, borderBottomRightRadius: 0, marginBottom: 0 } : null
+        ]}
+        onPress={() => setOpen(!open)}
+      >
+        <Text style={{
+          color: current ? themeColors.textTitle : themeColors.textMuted,
+          fontSize: 15,
+        }}>
+          {current || "Seleziona..."}
+        </Text>
+      </Pressable>
+
+      {open && (
+        <View style={{
+          backgroundColor: themeColors.card,
+          borderWidth: 1,
+          borderTopWidth: 0,
+          borderColor: themeColors.primary,
+          borderBottomLeftRadius: 12,
+          borderBottomRightRadius: 12,
+          padding: 6,
+          marginBottom: 14,
+        }}>
+          <ScrollView keyboardShouldPersistTaps="handled" style={{ maxHeight: 180 }}>
+            {field.options.map((opt) => (
+              <Pressable
+                key={opt}
+                style={({ hovered }) => ({
+                  paddingVertical: 10,
+                  paddingHorizontal: 12,
+                  backgroundColor: current === opt
+                    ? themeColors.primary
+                    : (hovered ? themeColors.primaryLight : "transparent"),
+                  borderRadius: 8,
+                  marginVertical: 1,
+                })}
+                onPress={() => {
+                  set(opt);
+                  setOpen(false);
+                }}
+              >
+                {({ hovered }) => (
+                  <Text style={{
+                    fontSize: 14,
+                    color: current === opt
+                      ? themeColors.textOnPrimary
+                      : (hovered ? themeColors.textTitle : themeColors.textBody),
+                    fontWeight: current === opt ? "600" : "400",
+                  }}>
+                    {opt === "" ? "Nessuno / Vuoto" : opt}
+                  </Text>
+                )}
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+    </View>
+  );
+};
+
+const MobileSelect = ({ field, current, set, styles, themeColors }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <View style={styles.field}>
+      <Text style={styles.label}>{field.label}</Text>
+      <Pressable
+        style={[
+          styles.input,
+          current ? { borderColor: themeColors.primary } : null
+        ]}
+        onPress={() => setOpen(true)}
+      >
+        <Text style={{
+          color: current ? themeColors.textTitle : themeColors.textMuted,
+          fontSize: 15,
+        }}>
+          {current || "Seleziona..."}
+        </Text>
+      </Pressable>
+
+      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
+        <Pressable style={styles.modalBackdrop} onPress={() => setOpen(false)}>
+          <View style={[styles.modalSheet, { maxHeight: "60%" }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{field.label}</Text>
+              <Pressable style={styles.modalCloseButton} onPress={() => setOpen(false)}>
+                <Text style={styles.modalCloseIcon}>✕</Text>
+              </Pressable>
+            </View>
+            <ScrollView keyboardShouldPersistTaps="handled">
+              {field.options.map((opt) => (
+                <Pressable
+                  key={opt}
+                  style={({ hovered }) => ({
+                    paddingVertical: 14,
+                    paddingHorizontal: 16,
+                    borderBottomWidth: 1,
+                    borderBottomColor: themeColors.borderLight || "#f0f0f0",
+                    backgroundColor: current === opt
+                      ? themeColors.primary
+                      : (hovered ? themeColors.primaryLight : "transparent"),
+                    borderRadius: 8,
+                    marginVertical: 2,
+                  })}
+                  onPress={() => {
+                    set(opt);
+                    setOpen(false);
+                  }}
+                >
+                  {({ hovered }) => (
+                    <Text style={{
+                      fontSize: 16,
+                      color: current === opt
+                        ? themeColors.textOnPrimary
+                        : (hovered ? themeColors.textTitle : themeColors.textBody),
+                      fontWeight: current === opt ? "600" : "400",
+                    }}>
+                      {opt === "" ? "Nessuno / Vuoto" : opt}
+                    </Text>
+                  )}
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        </Pressable>
+      </Modal>
+    </View>
+  );
+};
 
 const DatePickerField = ({ field, current, set, styles }) => {
   const [showPicker, setShowPicker] = useState(false);
@@ -70,7 +212,7 @@ const DatePickerField = ({ field, current, set, styles }) => {
 };
 
 export default function Field({ field, value, onChange, helpers }) {
-  const { styles } = useStyles();
+  const { styles, themeColors } = useStyles();
   const current = value[field.key];
   const set = (next) => onChange({ ...value, [field.key]: next });
 
@@ -140,7 +282,19 @@ export default function Field({ field, value, onChange, helpers }) {
     );
   }
 
-  // Campo: opzioni predefinite (Segmented control generico)
+  // Campo: selezione a tendina per liste lunghe (es. Mesi, Voti)
+  if (field.type === "select" || (field.options && field.options.length > 5)) {
+    if (Platform.OS === "web") {
+      return (
+        <WebSelect field={field} current={current} set={set} styles={styles} themeColors={themeColors} />
+      );
+    }
+    return (
+      <MobileSelect field={field} current={current} set={set} styles={styles} themeColors={themeColors} />
+    );
+  }
+
+  // Campo: opzioni predefinite (Segmented control generico per liste corte)
   if (field.options) {
     return (
       <View style={styles.field}>

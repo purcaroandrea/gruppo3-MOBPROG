@@ -133,8 +133,7 @@ export default function CoursesScreen(props) {
         onChange={setEditing}
         onClose={() => setEditing(null)}
         onSave={(item) => {
-          
-          item.teacher = `${item.prefix} ${item.teacherName}`;
+          item.teacher = item.prefix ? `${item.prefix} ${item.teacherName}` : item.teacherName;
           upsert("courses", item);
           setEditing(null);
         }}
