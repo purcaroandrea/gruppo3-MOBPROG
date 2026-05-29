@@ -124,7 +124,7 @@ export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSes
       {helpers.nextCriticalExam && (
         <Panel title="Suggerimento automatico">
           <Text style={styles.bodyText}>
-            L'esame più vicino con priorità alta è {helpers.nextCriticalExam.title}. Conviene pianificare un ripasso per domani.
+            L&apos;esame più vicino con priorità alta è {helpers.nextCriticalExam.title}. Conviene pianificare un ripasso per domani.
           </Text>
 
           <Pressable

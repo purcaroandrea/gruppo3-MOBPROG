@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, Pressable, Platform, Modal } from "react-native";
+import { View, Text, Pressable, Modal } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
 import * as Haptics from "expo-haptics";
 import { Audio } from "expo-av";
@@ -101,7 +101,7 @@ export default function PomodoroScreen({ data, upsert }) {
         upsert("sessions", { ...session, actualHours: String(newActual) });
       }
     }
-  }, [completedPomodoros]);
+  }, [completedPomodoros, data?.sessions, selectedSessionId, upsert]);
 
   const handleConfirmReset = (save) => {
     if (save && selectedSessionId) {
@@ -169,7 +169,7 @@ export default function PomodoroScreen({ data, upsert }) {
       {/* Selezione dell'attività in corso */}
       <View style={{ marginBottom: 20 }}>
         <Text style={styles.label}>
-          Associa il tempo a un'attività di oggi:
+          Associa il tempo a un&apos;attività di oggi:
         </Text>
         {availableSessions.length > 0 ? (
           <Segmented
@@ -320,11 +320,11 @@ export default function PomodoroScreen({ data, upsert }) {
 
       {/* Sezione esplicativa */}
       <View style={styles.panel}>
-        <Text style={styles.panelTitle}>Che cos'è il Pomodoro Timer?</Text>
+        <Text style={styles.panelTitle}>Che cos&apos;è il Pomodoro Timer?</Text>
         <Text style={styles.bodyText}>
           Il Pomodoro Timer alterna continuativamente sessioni da 25 minuti di
-          studio a pause da 5 minuti. Se selezioni un'attività prima di
-          iniziare, verranno aggiunti automaticamente 25 minuti allo "svolto" al
+          studio a pause da 5 minuti. Se selezioni un&apos;attività prima di
+          iniziare, verranno aggiunti automaticamente 25 minuti allo &quot;svolto&quot; al
           termine di ogni timer di studio.
         </Text>
       </View>

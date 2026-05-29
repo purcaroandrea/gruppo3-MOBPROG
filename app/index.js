@@ -1,7 +1,7 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useMemo, useState } from "react";
-import { Image, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { Image, Pressable, SafeAreaView, ScrollView, Text, View, useWindowDimensions } from "react-native";
 import { useStyles } from "../hooks/useStyles";
 import { ThemeProvider } from "../src/contexts/ThemeContext";
 import { emptySession } from "../src/data/emptyTemplates";
@@ -22,7 +22,18 @@ function MainApp() {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [loaded, setLoaded] = useState(false);
-  const tabs = ["Dashboard", "Corsi", "Esami", "Planner", "Obiettivi", "Pomodoro"];
+
+  const TABS_ORDER = ["Dashboard", "Corsi", "Esami", "Planner", "Obiettivi", "Pomodoro"];
+  const scrollViewRef = useRef(null);
+  const { width: screenWidth } = useWindowDimensions();
+
+  const goToTab = (tabName) => {
+    setActiveTab(tabName);
+    const index = TABS_ORDER.indexOf(tabName);
+    if (index !== -1 && scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({ x: index * screenWidth, animated: true });
+    }
+  };
 
   // Caricamento dei dati con gestione degli errori ottimizzata
   useEffect(() => {
@@ -118,7 +129,7 @@ function MainApp() {
       kind: "Ripasso",
     });
     
-    setActiveTab("Planner");
+    goToTab("Planner");
   };
 
   const screenProps = {
@@ -126,7 +137,7 @@ function MainApp() {
     helpers,
     upsert,
     remove,
-    setActiveTab,
+    setActiveTab: goToTab,
     selectedCourseId,
     setSelectedCourseId,
     addSuggestedSession,
@@ -142,7 +153,7 @@ function MainApp() {
       styles.headerIconButton,
       activeTab === "Dashboard" && styles.headerIconButtonActive,
     ]}
-    onPress={() => setActiveTab("Dashboard")}
+    onPress={() => goToTab("Dashboard")}
   >
     <MaterialIcons
       name="home"
@@ -175,7 +186,7 @@ function MainApp() {
       styles.headerIconButton,
       activeTab === "Pomodoro" && styles.headerIconButtonActive,
     ]}
-    onPress={() => setActiveTab("Pomodoro")}
+    onPress={() => goToTab("Pomodoro")}
   >
     <MaterialIcons
       name="timer"
@@ -198,14 +209,35 @@ function MainApp() {
 </View>
 
 
-      {/* 3. CONTENUTO DELLE SCHERMATE */}
-      <ScrollView contentContainerStyle={styles.content}>
-        {activeTab === "Dashboard" && <Dashboard {...screenProps} />}
-        {activeTab === "Corsi" && <CoursesScreen {...screenProps} />}
-        {activeTab === "Esami" && <ExamsScreen {...screenProps} />}
-        {activeTab === "Planner" && <PlannerScreen {...screenProps} />}
-        {activeTab === "Obiettivi" && <GoalsScreen {...screenProps} />}
-        {activeTab === "Pomodoro" && <PomodoroScreen {...screenProps} />}
+      {/* 3. CONTENUTO DELLE SCHERMATE (CAROSELLO) */}
+      <ScrollView
+        ref={scrollViewRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onScroll={(e) => {
+          const index = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
+          if (TABS_ORDER[index] && TABS_ORDER[index] !== activeTab) {
+            setActiveTab(TABS_ORDER[index]);
+          }
+        }}
+        scrollEventThrottle={16}
+      >
+        {TABS_ORDER.map((tab) => (
+          <ScrollView
+            key={tab}
+            style={{ width: screenWidth }}
+            contentContainerStyle={styles.content}
+            showsVerticalScrollIndicator={false}
+          >
+            {tab === "Dashboard" && <Dashboard {...screenProps} />}
+            {tab === "Corsi" && <CoursesScreen {...screenProps} />}
+            {tab === "Esami" && <ExamsScreen {...screenProps} />}
+            {tab === "Planner" && <PlannerScreen {...screenProps} />}
+            {tab === "Obiettivi" && <GoalsScreen {...screenProps} />}
+            {tab === "Pomodoro" && <PomodoroScreen {...screenProps} />}
+          </ScrollView>
+        ))}
       </ScrollView>
 
 <View style={styles.bottomNav}>
@@ -214,7 +246,7 @@ function MainApp() {
       styles.bottomNavItem,
       activeTab === "Corsi" && styles.bottomNavItemActive,
     ]}
-    onPress={() => setActiveTab("Corsi")}
+    onPress={() => goToTab("Corsi")}
   >
     <MaterialIcons
       name="menu-book"
@@ -240,7 +272,7 @@ function MainApp() {
       styles.bottomNavItem,
       activeTab === "Esami" && styles.bottomNavItemActive,
     ]}
-    onPress={() => setActiveTab("Esami")}
+    onPress={() => goToTab("Esami")}
   >
     <MaterialIcons
       name="assignment"
@@ -266,7 +298,7 @@ function MainApp() {
       styles.bottomNavItem,
       activeTab === "Planner" && styles.bottomNavItemActive,
     ]}
-    onPress={() => setActiveTab("Planner")}
+    onPress={() => goToTab("Planner")}
   >
     <MaterialIcons
       name="event-note"
@@ -292,7 +324,7 @@ function MainApp() {
       styles.bottomNavItem,
       activeTab === "Obiettivi" && styles.bottomNavItemActive,
     ]}
-    onPress={() => setActiveTab("Obiettivi")}
+    onPress={() => goToTab("Obiettivi")}
   >
     <MaterialIcons
       name="flag"
