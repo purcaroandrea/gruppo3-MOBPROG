@@ -2,13 +2,14 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useMemo, useState, useRef } from "react";
 import { Image, Pressable, SafeAreaView, ScrollView, Text, View, useWindowDimensions } from "react-native";
+import * as Haptics from "expo-haptics";
+import { Audio } from "expo-av";
 import { useStyles } from "../hooks/useStyles";
 import { ThemeProvider } from "../src/contexts/ThemeContext";
 import { emptySession } from "../src/data/emptyTemplates";
 import { seedData } from "../src/data/seedData";
 import { createHelpers } from "../src/helpers/createHelpers";
 import { isValidDateStrict } from "../src/helpers/date";
-
 import CoursesScreen from "../src/screens/CoursesScreen";
 import Dashboard from "../src/screens/Dashboard";
 import ExamsScreen from "../src/screens/ExamsScreen";
@@ -22,6 +23,98 @@ function MainApp() {
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [loaded, setLoaded] = useState(false);
+
+  // --- Pomodoro Timer Globale ---
+  const STUDY_DURATION = 25 * 60;
+  const BREAK_DURATION = 5 * 60;
+
+  const [pomodoroMode, setPomodoroMode] = useState("Studio");
+  const [pomodoroSecondsLeft, setPomodoroSecondsLeft] = useState(STUDY_DURATION);
+  const [pomodoroRunning, setPomodoroRunning] = useState(false);
+  const [completedPomodoros, setCompletedPomodoros] = useState(0);
+  const [selectedSessionId, setSelectedSessionId] = useState("");
+
+  const pomodoroSoundRef = useRef(null);
+  const targetEndTimeRef = useRef(null);
+
+  // Riproduce il suono quando il timer arriva a zero
+  async function playPomodoroSound() {
+    try {
+      if (!pomodoroSoundRef.current) {
+        const { sound } = await Audio.Sound.createAsync(
+          require("../assets/images/pomodoro-end.mp3")
+        );
+        pomodoroSoundRef.current = sound;
+      }
+      await pomodoroSoundRef.current.replayAsync();
+    } catch (e) {
+      console.warn("Errore riproduzione audio Pomodoro:", e);
+    }
+  }
+
+  // Sincronizza il tempo di fine target quando si avvia/ferma il timer
+  useEffect(() => {
+    if (pomodoroRunning) {
+      targetEndTimeRef.current = Date.now() + pomodoroSecondsLeft * 1000;
+    } else {
+      targetEndTimeRef.current = null;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pomodoroRunning]);
+
+  // Sincronizza il tempo di fine target se cambia la modalità mentre è in esecuzione
+  useEffect(() => {
+    if (pomodoroRunning) {
+      targetEndTimeRef.current = Date.now() + pomodoroSecondsLeft * 1000;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pomodoroMode]);
+
+  // Gestione principale del conto alla rovescia globale (timestamp-based)
+  useEffect(() => {
+    if (!pomodoroRunning) return;
+
+    const timer = setInterval(() => {
+      if (!targetEndTimeRef.current) return;
+
+      const remaining = Math.max(0, Math.round((targetEndTimeRef.current - Date.now()) / 1000));
+
+      if (remaining > 0) {
+        setPomodoroSecondsLeft(remaining);
+      } else {
+        // Timer scaduto
+        playPomodoroSound();
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+        const nextMode = pomodoroMode === "Studio" ? "Pausa" : "Studio";
+        const nextDuration = nextMode === "Studio" ? STUDY_DURATION : BREAK_DURATION;
+
+        if (pomodoroMode === "Studio") {
+          setCompletedPomodoros((count) => count + 1);
+        }
+
+        setPomodoroMode(nextMode);
+        setPomodoroSecondsLeft(nextDuration);
+        targetEndTimeRef.current = Date.now() + nextDuration * 1000;
+      }
+    }, 500);
+
+    return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pomodoroRunning, pomodoroMode]);
+
+  // Salva 25 minuti in automatico sull'attività selezionata
+  useEffect(() => {
+    if (completedPomodoros > 0 && selectedSessionId) {
+      const session = data?.sessions?.find((s) => s.id === selectedSessionId);
+
+      if (session) {
+        const currentActual = parseInt(session.actualHours || "0", 10);
+        const newActual = currentActual + 25;
+        upsert("sessions", { ...session, actualHours: String(newActual) });
+      }
+    }
+  }, [completedPomodoros, selectedSessionId, data?.sessions]);
 
   const TABS_ORDER = ["Dashboard", "Corsi", "Esami", "Planner", "Obiettivi", "Pomodoro"];
   const scrollViewRef = useRef(null);
@@ -141,6 +234,18 @@ function MainApp() {
     selectedCourseId,
     setSelectedCourseId,
     addSuggestedSession,
+    pomodoroProps: {
+      mode: pomodoroMode,
+      setMode: setPomodoroMode,
+      secondsLeft: pomodoroSecondsLeft,
+      setSecondsLeft: setPomodoroSecondsLeft,
+      running: pomodoroRunning,
+      setRunning: setPomodoroRunning,
+      completedPomodoros,
+      setCompletedPomodoros,
+      selectedSessionId,
+      setSelectedSessionId,
+    },
   };
 
   return (
@@ -203,7 +308,9 @@ function MainApp() {
         activeTab === "Pomodoro" && styles.headerIconLabelActive,
       ]}
     >
-      Pomodoro
+      {pomodoroRunning
+        ? `Pomodoro (${Math.floor(pomodoroSecondsLeft / 60)}:${(pomodoroSecondsLeft % 60).toString().padStart(2, "0")})`
+        : "Pomodoro"}
     </Text>
   </Pressable>
 </View>

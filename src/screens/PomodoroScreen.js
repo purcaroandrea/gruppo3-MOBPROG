@@ -1,30 +1,30 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, Pressable, Modal } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
-import * as Haptics from "expo-haptics";
-import { Audio } from "expo-av";
 import Segmented from "../components/Segmented";
 import Svg, { Circle } from "react-native-svg";
 
 const STUDY_DURATION = 25 * 60;
 const BREAK_DURATION = 5 * 60;
 
-export default function PomodoroScreen({ data, upsert }) {
+export default function PomodoroScreen({ data, upsert, pomodoroProps }) {
   const { styles } = useStyles();
-  const [mode, setMode] = useState("Studio");
-  const [secondsLeft, setSecondsLeft] = useState(STUDY_DURATION);
-  const [running, setRunning] = useState(false);
+  const {
+    mode,
+    setMode,
+    secondsLeft,
+    setSecondsLeft,
+    running,
+    setRunning,
+    completedPomodoros,
+    selectedSessionId,
+    setSelectedSessionId,
+  } = pomodoroProps;
+
   const [isResetModalVisible, setIsResetModalVisible] = useState(false);
   const [minutesStudied, setMinutesStudied] = useState(0);
   const [nextModeToSet, setNextModeToSet] = useState("");
 
-  // Contatore per tenere traccia delle sessioni finite oggi
-  const [completedPomodoros, setCompletedPomodoros] = useState(0);
-
-  // Salva l'id dell'attività a cui aggiungere le ore studiate
-  const [selectedSessionId, setSelectedSessionId] = useState("");
-
-  const soundRef = useRef(null);
   const studyStartTimeRef = useRef(null);
 
   // Filtra le attività di oggi che non sono ancora state completate
@@ -39,17 +39,6 @@ export default function PomodoroScreen({ data, upsert }) {
     sessionLabels[s.id] = s.title;
   });
 
-  // Riproduce il suono quando il timer arriva a zero
-  async function playSound() {
-    if (!soundRef.current) {
-      const { sound } = await Audio.Sound.createAsync(
-        require("../../assets/images/pomodoro-end.mp3")
-      );
-      soundRef.current = sound;
-    }
-    await soundRef.current.replayAsync();
-  }
-
   // Traccia quando inizia lo studio
   useEffect(() => {
     if (running && mode === "Studio" && !studyStartTimeRef.current) {
@@ -59,49 +48,6 @@ export default function PomodoroScreen({ data, upsert }) {
       studyStartTimeRef.current = null;
     }
   }, [running, mode]);
-
-  // Gestione principale del conto alla rovescia
-  useEffect(() => {
-    if (!running) return;
-
-    const timer = setInterval(() => {
-      setSecondsLeft((value) => {
-        if (value > 1) return value - 1;
-
-        // Il timer è scaduto: avvia suono e vibrazione
-        playSound();
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-        const nextMode = mode === "Studio" ? "Pausa" : "Studio";
-
-        // Se si stava studiando, incrementa il contatore dei pomodori fatti
-        if (mode === "Studio") {
-          setCompletedPomodoros((count) => count + 1);
-        }
-
-        setMode(nextMode);
-
-        // Ritorna i secondi giusti in base a cosa si deve fare dopo
-        return nextMode === "Studio" ? STUDY_DURATION : BREAK_DURATION;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [running, mode]);
-
-  // Salva 25 minuti in automatico sull'attività selezionata
-  useEffect(() => {
-    if (completedPomodoros > 0 && selectedSessionId) {
-      const session = data?.sessions?.find((s) => s.id === selectedSessionId);
-
-      if (session) {
-        const currentActual = parseInt(session.actualHours || "0", 10);
-        const newActual = currentActual + 25;
-
-        upsert("sessions", { ...session, actualHours: String(newActual) });
-      }
-    }
-  }, [completedPomodoros, data?.sessions, selectedSessionId, upsert]);
 
   const handleConfirmReset = (save) => {
     if (save && selectedSessionId) {
