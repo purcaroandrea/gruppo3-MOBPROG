@@ -17,15 +17,45 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
   // Stati per la vista settimanale
   const [weekStart, setWeekStart] = React.useState(startOfWeek(new Date().toISOString().slice(0, 10)));
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  const visibleSessions = data.sessions
-    .filter((session) => days.includes(session.date))
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  // Stati per la vista lista
+  // Stati per la vista lista e comuni
   const [viewMode, setViewMode] = React.useState("Settimanale");
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [sortBy, setSortBy] = React.useState("Data ↑");
+  const [sortBy, setSortBy] = React.useState("Nome");
+  const [sortOrder, setSortOrder] = React.useState("Crescente");
   const [periodFilter, setPeriodFilter] = React.useState("Tutte");
+
+  // Helper per l'ordinamento
+  const sortSessions = (sessionsList) => {
+    return [...sessionsList].sort((a, b) => {
+      let res = 0;
+      if (sortBy === "Nome") {
+        res = (a.title || "").localeCompare(b.title || "");
+      } else if (sortBy === "Data di inserimento") {
+        const timeA = parseInt(a.id?.match(/\d+/)?.[0] || "0", 10);
+        const timeB = parseInt(b.id?.match(/\d+/)?.[0] || "0", 10);
+        res = timeA - timeB;
+      } else if (sortBy === "Corso") {
+        const courseA = helpers.courseById(a.courseId)?.name || "Z";
+        const courseB = helpers.courseById(b.courseId)?.name || "Z";
+        res = courseA.localeCompare(courseB) || (a.title || "").localeCompare(b.title || "");
+      }
+      return sortOrder === "Crescente" ? res : -res;
+    });
+  };
+
+  // Filtri e ordinamenti per la vista settimanale
+  let visibleSessions = data.sessions.filter((session) => days.includes(session.date));
+
+  if (searchQuery.trim()) {
+    const q = searchQuery.toLowerCase();
+    visibleSessions = visibleSessions.filter((s) => {
+      const courseName = helpers.courseById(s.courseId)?.name || "";
+      return (s.title || "").toLowerCase().includes(q) || courseName.toLowerCase().includes(q);
+    });
+  }
+
+  visibleSessions = sortSessions(visibleSessions);
 
   // Filtri e ordinamenti per la lista completa
   const todayDate = new Date().toISOString().slice(0, 10);
@@ -45,18 +75,7 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
     allSessions = allSessions.filter((s) => s.date < todayDate);
   }
 
-  allSessions.sort((a, b) => {
-    if (sortBy === "Data ↑") {
-      return new Date(a.date) - new Date(b.date);
-    } else if (sortBy === "Data ↓") {
-      return new Date(b.date) - new Date(a.date);
-    } else if (sortBy === "Corso") {
-      const courseA = helpers.courseById(a.courseId)?.name || "Z";
-      const courseB = helpers.courseById(b.courseId)?.name || "Z";
-      return courseA.localeCompare(courseB) || new Date(a.date) - new Date(b.date);
-    }
-    return 0;
-  });
+  allSessions = sortSessions(allSessions);
 
   const toggleComplete = (session) => {
     //Troviamo la data di oggi in formato YYYY-MM-DD
@@ -137,6 +156,29 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
 
       {viewMode === "Settimanale" ? (
         <>
+          {/* FILTRI E ORDINAMENTO SETTIMANALE */}
+          <View style={styles.panel}>
+            <SearchBox
+              placeholder="Cerca per titolo o corso..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+
+            <Text style={[styles.label, { marginTop: 10 }]}>Ordina per</Text>
+            <Segmented
+              options={["Nome", "Data di inserimento", "Corso"]}
+              value={sortBy}
+              onChange={setSortBy}
+            />
+
+            <Text style={[styles.label, { marginTop: 10 }]}>Direzione</Text>
+            <Segmented
+              options={["Crescente", "Decrescente"]}
+              value={sortOrder}
+              onChange={setSortOrder}
+            />
+          </View>
+
           {/* BARRA NAVIGAZIONE SETTIMANA */}
           <View style={styles.weekBar}>
             <Pressable style={styles.iconButton} onPress={() => setWeekStart(addDays(weekStart, -7))}>
@@ -186,6 +228,10 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
 
           {/* LISTA SESSIONI SETTIMANALI */}
           {visibleSessions.map(renderSessionCard)}
+
+          {visibleSessions.length === 0 && (
+            <Text style={styles.bodyText}>Nessuna attività trovata per questa settimana.</Text>
+          )}
         </>
       ) : (
         <>
@@ -206,9 +252,16 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
 
             <Text style={[styles.label, { marginTop: 10 }]}>Ordina per</Text>
             <Segmented
-              options={["Data ↑", "Data ↓", "Corso"]}
+              options={["Nome", "Data di inserimento", "Corso"]}
               value={sortBy}
               onChange={setSortBy}
+            />
+
+            <Text style={[styles.label, { marginTop: 10 }]}>Direzione</Text>
+            <Segmented
+              options={["Crescente", "Decrescente"]}
+              value={sortOrder}
+              onChange={setSortOrder}
             />
           </View>
 
