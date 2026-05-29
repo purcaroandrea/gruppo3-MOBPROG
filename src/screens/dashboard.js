@@ -1,10 +1,10 @@
-import React, { useContext } from "react";
-import { Pressable, Text, View, Dimensions, Switch } from "react-native";
+import { useContext } from "react";
+import { Dimensions, Pressable, Switch, Text, View } from "react-native";
+import { LineChart } from "react-native-chart-kit";
 import Metric from "../components/Metric";
 import Panel from "../components/Panel";
 import PriorityBadge from "../components/PriorityBadge";
 import { formatDate } from "../helpers/date";
-import { LineChart } from "react-native-chart-kit";
 
 import { useStyles } from "../../hooks/useStyles";
 import { ThemeContext } from "../contexts/ThemeContext";
@@ -49,11 +49,14 @@ export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSes
 
       {/* METRICHE PRINCIPALI */}
       <View style={styles.metricGrid}>
-        <Metric label="Corsi inseriti" value={data.courses.length} />
-        <Metric label="Esami futuri" value={helpers.futureExams.length} />
-        <Metric label="Attività da completare" value={helpers.openGoals + helpers.openSessions} />
-        <Metric label="Ore svolte (settimana)" value={`${helpers.weekHours.actual}h`} />
-      </View>
+  <Metric label="Corsi inseriti" value={data.courses.length} />
+  <Metric label="Esami futuri" value={helpers.futureExams.length} />
+  <Metric label="Attività da completare" value={helpers.openGoals + helpers.openSessions} />
+  <Metric
+    label="Ore svolte settimana"
+    value={`${helpers.weekHours?.actual ?? 0}h`}
+  />
+</View>
 
       {/* GRAFICO ANDAMENTO STUDIO */}
       <Panel title="Andamento ultimi 7 giorni">

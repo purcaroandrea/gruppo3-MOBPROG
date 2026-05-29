@@ -1,4 +1,4 @@
-import { StyleSheet, Platform } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 
 export const getStyles = (themeColors) => StyleSheet.create({
   
@@ -17,6 +17,27 @@ export const getStyles = (themeColors) => StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: themeColors.border,
   },
+  headerIconButton: {
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: themeColors.surfaceAlt,
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  borderRadius: 16,
+  gap: 6,
+},
+headerIconButtonActive: {
+  backgroundColor: themeColors.primary,
+},
+headerIconLabel: {
+  fontSize: 13,
+  fontWeight: "600",
+  color: themeColors.textTitle,
+},
+headerIconLabelActive: {
+  color: themeColors.textOnPrimary,
+},
+
   title: {
     fontSize: 20,
     fontWeight: "bold",
@@ -41,7 +62,7 @@ export const getStyles = (themeColors) => StyleSheet.create({
   },
   content: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 90,
   },
 
   // --- Navigazione Tab Superiore ---
@@ -236,6 +257,37 @@ export const getStyles = (themeColors) => StyleSheet.create({
   },
 
   // --- Pulsanti (Bottoni) ---
+
+  bottomNav: {
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  borderTopWidth: 1,
+  borderTopColor: themeColors.border,
+  backgroundColor: themeColors.surface,
+},
+bottomNavItem: {
+  flex: 1,
+  alignItems: "center",
+  justifyContent: "center",
+  paddingVertical: 6,
+  borderRadius: 16,
+},
+bottomNavItemActive: {
+  backgroundColor: themeColors.primaryLight,
+},
+bottomNavLabel: {
+  fontSize: 12,
+  marginTop: 2,
+  color: themeColors.textBody,
+  fontWeight: "600",
+},
+bottomNavLabelActive: {
+  color: themeColors.textTitle,
+},
+
   actions: {
     flexDirection: "row",
     justifyContent: "flex-end",
@@ -485,25 +537,23 @@ export const getStyles = (themeColors) => StyleSheet.create({
     borderWidth: 1,
     borderColor: themeColors.border,
   },
+  
   timerPanelPausa: {
     backgroundColor: themeColors.badgeLowBg,
   },
+  
   timerModePausa: {
     color: themeColors.badgeLowText,
   },
   primaryButtonPausa: {
     backgroundColor: themeColors.badgeLowText,
   },
-  primaryButtonTextPausa: {
-    color: themeColors.background, 
-  },
   secondaryButtonPausa: {
-    backgroundColor: "transparent", 
-    borderWidth: 1,
-    borderColor: themeColors.badgeLowText, 
+    backgroundColor: themeColors.badgeLowText,
+    opacity: 0.65, 
   },
   secondaryButtonTextPausa: {
-    color: themeColors.badgeLowText, 
+    color: themeColors.textOnPrimary, 
   },
   timerMode: {
     fontSize: 18,
@@ -519,22 +569,6 @@ export const getStyles = (themeColors) => StyleSheet.create({
     color: themeColors.textTitle,
     fontVariant: ["tabular-nums"],
     marginVertical: 10,
-  },
-  
-  // Stili bottone Switch in alto a destra
-  switchButtonStudio: {
-    backgroundColor: themeColors.badgeLowBg, 
-  },
-  switchButtonTextStudio: {
-    color: themeColors.badgeLowText, 
-  },
-  // 🔥 AGGIORNATO: Ora il bottone usa il colore primario del tuo tema
-  switchButtonPausa: {
-    backgroundColor: themeColors.primary, 
-  },
-  // 🔥 AGGIORNATO: Ora il testo usa il colore di contrasto per i bottoni primari
-  switchButtonTextPausa: {
-    color: themeColors.textOnPrimary, 
   },
 
   // --- Modali e Fogli di Dettaglio ---

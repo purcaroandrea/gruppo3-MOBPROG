@@ -1,25 +1,25 @@
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useEffect, useMemo, useState } from "react";
-import { SafeAreaView, ScrollView, View, Text, Pressable } from "react-native";
-// 👉 I NOSTRI NUOVI IMPORT PER IL TEMA
+import { useEffect, useMemo, useState } from "react";
+import { Image, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
 import { useStyles } from "../hooks/useStyles";
 import { ThemeProvider } from "../src/contexts/ThemeContext";
+import { emptySession } from "../src/data/emptyTemplates";
 import { seedData } from "../src/data/seedData";
-import { emptyCourse, emptyExam, emptySession, emptyGoal } from "../src/data/emptyTemplates";
 import { createHelpers } from "../src/helpers/createHelpers";
-import { isValidDateStrict } from "../src/helpers/date"; 
+import { isValidDateStrict } from "../src/helpers/date";
 
-import Dashboard from "../src/screens/Dashboard";
 import CoursesScreen from "../src/screens/CoursesScreen";
+import Dashboard from "../src/screens/Dashboard";
 import ExamsScreen from "../src/screens/ExamsScreen";
-import PlannerScreen from "../src/screens/PlannerScreen";
 import GoalsScreen from "../src/screens/GoalsScreen";
+import PlannerScreen from "../src/screens/PlannerScreen";
 import PomodoroScreen from "../src/screens/PomodoroScreen";
 
 // 1. RINOMINATA DA "App" A "MainApp"
 function MainApp() {
   // 👉 INSERIMENTO DELL'HOOK COME PRIMA RIGA
-  const { styles } = useStyles();
+  const { styles, themeColors } = useStyles();
   const [data, setData] = useState(seedData);
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [selectedCourseId, setSelectedCourseId] = useState(null);
@@ -141,32 +141,70 @@ function MainApp() {
   return (
     <SafeAreaView style={styles.safe}>
       {/* 1. HEADER */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Study Planner & Exam Tracker</Text>
-        </View>
-        <View style={styles.headerBadge}>
-          <Text style={styles.headerBadgeText}>{helpers.weekHours?.planned || 0}h</Text>
-          <Text style={styles.headerBadgeSmall}>Questa settimana!</Text>
-        </View>
-      </View>
+<View style={styles.header}>
+  {/* Pulsante Dashboard (home) a sinistra */}
+  <Pressable
+    style={[
+      styles.headerIconButton,
+      activeTab === "Dashboard" && styles.headerIconButtonActive,
+    ]}
+    onPress={() => setActiveTab("Dashboard")}
+  >
+    <MaterialIcons
+      name="home"
+      size={22}
+      color={
+        activeTab === "Dashboard"
+          ? themeColors.textOnPrimary
+          : themeColors.textTitle
+      }
+    />
+    <Text
+      style={[
+        styles.headerIconLabel,
+        activeTab === "Dashboard" && styles.headerIconLabelActive,
+      ]}
+    >
+      Dashboard
+    </Text>
+  </Pressable>
 
-      {/* 2. BARRA DELLE TAB */}
-      <View style={styles.tabs}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {tabs.map((tab) => (
-            <Pressable
-              key={tab}
-              onPress={() => setActiveTab(tab)}
-              style={[styles.tabButton, activeTab === tab && styles.tabButtonActive]}
-            >
-              <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
-                {tab}
-              </Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-      </View>
+  {/* Titolo centrale (puoi cambiarlo a piacere) */}
+  {/* <Text style={styles.title}>Study Planner</Text> */}
+  <Image
+  source={require("../assets/images/logo-mobile.png")}
+  style={{ height: 60, width: 60 }}
+  resizeMode="contain"
+/>
+
+  {/* Pulsante Pomodoro a destra */}
+  <Pressable
+    style={[
+      styles.headerIconButton,
+      activeTab === "Pomodoro" && styles.headerIconButtonActive,
+    ]}
+    onPress={() => setActiveTab("Pomodoro")}
+  >
+    <MaterialIcons
+      name="timer"
+      size={22}
+      color={
+        activeTab === "Pomodoro"
+          ? themeColors.textOnPrimary
+          : themeColors.textTitle
+      }
+    />
+    <Text
+      style={[
+        styles.headerIconLabel,
+        activeTab === "Pomodoro" && styles.headerIconLabelActive,
+      ]}
+    >
+      Pomodoro
+    </Text>
+  </Pressable>
+</View>
+
 
       {/* 3. CONTENUTO DELLE SCHERMATE */}
       <ScrollView contentContainerStyle={styles.content}>
@@ -177,6 +215,112 @@ function MainApp() {
         {activeTab === "Obiettivi" && <GoalsScreen {...screenProps} />}
         {activeTab === "Pomodoro" && <PomodoroScreen {...screenProps} />}
       </ScrollView>
+      {/* 3. NAVIGAZIONE IN BASSO */}
+<View style={styles.bottomNav}>
+  <Pressable
+    style={[
+      styles.bottomNavItem,
+      activeTab === "Corsi" && styles.bottomNavItemActive,
+    ]}
+    onPress={() => setActiveTab("Corsi")}
+  >
+    <MaterialIcons
+      name="menu-book"
+      size={22}
+      color={
+        activeTab === "Corsi"
+          ? themeColors.textOnPrimary
+          : themeColors.textTitle
+      }
+    />
+    <Text
+      style={[
+        styles.bottomNavLabel,
+        activeTab === "Corsi" && styles.bottomNavLabelActive,
+      ]}
+    >
+      Corsi
+    </Text>
+  </Pressable>
+
+  <Pressable
+    style={[
+      styles.bottomNavItem,
+      activeTab === "Esami" && styles.bottomNavItemActive,
+    ]}
+    onPress={() => setActiveTab("Esami")}
+  >
+    <MaterialIcons
+      name="assignment"
+      size={22}
+      color={
+        activeTab === "Esami"
+          ? themeColors.textOnPrimary
+          : themeColors.textTitle
+      }
+    />
+    <Text
+      style={[
+        styles.bottomNavLabel,
+        activeTab === "Esami" && styles.bottomNavLabelActive,
+      ]}
+    >
+      Esami
+    </Text>
+  </Pressable>
+
+  <Pressable
+    style={[
+      styles.bottomNavItem,
+      activeTab === "Planner" && styles.bottomNavItemActive,
+    ]}
+    onPress={() => setActiveTab("Planner")}
+  >
+    <MaterialIcons
+      name="event-note"
+      size={22}
+      color={
+        activeTab === "Planner"
+          ? themeColors.textOnPrimary
+          : themeColors.textTitle
+      }
+    />
+    <Text
+      style={[
+        styles.bottomNavLabel,
+        activeTab === "Planner" && styles.bottomNavLabelActive,
+      ]}
+    >
+      Planner
+    </Text>
+  </Pressable>
+
+  <Pressable
+    style={[
+      styles.bottomNavItem,
+      activeTab === "Obiettivi" && styles.bottomNavItemActive,
+    ]}
+    onPress={() => setActiveTab("Obiettivi")}
+  >
+    <MaterialIcons
+      name="flag"
+      size={22}
+      color={
+        activeTab === "Obiettivi"
+          ? themeColors.textOnPrimary
+          : themeColors.textTitle
+      }
+    />
+    <Text
+      style={[
+        styles.bottomNavLabel,
+        activeTab === "Obiettivi" && styles.bottomNavLabelActive,
+      ]}
+    >
+      Obiettivi
+    </Text>
+  </Pressable>
+</View>
     </SafeAreaView>
   );
 }
