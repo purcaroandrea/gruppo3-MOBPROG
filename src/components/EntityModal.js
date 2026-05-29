@@ -1,5 +1,4 @@
-import React from "react";
-import { Modal, View, ScrollView, Text, Pressable } from "react-native";
+import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
 import Field from "./Field";
 
@@ -36,9 +35,13 @@ export default function EntityModal({
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.modalBackdrop}>
         <View style={styles.modalSheet}>
-          <ScrollView keyboardShouldPersistTaps="handled">
+          <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>{title}</Text>
-
+            <Pressable style={styles.modalCloseButton} onPress={onClose}>
+              <Text style={styles.modalCloseIcon}>✕</Text>
+            </Pressable>
+          </View>
+          <ScrollView keyboardShouldPersistTaps="handled">
             {fields.map((field) => (
               <Field
                 key={field.key}

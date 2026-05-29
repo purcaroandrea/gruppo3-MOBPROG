@@ -586,10 +586,29 @@ bottomNavLabelActive: {
     borderWidth: 1,
     borderColor: themeColors.border,
   },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
   modalTitle: {
     fontSize: 22,
     fontWeight: "bold",
     color: themeColors.textTitle,
-    marginBottom: 6,
+    flex: 1,
+  },
+  modalCloseButton: {
+    padding: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  modalCloseIcon: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: themeColors.textTitle,
   },
 });
