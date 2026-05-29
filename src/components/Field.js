@@ -1,12 +1,90 @@
-import { Switch, Text, TextInput, View } from "react-native";
-// INSERISCI QUESTA (aggiustando il percorso se necessario, ad es. "./hooks/useStyles" da App.js):
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useState } from "react";
+import { Platform, Pressable, Switch, Text, TextInput, View } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
 import Segmented from "./Segmented";
+
+const DatePickerField = ({ field, current, set, styles }) => {
+  const [showPicker, setShowPicker] = useState(false);
+
+  const parsed = current ? new Date(current) : new Date();
+  const display = current
+    ? new Date(current).toLocaleDateString("it-IT", {
+      day: "2-digit", month: "2-digit", year: "numeric",
+    })
+    : "";
+
+  // Web
+  if (Platform.OS === "web") {
+    return (
+      <View style={styles.field}>
+        <Text style={styles.label}>{field.label}</Text>
+        <input
+          type="date"
+          value={current || ""}
+          onChange={(e) => set(e.target.value)}
+          style={{
+            padding: "6px 8px",
+            borderRadius: 8,
+            border: "1px solid #ccc",
+            fontSize: 14,
+            width: "auto",
+            maxWidth: 160,
+            display: "block",
+          }}
+        />
+      </View>
+    );
+  }
+
+  // iOS / Android: DateTimePicker nativo
+  return (
+    <View style={styles.field}>
+      <Text style={styles.label}>{field.label}</Text>
+      <Pressable style={styles.input} onPress={() => setShowPicker(true)}>
+        <Text style={styles.inputText}>{display || "Seleziona data"}</Text>
+      </Pressable>
+      {showPicker && (
+        <DateTimePicker
+          value={parsed}
+          mode="date"
+          display={Platform.OS === "ios" ? "inline" : "default"}
+          onChange={(event, selectedDate) => {
+            // Su Android l'utente clicca OK/Annulla, quindi possiamo chiudere la modale
+            if (Platform.OS === "android") {
+              setShowPicker(false);
+            }
+
+            if (selectedDate) {
+              // Estraiamo la data LOCALE per evitare il bug del fuso orario
+              const year = selectedDate.getFullYear();
+              const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+              const day = String(selectedDate.getDate()).padStart(2, "0");
+              set(`${year}-${month}-${day}`);
+            }
+          }}
+        />
+      )}
+    </View>
+  );
+};
 
 export default function Field({ field, value, onChange, helpers }) {
   const { styles } = useStyles();
   const current = value[field.key];
   const set = (next) => onChange({ ...value, [field.key]: next });
+
+  // Campo Data
+  if (field.key === "date") {
+    return (
+      <DatePickerField
+        field={field}
+        current={current}
+        set={set}
+        styles={styles}
+      />
+    );
+  }
 
   // Campo: selezione corso
   if (field.type === "course") {
@@ -91,7 +169,7 @@ export default function Field({ field, value, onChange, helpers }) {
           style={styles.input}
           value={current}
           onChangeText={(txt) => {
-            const clean = txt.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ\s'’\-]/g, "");
+            const clean = txt.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ\s''\-]/g, "");
             set(clean);
           }}
           placeholder="Es. Rossi"
@@ -120,11 +198,11 @@ export default function Field({ field, value, onChange, helpers }) {
     );
   }
 
-  // GESTIONE TEMPO (Ore e Minuti separati) - Ora completamente manuale anche per plannedHours
+  // GESTIONE TEMPO (Ore e Minuti separati)
   const isPlanned = field.key === "plannedHours";
   const isActual = field.key === "actualHours";
   const isEstimated = field.key === "estimatedHours";
-  
+
   if (isPlanned || isActual || isEstimated) {
     const totalMinutes = parseInt(current || "0", 10);
     const hoursVal = Math.floor(totalMinutes / 60);
@@ -134,19 +212,17 @@ export default function Field({ field, value, onChange, helpers }) {
       const h = parseInt(newHours, 10) || 0;
       const m = parseInt(newMins, 10) || 0;
       const total = (h * 60) + m;
-      
-      // Limite per actualHours: non può superare plannedHours (per le sessioni)
+
       if (isActual && !("estimatedHours" in value)) {
         const maxMinutes = parseInt(value.plannedHours || "0", 10);
         if (total > maxMinutes) return;
       }
 
-      // Limite per actualHours: non può superare estimatedHours (per gli obiettivi)
       if (isActual && ("estimatedHours" in value)) {
         const maxMinutes = parseInt(value.estimatedHours || "0", 10);
         if (total > maxMinutes) return;
       }
-      
+
       set(String(total));
     };
 
@@ -154,7 +230,6 @@ export default function Field({ field, value, onChange, helpers }) {
       <View style={styles.field}>
         <Text style={styles.label}>{field.label}</Text>
         <View style={{ flexDirection: "row", gap: 12 }}>
-          {/* Input delle Ore */}
           <View style={{ flex: 1 }}>
             <TextInput
               style={styles.input}
@@ -164,7 +239,6 @@ export default function Field({ field, value, onChange, helpers }) {
               onChangeText={(txt) => handleTimeChange(txt, minutesVal)}
             />
           </View>
-          {/* Input dei Minuti */}
           <View style={{ flex: 1 }}>
             <TextInput
               style={styles.input}
@@ -174,7 +248,7 @@ export default function Field({ field, value, onChange, helpers }) {
               maxLength={2}
               onChangeText={(txt) => {
                 let m = parseInt(txt, 10) || 0;
-                if (m > 59) m = 59; 
+                if (m > 59) m = 59;
                 handleTimeChange(hoursVal, m);
               }}
             />
@@ -184,11 +258,10 @@ export default function Field({ field, value, onChange, helpers }) {
     );
   }
 
-  // Fallback per campi testuali generici (Note, Titoli, ecc.)
+  // Fallback per campi testuali generici
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{field.label}</Text>
-
       <TextInput
         style={[styles.input, field.multiline && styles.textarea]}
         value={String(current ?? "")}
