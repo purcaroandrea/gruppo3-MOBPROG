@@ -18,7 +18,6 @@ import PomodoroScreen from "../src/screens/PomodoroScreen";
 
 // 1. RINOMINATA DA "App" A "MainApp"
 function MainApp() {
-  // 👉 INSERIMENTO DELL'HOOK COME PRIMA RIGA
   const { styles, themeColors } = useStyles();
   const [data, setData] = useState(seedData);
   const [activeTab, setActiveTab] = useState("Dashboard");
