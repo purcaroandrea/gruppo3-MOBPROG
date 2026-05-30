@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Pressable, Switch } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
 import ScreenTop from "../components/screen-top";
+import SearchBox from "../components/search-box";
 import Segmented from "../components/segmented";
 import DangerButton from "../components/danger-button";
 import Progress from "../components/progress";
@@ -34,11 +35,32 @@ export default function GoalsScreen({ data, helpers, upsert, remove }) {
   const [priority, setPriority] = React.useState("Tutte");
   const [showDone, setShowDone] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
+  const [query, setQuery] = React.useState("");
+  const [courseFilter, setCourseFilter] = React.useState("");
+
+  const courseFilterOptions = [
+    "",
+    ...helpers.courseOptions.map((c) => c.id),
+  ];
+  const courseFilterLabels = {
+    "": "Tutti i corsi",
+    ...Object.fromEntries(helpers.courseOptions.map((c) => [c.id, c.name])),
+  };
 
   const goals = data.goals.filter((goal) => {
     const matchesPriority = priority === "Tutte" || goal.priority === priority;
     const matchesDone = showDone || !goal.completed;
-    return matchesPriority && matchesDone;
+    const matchesCourse = !courseFilter || goal.courseId === courseFilter;
+    const matchesQuery = !query || (() => {
+      const q = query.toLowerCase();
+      const courseName = helpers.courseById(goal.courseId)?.name || "";
+      return (
+        goal.title.toLowerCase().includes(q) ||
+        (goal.description || "").toLowerCase().includes(q) ||
+        courseName.toLowerCase().includes(q)
+      );
+    })();
+    return matchesPriority && matchesDone && matchesCourse && matchesQuery;
   });
 
   return (
@@ -49,11 +71,26 @@ export default function GoalsScreen({ data, helpers, upsert, remove }) {
         onPress={() => setEditing({ ...emptyGoal })}
       />
 
-      <Segmented options={priorities} value={priority} onChange={setPriority} />
+      <SearchBox value={query} onChangeText={setQuery} placeholder="Cerca obiettivo..." />
 
-      <View style={styles.filterRow}>
-        <Text style={styles.bodyText}>Mostra completati</Text>
-        <Switch value={showDone} onValueChange={setShowDone} />
+      <View style={[styles.card, { marginBottom: 10, paddingVertical: 12 }]}>
+        <Text style={[styles.label, { marginBottom: 4 }]}>Filtra per corso</Text>
+        <Segmented
+          options={courseFilterOptions}
+          labels={courseFilterLabels}
+          value={courseFilter}
+          onChange={setCourseFilter}
+        />
+      </View>
+
+      <View style={[styles.card, { marginBottom: 10, paddingVertical: 12 }]}>
+        <Text style={[styles.label, { marginBottom: 4 }]}>Priorità</Text>
+        <Segmented options={priorities} value={priority} onChange={setPriority} />
+
+        <View style={[styles.filterRow, { marginBottom: 0, marginTop: 4 }]}>
+          <Text style={styles.bodyText}>Mostra completati</Text>
+          <Switch value={showDone} onValueChange={setShowDone} />
+        </View>
       </View>
 
       {goals.map((goal) => (
