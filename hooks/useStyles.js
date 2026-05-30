@@ -1,6 +1,6 @@
 import { useContext, useMemo } from "react";
 // Importiamo il Context che abbiamo appena creato!
-import { ThemeContext } from "../src/contexts/ThemeContext";
+import { ThemeContext } from "../src/contexts/themeContext";
 import { colors } from "../src/styles/colors";
 import { getStyles } from "../src/styles/styles";
 

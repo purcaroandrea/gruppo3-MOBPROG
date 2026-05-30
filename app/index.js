@@ -5,7 +5,7 @@ import * as Haptics from "expo-haptics";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Image, Pressable, SafeAreaView, ScrollView, Text, View, useWindowDimensions } from "react-native";
 import { useStyles } from "../hooks/useStyles";
-import { ThemeProvider } from "../src/contexts/ThemeContext";
+import { ThemeProvider } from "../src/contexts/themeContext";
 import { emptySession } from "../src/data/emptyTemplates";
 import { seedData } from "../src/data/seedData";
 import { createHelpers } from "../src/helpers/createHelpers";

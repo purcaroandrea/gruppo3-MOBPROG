@@ -7,7 +7,7 @@ import PriorityBadge from "../components/priority-badge";
 import { formatDate } from "../helpers/date";
 
 import { useStyles } from "../../hooks/useStyles";
-import { ThemeContext } from "../contexts/ThemeContext";
+import { ThemeContext } from "../contexts/themeContext";
 
 export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSession }) {
   // Estraiamo gli stili e i colori attuali
