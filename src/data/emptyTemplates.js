@@ -32,7 +32,6 @@ export const emptyExam = {
 export const emptySession = {
   id: undefined,
   title: "",
-  courseId: "",
   examId: "",
   goalId: "",
   date: isoToday,

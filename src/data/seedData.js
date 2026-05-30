@@ -90,8 +90,8 @@ export const seedData = {
     {
       id: "session-1",
       title: "Studiare Teoria della Stima",
-      courseId: "course-1",
       examId: "exam-1",
+      goalId: "goal-1",
       date: isoToday, 
       startTime: "", // Lasciato vuoto
       endTime: "",   // Lasciato vuoto
@@ -104,8 +104,8 @@ export const seedData = {
     {
       id: "session-2",
       title: "Ripasso SQL avanzato",
-      courseId: "course-2",
       examId: "exam-3",
+      goalId: "goal-2",
       date: addDays(isoToday, -1),
       startTime: "",
       endTime: "",
@@ -118,8 +118,8 @@ export const seedData = {
     {
       id: "session-3",
       title: "Preparare relazione",
-      courseId: "course-1",
       examId: "exam-1",
+      goalId: "goal-1",
       date: addDays(isoToday, 2),
       startTime: "",
       endTime: "",

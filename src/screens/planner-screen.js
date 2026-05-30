@@ -50,7 +50,10 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
   if (searchQuery.trim()) {
     const q = searchQuery.toLowerCase();
     visibleSessions = visibleSessions.filter((s) => {
-      const courseName = helpers.courseById(s.courseId)?.name || "";
+      const exam = s.examId ? helpers.examById(s.examId) : null;
+      const goal = s.goalId ? helpers.goalById(s.goalId) : null;
+      const courseId = exam?.courseId || goal?.courseId;
+      const courseName = courseId ? helpers.courseById(courseId)?.name || "" : "";
       return (s.title || "").toLowerCase().includes(q) || courseName.toLowerCase().includes(q);
     });
   }
@@ -64,7 +67,10 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
   if (searchQuery.trim()) {
     const q = searchQuery.toLowerCase();
     allSessions = allSessions.filter((s) => {
-      const courseName = helpers.courseById(s.courseId)?.name || "";
+      const exam = s.examId ? helpers.examById(s.examId) : null;
+      const goal = s.goalId ? helpers.goalById(s.goalId) : null;
+      const courseId = exam?.courseId || goal?.courseId;
+      const courseName = courseId ? helpers.courseById(courseId)?.name || "" : "";
       return (s.title || "").toLowerCase().includes(q) || courseName.toLowerCase().includes(q);
     });
   }
@@ -99,7 +105,12 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
         <View style={styles.cardHeaderText}>
           <Text style={styles.cardTitle}>{session.title}</Text>
           <Text style={styles.rowMeta}>
-            {helpers.courseById(session.courseId)?.name || "Senza corso"} ·{" "}
+            {(() => {
+              const exam = session.examId ? helpers.examById(session.examId) : null;
+              const goal = session.goalId ? helpers.goalById(session.goalId) : null;
+              const courseId = exam?.courseId || goal?.courseId;
+              return courseId ? helpers.courseById(courseId)?.name || "Senza corso" : "Senza corso";
+            })()} ·{" "}
             {session.kind} · {formatDate(session.date)}
           </Text>
         </View>
@@ -283,7 +294,6 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
         value={editing}
         fields={[
           { key: "title", label: "Nome *", required: true },
-          { key: "courseId", label: "Corso", type: "course" },
           { key: "examId", label: "Esame", type: "exam" },
           { key: "goalId", label: "Obiettivo", type: "goal" },
           { key: "date", label: "Data *", required: true },

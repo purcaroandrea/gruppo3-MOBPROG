@@ -246,37 +246,77 @@ export default function Field({ field, value, onChange, helpers }) {
     );
   }
 
-  // Campo: selezione esame
+  // Campo: selezione esame (filtrato per corso dell'obiettivo selezionato)
   if (field.type === "exam") {
+    let filteredExams = helpers.examOptions;
+    if (value.goalId) {
+      const goal = helpers.goalById(value.goalId);
+      if (goal?.courseId) {
+        filteredExams = helpers.examOptions.filter(
+          (e) => helpers.examById(e.id)?.courseId === goal.courseId
+        );
+      }
+    }
     return (
       <View style={styles.field}>
         <Text style={styles.label}>{field.label}</Text>
         <Segmented
-          options={["", ...helpers.examOptions.map((o) => o.id)]}
+          options={["", ...filteredExams.map((o) => o.id)]}
           labels={{
             "": "Nessuno",
-            ...Object.fromEntries(helpers.examOptions.map((o) => [o.id, o.title])),
+            ...Object.fromEntries(filteredExams.map((o) => [o.id, o.title])),
           }}
           value={current || ""}
-          onChange={set}
+          onChange={(id) => {
+            const exam = id ? helpers.examById(id) : null;
+            const updates = { ...value, examId: id };
+            // Se c'è un obiettivo selezionato e non è compatibile, resettalo
+            if (value.goalId && exam) {
+              const goal = helpers.goalById(value.goalId);
+              if (goal && goal.courseId !== exam.courseId) {
+                updates.goalId = "";
+              }
+            }
+            onChange(updates);
+          }}
         />
       </View>
     );
   }
 
-  // Campo: selezione obiettivo
+  // Campo: selezione obiettivo (filtrato per corso dell'esame selezionato)
   if (field.type === "goal") {
+    let filteredGoals = helpers.goalOptions;
+    if (value.examId) {
+      const exam = helpers.examById(value.examId);
+      if (exam?.courseId) {
+        filteredGoals = helpers.goalOptions.filter(
+          (g) => helpers.goalById(g.id)?.courseId === exam.courseId
+        );
+      }
+    }
     return (
       <View style={styles.field}>
         <Text style={styles.label}>{field.label}</Text>
         <Segmented
-          options={["", ...helpers.goalOptions.map((g) => g.id)]}
+          options={["", ...filteredGoals.map((g) => g.id)]}
           labels={{
             "": "Nessuno",
-            ...Object.fromEntries(helpers.goalOptions.map((g) => [g.id, g.title])),
+            ...Object.fromEntries(filteredGoals.map((g) => [g.id, g.title])),
           }}
           value={current || ""}
-          onChange={set}
+          onChange={(id) => {
+            const goal = id ? helpers.goalById(id) : null;
+            const updates = { ...value, goalId: id };
+            // Se c'è un esame selezionato e non è compatibile, resettalo
+            if (value.examId && goal) {
+              const exam = helpers.examById(value.examId);
+              if (exam && exam.courseId !== goal.courseId) {
+                updates.examId = "";
+              }
+            }
+            onChange(updates);
+          }}
         />
       </View>
     );
