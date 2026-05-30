@@ -73,20 +73,17 @@ export default function CoursesScreen(props) {
 
 
     
-              {course.status === "Completato" && course.actualGrade ?
-(
+              {course.actualGrade ? (
                 <View
                   style={{
                     marginTop: 6,
                     backgroundColor: "#f0f0f0",
                     paddingVertical: 4,
-   
-                  paddingHorizontal: 10,
+                    paddingHorizontal: 10,
                     borderRadius: 8,
                     flexDirection: "row",
                     alignItems: "center",
                   }}
- 
                 >
                   <Text style={[styles.rowMeta, { fontSize: 18 }]}>🏅 {course.actualGrade}</Text>
                 </View>

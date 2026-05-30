@@ -25,6 +25,9 @@ export const emptyExam = {
   type: "Altro",
   priority: "Media",
   status: "Futuro",
+  esito: "Da valutare",
+  voto: "",
+  completed: false,
   notes: ""
 };
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable, Platform, TextInput } from "react-native";
+import { View, Text, Pressable, Platform, TextInput, Modal, ScrollView } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
 import ScreenTop from "../components/screen-top";
 import SearchBox from "../components/search-box";
@@ -13,6 +13,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 const isoToday = new Date().toISOString().slice(0, 10);
 const esitoFilterOptions = ["Tutti", "Da valutare", "Superato", "Non superato"];
+const gradeOptions = ["18","19","20","21","22","23","24","25","26","27","28","29","30","30L"];
 
 export default function ExamsScreen({ data, helpers, upsert, remove, addSuggestedSession }) {
   const { styles, themeColors } = useStyles();
@@ -24,11 +25,18 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
   const [dateTo, setDateTo] = React.useState("");
   const [showDateFilter, setShowDateFilter] = React.useState(false);
 
+  // Stato per il modale di inserimento voto
+  const [gradeExam, setGradeExam] = React.useState(null);
+
   const hasDateFilter = Boolean(dateFrom || dateTo);
 
   /* ── Auto-categorizzazione ── */
   const isExamDone = (exam) =>
-    exam.completed || exam.status === "Completato" || exam.status === "Annullato";
+    exam.completed ||
+    exam.status === "Completato" ||
+    exam.status === "Annullato" ||
+    exam.esito === "Superato" ||
+    exam.esito === "Non superato";
 
   const isExamFuture = (exam) => exam.date >= isoToday && !isExamDone(exam);
 
@@ -38,6 +46,25 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
   const isExamPast = (exam) => !isExamFuture(exam) && !isExamOverdue(exam);
 
   const overdueCount = data.exams.filter(isExamOverdue).length;
+
+  /* ── Salva esame con esito "Superato" + voto + aggiorna corso ── */
+  const handleSuperato = (exam, voto) => {
+    const updatedExam = { ...exam, esito: "Superato", completed: true, voto };
+    upsert("exams", updatedExam);
+
+    // Aggiorna actualGrade del corso associato
+    if (exam.courseId) {
+      const course = helpers.courseById(exam.courseId);
+      if (course) {
+        upsert("courses", { ...course, actualGrade: voto });
+      }
+    }
+  };
+
+  /* ── Salva esame con esito "Non superato" ── */
+  const handleNonSuperato = (exam) => {
+    upsert("exams", { ...exam, esito: "Non superato", completed: true });
+  };
 
   /* ── Filtraggio ── */
   const exams = [...data.exams]
@@ -247,20 +274,45 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
                     {exam.esito || "Da valutare"}
                   </Text>
                 )}
+                {/* Badge voto per esami superati */}
+                {exam.esito === "Superato" && exam.voto && (
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: themeColors.badgeLowBg,
+                      paddingVertical: 3,
+                      paddingHorizontal: 8,
+                      borderRadius: 8,
+                      gap: 4,
+                    }}
+                  >
+                    <Text style={{ fontSize: 14 }}>🏅</Text>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontWeight: "700",
+                        color: themeColors.badgeLowText,
+                      }}
+                    >
+                      {exam.voto}
+                    </Text>
+                  </View>
+                )}
               </View>
             </View>
 
             {exam.notes ? <Text style={styles.bodyText}>{exam.notes}</Text> : null}
 
-            {/* Bottoni esito rapido per Passati "Da valutare" */}
-            {tab === "Passati" && (!exam.esito || exam.esito === "Da valutare") && (
+            {/* Bottoni esito rapido per "In ritardo" (Consegne) */}
+            {tab === "In ritardo" && (
               <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
                 <Pressable
                   style={[
                     styles.secondaryButton,
                     { flex: 1, backgroundColor: themeColors.badgeLowBg, flexDirection: "row", gap: 6, justifyContent: "center" },
                   ]}
-                  onPress={() => upsert("exams", { ...exam, esito: "Superato" })}
+                  onPress={() => setGradeExam(exam)}
                 >
                   <MaterialIcons name="check-circle" size={16} color={themeColors.badgeLowText} />
                   <Text style={[styles.secondaryButtonText, { color: themeColors.badgeLowText }]}>
@@ -272,7 +324,37 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
                     styles.secondaryButton,
                     { flex: 1, backgroundColor: themeColors.dangerBg, flexDirection: "row", gap: 6, justifyContent: "center" },
                   ]}
-                  onPress={() => upsert("exams", { ...exam, esito: "Non superato" })}
+                  onPress={() => handleNonSuperato(exam)}
+                >
+                  <MaterialIcons name="cancel" size={16} color={themeColors.dangerText} />
+                  <Text style={[styles.secondaryButtonText, { color: themeColors.dangerText }]}>
+                    Non superato
+                  </Text>
+                </Pressable>
+              </View>
+            )}
+
+            {/* Bottoni esito rapido per Passati "Da valutare" */}
+            {tab === "Passati" && (!exam.esito || exam.esito === "Da valutare") && (
+              <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
+                <Pressable
+                  style={[
+                    styles.secondaryButton,
+                    { flex: 1, backgroundColor: themeColors.badgeLowBg, flexDirection: "row", gap: 6, justifyContent: "center" },
+                  ]}
+                  onPress={() => setGradeExam(exam)}
+                >
+                  <MaterialIcons name="check-circle" size={16} color={themeColors.badgeLowText} />
+                  <Text style={[styles.secondaryButtonText, { color: themeColors.badgeLowText }]}>
+                    Superato
+                  </Text>
+                </Pressable>
+                <Pressable
+                  style={[
+                    styles.secondaryButton,
+                    { flex: 1, backgroundColor: themeColors.dangerBg, flexDirection: "row", gap: 6, justifyContent: "center" },
+                  ]}
+                  onPress={() => handleNonSuperato(exam)}
                 >
                   <MaterialIcons name="cancel" size={16} color={themeColors.dangerText} />
                   <Text style={[styles.secondaryButtonText, { color: themeColors.dangerText }]}>
@@ -283,7 +365,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
             )}
 
             <View style={[styles.actions, { flexWrap: "wrap" }]}>
-              {/* In ritardo → bottone completamento */}
+              {/* In ritardo → bottone completamento generico (va in Da valutare) */}
               {tab === "In ritardo" && (
                 <Pressable
                   style={[styles.primaryButton, { flexDirection: "row", gap: 6, alignItems: "center" }]}
@@ -319,6 +401,20 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
         );
       })}
 
+      {/* ── Modale inserimento voto ── */}
+      <GradeModal
+        visible={Boolean(gradeExam)}
+        themeColors={themeColors}
+        styles={styles}
+        onClose={() => setGradeExam(null)}
+        onSave={(voto) => {
+          if (gradeExam) {
+            handleSuperato(gradeExam, voto);
+          }
+          setGradeExam(null);
+        }}
+      />
+
       <EntityModal
         visible={Boolean(editing)}
         title={editing?.id ? "Modifica esame" : "Nuovo esame"}
@@ -330,6 +426,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
           { key: "type", label: "Tipo", options: ["Altro", "Consegna", "Prova intercorso", "Prova orale", "Prova scritta"] },
           { key: "priority", label: "Priorità", options: ["Alta", "Media", "Bassa"] },
           { key: "esito", label: "Esito", options: ["Da valutare", "Superato", "Non superato"] },
+          { key: "voto", label: "Voto", options: ["", ...gradeOptions] },
           { key: "notes", label: "Note", multiline: true },
         ]}
         onChange={setEditing}
@@ -341,5 +438,116 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
         helpers={helpers}
       />
     </View>
+  );
+}
+
+/* ── Componente GradeModal ── */
+function GradeModal({ visible, themeColors, styles, onClose, onSave }) {
+  const [selectedGrade, setSelectedGrade] = React.useState(null);
+
+  // Reset selezione quando si apre il modale
+  React.useEffect(() => {
+    if (visible) setSelectedGrade(null);
+  }, [visible]);
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <View style={styles.modalBackdrop}>
+        <View
+          style={[
+            styles.modalSheet,
+            { maxWidth: 400, width: "90%" },
+          ]}
+        >
+          {/* Header */}
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Inserisci il voto</Text>
+            <Pressable style={styles.modalCloseButton} onPress={onClose}>
+              <Text style={styles.modalCloseIcon}>✕</Text>
+            </Pressable>
+          </View>
+
+          <Text
+            style={[
+              styles.rowMeta,
+              { marginBottom: 16, paddingHorizontal: 20 },
+            ]}
+          >
+            Seleziona il voto ottenuto per questo esame
+          </Text>
+
+          {/* Griglia voti */}
+          <ScrollView style={{ paddingHorizontal: 20 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                gap: 10,
+                justifyContent: "center",
+                marginBottom: 20,
+              }}
+            >
+              {gradeOptions.map((grade) => {
+                const isSelected = selectedGrade === grade;
+                return (
+                  <Pressable
+                    key={grade}
+                    onPress={() => setSelectedGrade(grade)}
+                    style={{
+                      width: 60,
+                      height: 48,
+                      borderRadius: 12,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      backgroundColor: isSelected
+                        ? themeColors.primary
+                        : themeColors.card,
+                      borderWidth: 2,
+                      borderColor: isSelected
+                        ? themeColors.primary
+                        : themeColors.borderDark,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 17,
+                        fontWeight: "700",
+                        color: isSelected
+                          ? themeColors.textOnPrimary
+                          : themeColors.textTitle,
+                      }}
+                    >
+                      {grade}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            {/* Bottoni azione */}
+            <View style={[styles.actions, { marginBottom: 20 }]}>
+              <Pressable
+                style={[
+                  styles.primaryButton,
+                  !selectedGrade && styles.disabledButton,
+                  { flexDirection: "row", gap: 8, alignItems: "center" },
+                ]}
+                disabled={!selectedGrade}
+                onPress={() => onSave(selectedGrade)}
+              >
+                <MaterialIcons name="check-circle" size={18} color={themeColors.textOnPrimary} />
+                <Text style={styles.primaryButtonText}>
+                  Conferma {selectedGrade ? `(${selectedGrade})` : ""}
+                </Text>
+              </Pressable>
+
+              <Pressable style={styles.secondaryButton} onPress={onClose}>
+                <Text style={styles.secondaryButtonText}>Annulla</Text>
+              </Pressable>
+            </View>
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
   );
 }
