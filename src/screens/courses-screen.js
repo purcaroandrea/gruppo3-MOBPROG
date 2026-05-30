@@ -1,5 +1,6 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
+import { useStyles } from "../../hooks/useStyles";
 import DangerButton from "../components/danger-button";
 import EntityModal from "../components/entity-modal";
 import ScreenTop from "../components/screen-top";
@@ -7,7 +8,6 @@ import SearchBox from "../components/search-box";
 import Segmented from "../components/segmented";
 import StatusBadge from "../components/status-badge";
 import { emptyCourse } from "../data/emptyTemplates";
-import { useStyles } from "../../hooks/useStyles";
 const courseStates = ["Tutti", "Da iniziare", "In corso", "Completato"];
 
 export default function CoursesScreen(props) {
@@ -101,7 +101,12 @@ export default function CoursesScreen(props) {
               <Text style={styles.secondaryButtonText}>Modifica</Text>
             </Pressable>
 
-            <DangerButton onPress={() => remove("courses", course.id)} />
+            <DangerButton
+              onPress={() => remove("courses", course.id)}
+              itemName={course.name}
+              itemType="corso"
+              warningMessage="L'eliminazione di un corso rimuoverà anche tutti gli esami, gli obiettivi e le attività del planner ad esso associati."
+            />
           </View>
         </Pressable>
       ))}

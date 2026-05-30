@@ -103,7 +103,11 @@ export default function GoalsScreen({ data, helpers, upsert, remove }) {
               <Text style={styles.secondaryButtonText}>Modifica</Text>
             </Pressable>
 
-            <DangerButton onPress={() => remove("goals", goal.id)} />
+            <DangerButton
+              onPress={() => remove("goals", goal.id)}
+              itemName={goal.title}
+              itemType="obiettivo"
+            />
           </View>
         </View>
       ))}

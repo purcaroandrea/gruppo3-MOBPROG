@@ -10,19 +10,13 @@ import { useStyles } from "../../hooks/useStyles";
 import { ThemeContext } from "../contexts/themeContext";
 
 export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSession }) {
-  // Estraiamo gli stili e i colori attuali
   const { styles, themeColors } = useStyles();
-  
-  // Estraiamo il tema attivo e la funzione per cambiarlo
   const { activeTheme, toggleTheme } = useContext(ThemeContext);
 
   const upcoming = helpers.upcomingExams.slice(0, 3);
   const topCourses = helpers.studyByCourse.slice(0, 4);
-  
-  // Otteniamo la larghezza dello schermo per adattare il grafico al dispositivo
   const screenWidth = Dimensions.get("window").width;
 
-  // Prepariamo i dati del grafico con un fallback di sicurezza
   const chartData = {
     labels: helpers.studyChartData?.labels || ["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"],
     datasets: [
@@ -63,7 +57,7 @@ export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSes
         <View style={{ alignItems: 'center', marginTop: 10 }}>
           <LineChart
             data={chartData}
-            width={screenWidth - 64} // Larghezza schermo meno padding laterali
+            width={screenWidth - 64}
             height={220}
             chartConfig={{
               // COLORI DEL GRAFICO DINAMICI
@@ -71,15 +65,15 @@ export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSes
               backgroundGradientFrom: themeColors.card,
               backgroundGradientTo: themeColors.card,
               decimalPlaces: 1, 
-              color: (opacity = 1) => `rgba(226, 135, 67, ${opacity})`, // Linea arancione
-              labelColor: (opacity = 1) => themeColors.textMuted, // Testo delle ascisse e ordinate
+              color: (opacity = 1) => `rgba(226, 135, 67, ${opacity})`,
+              labelColor: (opacity = 1) => themeColors.textMuted,
               style: {
                 borderRadius: 16,
               },
               propsForDots: {
                 r: "5",
                 strokeWidth: "2",
-                stroke: themeColors.primary // Contorno dei puntini
+                stroke: themeColors.primary
               }
             }}
             bezier 

@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
-import { View, Text, Pressable, Modal } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Modal, Pressable, Text, View } from "react-native";
+import Svg, { Circle } from "react-native-svg";
 import { useStyles } from "../../hooks/useStyles";
 import Segmented from "../components/segmented";
-import Svg, { Circle } from "react-native-svg";
 
 const STUDY_DURATION = 25 * 60;
 const BREAK_DURATION = 5 * 60;
@@ -69,14 +69,12 @@ export default function PomodoroScreen({ data, upsert, pomodoroProps }) {
 
   // Resetta il timer con eventuale alert se c'è tempo trascorso in Studio
   const reset = (nextMode = mode) => {
-    // Se in modalità Studio e c'è tempo trascorso, mostra alert
     if (mode === "Studio" && (STUDY_DURATION - secondsLeft) > 0) {
       const mins = Math.round((STUDY_DURATION - secondsLeft) / 60);
       setMinutesStudied(mins);
       setNextModeToSet(nextMode);
       setIsResetModalVisible(true);
     } else {
-      // Resetta normalmente se non c'è tempo trascorso o non siamo in Studio
       studyStartTimeRef.current = null;
       setRunning(false);
       setMode(nextMode);
@@ -93,9 +91,8 @@ export default function PomodoroScreen({ data, upsert, pomodoroProps }) {
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  // -------- Cerchio tipo miccia (SVG) --------
   const totalSeconds = mode === "Studio" ? STUDY_DURATION : BREAK_DURATION;
-  const fractionElapsed = (totalSeconds - secondsLeft) / totalSeconds; // da 0 a 1
+  const fractionElapsed = (totalSeconds - secondsLeft) / totalSeconds;
   const strokeWidth = 6;
 
   // Raggio più grande per i 25 min, leggermente più grande anche per i 5 min

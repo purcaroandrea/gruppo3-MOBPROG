@@ -1,13 +1,13 @@
 import React from "react";
-import { View, Text, Pressable, Switch } from "react-native";
+import { Pressable, Switch, Text, View } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
-import ScreenTop from "../components/screen-top";
 import DangerButton from "../components/danger-button";
 import EntityModal from "../components/entity-modal";
+import ScreenTop from "../components/screen-top";
 import SearchBox from "../components/search-box";
 import Segmented from "../components/segmented";
 import { emptySession } from "../data/emptyTemplates";
-import { addDays, startOfWeek, weekday, formatDate } from "../helpers/date";
+import { addDays, formatDate, startOfWeek, weekday } from "../helpers/date";
 import { minutesToHM } from "../helpers/format";
 
 export default function PlannerScreen({ data, helpers, upsert, remove }) {
@@ -86,7 +86,6 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
       return; 
     }
 
-    //Se il controllo viene superato, procede normalmente
     upsert("sessions", {
       ...session,
       completed: !session.completed,
@@ -135,7 +134,11 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
           <Text style={styles.secondaryButtonText}>Modifica</Text>
         </Pressable>
 
-        <DangerButton onPress={() => remove("sessions", session.id)} />
+        <DangerButton
+          onPress={() => remove("sessions", session.id)}
+          itemName={session.title}
+          itemType="attività"
+        />
       </View>
     </View>
   );
@@ -295,7 +298,6 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
         }}
         onClose={() => setEditing(null)}
         onSave={(item) => {
-          // Controllo: Impedisce la creazione nel passato
           const today = new Date().toISOString().slice(0, 10);
           
           if (!item.id && item.date < today) {

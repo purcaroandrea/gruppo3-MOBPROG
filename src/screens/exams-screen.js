@@ -66,7 +66,12 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
               <Text style={styles.secondaryButtonText}>Modifica</Text>
             </Pressable>
 
-            <DangerButton onPress={() => remove("exams", exam.id)} />
+            <DangerButton
+              onPress={() => remove("exams", exam.id)}
+              itemName={exam.title}
+              itemType="esame"
+              warningMessage="L'eliminazione di un esame rimuoverà anche tutte le attività del planner ad esso associate."
+            />
           </View>
         </View>
       ))}

@@ -5,12 +5,10 @@ const today = new Date();
 const isoToday = today.toISOString().slice(0, 10);
 
 export function createHelpers(data) {
-  // --- Helpers di base per recuperare entità tramite ID ---
   const courseById = (id) => data.courses.find((course) => course.id === id);
   const examById = (id) => data.exams.find((exam) => exam.id === id);
   const goalById = (id) => data.goals.find((goal) => goal.id === id);
 
-  // --- Filtraggio esami futuri e imminenti ---
   const futureExams = data.exams.filter(
     (exam) =>
       exam.status !== "Completato" &&
@@ -22,7 +20,6 @@ export function createHelpers(data) {
     a.date.localeCompare(b.date)
   );
 
-  // --- Calcolo delle date e ore per la settimana corrente ---
   const weekStart = startOfWeek(isoToday);
   const weekEnd = addDays(weekStart, 6);
 
@@ -30,7 +27,6 @@ export function createHelpers(data) {
     (session) => session.date >= weekStart && session.date <= weekEnd
   );
 
-  // Somma i minuti settimanali e li converte in ore decimali (es. 12.5h) per l'UI
   const weekHours = {
     planned: minutesToDecimalHours(
       weekSessions.reduce(
@@ -46,7 +42,6 @@ export function createHelpers(data) {
     ),
   };
 
-  // --- Calcolo delle ore totali per singolo corso ---
   const hoursForCourse = (courseId) =>
     minutesToDecimalHours(
       data.sessions
@@ -54,14 +49,11 @@ export function createHelpers(data) {
         .reduce((sum, session) => sum + toNumber(session.plannedHours), 0)
     );
 
-  // Trova il valore massimo di ore tra tutti i corsi (per scalare le progress bar)
   const maxCourseHours = Math.max(
     1,
     ...data.courses.map((course) => hoursForCourse(course.id))
   );
 
-  // --- NUOVO: Calcolo dati per il grafico LineChart della Dashboard ---
-  // Recupera gli ultimi 7 giorni (incluso oggi)
   const last7Days = Array.from({ length: 7 }, (_, i) => addDays(isoToday, -6 + i));
   
   const studyChartData = {
