@@ -73,7 +73,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
     upsert("exams", { ...exam, esito: "Superato", completed: true, voto: voto || "", isGradeForCourse: isForCourse });
     if (isForCourse && exam.courseId) {
       const course = helpers.courseById(exam.courseId);
-      if (course) upsert("courses", { ...course, actualGrade: voto, status: "Completato" });
+      if (course) upsert("courses", { ...course, actualGrade: voto, status: "Superato" });
     }
   };
 
@@ -527,13 +527,13 @@ function CourseGradeModal({ visible, tc, voto, courseName, onClose, onYes, onNo 
             borderRadius: 12, padding: 12, flexDirection: "row", gap: 10, alignItems: "flex-start" }}>
             <MaterialIcons name="info-outline" size={17} color={tc.primary} style={{ marginTop: 1 }} />
             <Text style={{ flex: 1, fontSize: 13, color: tc.textBody, lineHeight: 19 }}>
-              Se sì, il corso passerà a <Text style={{ fontWeight: "700" }}>Completato</Text> e mostrerà il voto {voto} nella sezione Corsi.
+              Se sì, il corso passerà a <Text style={{ fontWeight: "700" }}>Superato</Text> e mostrerà il voto {voto} nella sezione Corsi.
             </Text>
           </View>
 
           <View style={{ flexDirection: "row", gap: 12, padding: 20, paddingTop: 0 }}>
             <ModalBtn label="No" sub="Solo voto esame" onPress={onNo} tc={tc} />
-            <ModalBtn label="Sì" sub="Completa il corso" onPress={onYes} tc={tc} primary />
+            <ModalBtn label="Sì" sub="Supera il corso" onPress={onYes} tc={tc} primary />
           </View>
         </View>
       </View>

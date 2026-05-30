@@ -10,6 +10,7 @@ export const emptyCourse = {
   semester: "",
   credits: "",
   year: "",
+  endDate: "",
   status: "Da iniziare",
   targetGrade: "",         
   actualGrade: "",          

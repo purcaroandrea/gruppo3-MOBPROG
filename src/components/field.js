@@ -217,7 +217,7 @@ export default function Field({ field, value, onChange, helpers }) {
   const set = (next) => onChange({ ...value, [field.key]: next });
 
   // Campo Data
-  if (field.key === "date") {
+  if (field.type === "date" || field.key === "date") {
     return (
       <DatePickerField
         field={field}

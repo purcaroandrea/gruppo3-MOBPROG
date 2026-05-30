@@ -9,7 +9,8 @@ import Segmented from "../components/segmented";
 import StatusBadge from "../components/status-badge";
 import { emptyCourse } from "../data/emptyTemplates";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-const courseStates = ["Tutti", "Da iniziare", "In corso", "Completato"];
+import { formatDate } from "../helpers/date";
+const courseStates = ["Tutti", "Da iniziare", "In corso", "Completato", "Superato"];
 
 export default function CoursesScreen(props) {
   const { styles, themeColors: tc } = useStyles();
@@ -195,7 +196,7 @@ export default function CoursesScreen(props) {
             <View style={styles.cardHeaderText}>
               <Text style={styles.cardTitle}>{course.name}</Text>
               <Text style={styles.rowMeta}>
-                {course.teacher} · {course.year ? `${course.year} · ` : ""}{course.semester} · {course.credits} CFU
+                {course.teacher} · {course.year ? `${course.year} · ` : ""}{course.semester} · {course.credits} CFU{course.endDate ? ` · Fine: ${formatDate(course.endDate)}` : ""}
               </Text>
 
 
@@ -272,13 +273,14 @@ export default function CoursesScreen(props) {
           { key: "semester", label: "Semestre", options: ["1 semestre", "2 semestre"] },
           { key: "year", label: "Anno", options: ["1° anno", "2° anno", "3° anno", "4° anno", "5° anno", "6° anno", "7° anno", "Fuori corso"] },
           { key: "credits", label: "Crediti * (min 1 - max 20)", numeric: true, required: true },
+          { key: "endDate", label: "Data di fine", type: "date" },
 
           // VOTI
           { key: "targetGrade", label: "Voto desiderato", options: ["18","19","20","21","22","23","24","25","26","27","28","29","30","30L"] },
           { key: "actualGrade", label: "Voto ottenuto", options: ["","18","19","20","21","22","23","24","25","26","27","28","29","30","30L"] },
 
 
-          { key: "status", label: "Stato", options: ["Da iniziare", "In corso", "Completato"] },
+          { key: "status", label: "Stato", options: ["Da iniziare", "In corso", "Completato", "Superato"] },
 
           { key: "materials", label: "Materiali", multiline: true },
           { key: "notes", label: "Note", multiline: true },
@@ -287,6 +289,26 @@ export default function CoursesScreen(props) {
         onClose={() => setEditing(null)}
         onSave={(item) => {
           item.teacher = item.prefix ? `${item.prefix} ${item.teacherName}` : item.teacherName;
+
+          if (item.actualGrade) {
+            item.status = "Superato";
+          } else {
+            const today = new Date().toISOString().slice(0, 10);
+            if (item.endDate && item.endDate < today) {
+              item.status = "Completato";
+            }
+          }
+
+          const oldCourse = data.courses.find((c) => c.id === item.id);
+          if (oldCourse && oldCourse.actualGrade !== item.actualGrade) {
+            const prevExam = data.exams.find(
+              (e) => e.courseId === item.id && e.isGradeForCourse
+            );
+            if (prevExam) {
+              upsert("exams", { ...prevExam, isGradeForCourse: false });
+            }
+          }
+
           upsert("courses", item);
           setEditing(null);
         }}
