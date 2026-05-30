@@ -44,7 +44,7 @@ export default function GoalsScreen({ data, helpers, upsert, remove }) {
   return (
     <View>
       <ScreenTop
-        title="Attività e obiettivi"
+        title="Obiettivi"
         button="Nuovo obiettivo"
         onPress={() => setEditing({ ...emptyGoal })}
       />
