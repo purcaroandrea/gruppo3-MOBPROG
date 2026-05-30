@@ -9,10 +9,20 @@ import Segmented from "../components/segmented";
 import { emptySession } from "../data/emptyTemplates";
 import { addDays, formatDate, startOfWeek, weekday } from "../helpers/date";
 import { minutesToHM } from "../helpers/format";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 export default function PlannerScreen({ data, helpers, upsert, remove }) {
-  const { styles } = useStyles();
+  const { styles, themeColors: tc } = useStyles();
   const [editing, setEditing] = React.useState(null);
+
+  const handleSortPress = (key) => {
+    if (sortBy === key) {
+      setSortOrder(sortOrder === "Crescente" ? "Decrescente" : "Crescente");
+    } else {
+      setSortBy(key);
+      setSortOrder("Crescente");
+    }
+  };
   
   // Stati per la vista settimanale
   const [weekStart, setWeekStart] = React.useState(startOfWeek(new Date().toISOString().slice(0, 10)));
@@ -178,19 +188,49 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
               onChangeText={setSearchQuery}
             />
 
-            <Text style={[styles.label, { marginTop: 10 }]}>Ordina per</Text>
-            <Segmented
-              options={["Nome", "Data di inserimento", "Corso"]}
-              value={sortBy}
-              onChange={setSortBy}
-            />
-
-            <Text style={[styles.label, { marginTop: 10 }]}>Direzione</Text>
-            <Segmented
-              options={["Crescente", "Decrescente"]}
-              value={sortOrder}
-              onChange={setSortOrder}
-            />
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+              <Text style={{ fontSize: 13, color: tc.textMuted, fontWeight: "600" }}>Ordina per:</Text>
+              {[
+                { key: "Nome", label: "Nome" },
+                { key: "Data di inserimento", label: "Data" },
+                { key: "Corso", label: "Corso" }
+              ].map((opt) => {
+                const active = sortBy === opt.key;
+                const activeDir = active ? sortOrder : null;
+                return (
+                  <Pressable
+                    key={opt.key}
+                    onPress={() => handleSortPress(opt.key)}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 4,
+                      paddingVertical: 6,
+                      paddingHorizontal: 12,
+                      borderRadius: 16,
+                      backgroundColor: active ? tc.primary + "15" : tc.card,
+                      borderWidth: 1.5,
+                      borderColor: active ? tc.primary : tc.borderDark,
+                    }}
+                  >
+                    <Text style={{
+                      fontSize: 12,
+                      fontWeight: "700",
+                      color: active ? tc.primary : tc.textBody
+                    }}>
+                      {opt.label}
+                    </Text>
+                    {active && (
+                      <MaterialIcons
+                        name={activeDir === "Crescente" ? "arrow-upward" : "arrow-downward"}
+                        size={14}
+                        color={tc.primary}
+                      />
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
 
           {/* BARRA NAVIGAZIONE SETTIMANA */}
@@ -257,26 +297,56 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
               onChangeText={setSearchQuery}
             />
             
-            <Text style={[styles.label, { marginTop: 10 }]}>Periodo</Text>
+            <Text style={[styles.label, { marginTop: 10, marginBottom: 6 }]}>Periodo</Text>
             <Segmented
               options={["Tutte", "Future", "Passate"]}
               value={periodFilter}
               onChange={setPeriodFilter}
             />
 
-            <Text style={[styles.label, { marginTop: 10 }]}>Ordina per</Text>
-            <Segmented
-              options={["Nome", "Data di inserimento", "Corso"]}
-              value={sortBy}
-              onChange={setSortBy}
-            />
-
-            <Text style={[styles.label, { marginTop: 10 }]}>Direzione</Text>
-            <Segmented
-              options={["Crescente", "Decrescente"]}
-              value={sortOrder}
-              onChange={setSortOrder}
-            />
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+              <Text style={{ fontSize: 13, color: tc.textMuted, fontWeight: "600" }}>Ordina per:</Text>
+              {[
+                { key: "Nome", label: "Nome" },
+                { key: "Data di inserimento", label: "Data" },
+                { key: "Corso", label: "Corso" }
+              ].map((opt) => {
+                const active = sortBy === opt.key;
+                const activeDir = active ? sortOrder : null;
+                return (
+                  <Pressable
+                    key={opt.key}
+                    onPress={() => handleSortPress(opt.key)}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 4,
+                      paddingVertical: 6,
+                      paddingHorizontal: 12,
+                      borderRadius: 16,
+                      backgroundColor: active ? tc.primary + "15" : tc.card,
+                      borderWidth: 1.5,
+                      borderColor: active ? tc.primary : tc.borderDark,
+                    }}
+                  >
+                    <Text style={{
+                      fontSize: 12,
+                      fontWeight: "700",
+                      color: active ? tc.primary : tc.textBody
+                    }}>
+                      {opt.label}
+                    </Text>
+                    {active && (
+                      <MaterialIcons
+                        name={activeDir === "Crescente" ? "arrow-upward" : "arrow-downward"}
+                        size={14}
+                        color={tc.primary}
+                      />
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
 
           {allSessions.map(renderSessionCard)}

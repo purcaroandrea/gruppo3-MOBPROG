@@ -9,6 +9,7 @@ import Progress from "../components/progress";
 import EntityModal from "../components/entity-modal";
 import PriorityBadge from "../components/priority-badge";
 import { emptyGoal } from "../data/emptyTemplates";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 const months = [
   "Gennaio",
@@ -31,12 +32,26 @@ const months = [
 const priorities = ["Tutte", "Alta", "Media", "Bassa"];
 
 export default function GoalsScreen({ data, helpers, upsert, remove }) {
-  const { styles } = useStyles();
+  const { styles, themeColors: tc } = useStyles();
   const [priority, setPriority] = React.useState("Tutte");
   const [showDone, setShowDone] = React.useState(false);
   const [editing, setEditing] = React.useState(null);
   const [query, setQuery] = React.useState("");
   const [courseFilter, setCourseFilter] = React.useState("");
+
+  // Ordinamento
+  const [sortBy, setSortBy] = React.useState("name");
+  const [sortOrder, setSortOrder] = React.useState(null);
+
+  const handleSortPress = (key) => {
+    if (sortBy === key) {
+      const currentDir = sortOrder || "asc";
+      setSortOrder(currentDir === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(key);
+      setSortOrder("asc");
+    }
+  };
 
   const courseFilterOptions = [
     "",
@@ -47,21 +62,37 @@ export default function GoalsScreen({ data, helpers, upsert, remove }) {
     ...Object.fromEntries(helpers.courseOptions.map((c) => [c.id, c.name])),
   };
 
-  const goals = data.goals.filter((goal) => {
-    const matchesPriority = priority === "Tutte" || goal.priority === priority;
-    const matchesDone = showDone || !goal.completed;
-    const matchesCourse = !courseFilter || goal.courseId === courseFilter;
-    const matchesQuery = !query || (() => {
-      const q = query.toLowerCase();
-      const courseName = helpers.courseById(goal.courseId)?.name || "";
-      return (
-        goal.title.toLowerCase().includes(q) ||
-        (goal.description || "").toLowerCase().includes(q) ||
-        courseName.toLowerCase().includes(q)
-      );
-    })();
-    return matchesPriority && matchesDone && matchesCourse && matchesQuery;
-  });
+  const goals = data.goals
+    .filter((goal) => {
+      const matchesPriority = priority === "Tutte" || goal.priority === priority;
+      const matchesDone = showDone || !goal.completed;
+      const matchesCourse = !courseFilter || goal.courseId === courseFilter;
+      const matchesQuery = !query || (() => {
+        const q = query.toLowerCase();
+        const courseName = helpers.courseById(goal.courseId)?.name || "";
+        return (
+          goal.title.toLowerCase().includes(q) ||
+          (goal.description || "").toLowerCase().includes(q) ||
+          courseName.toLowerCase().includes(q)
+        );
+      })();
+      return matchesPriority && matchesDone && matchesCourse && matchesQuery;
+    })
+    .sort((a, b) => {
+      const field = sortBy || "name";
+      const direction = sortOrder || "asc";
+
+      let comparison = 0;
+      if (field === "name") {
+        comparison = a.title.localeCompare(b.title);
+      } else if (field === "course") {
+        const courseA = helpers.courseById(a.courseId)?.name || "";
+        const courseB = helpers.courseById(b.courseId)?.name || "";
+        comparison = courseA.localeCompare(courseB);
+      }
+
+      return direction === "asc" ? comparison : -comparison;
+    });
 
   return (
     <View>
@@ -79,18 +110,70 @@ export default function GoalsScreen({ data, helpers, upsert, remove }) {
           options={courseFilterOptions}
           labels={courseFilterLabels}
           value={courseFilter}
-          onChange={setCourseFilter}
+          onChange={(v) => {
+            setCourseFilter(v);
+            setSortBy("name");
+            setSortOrder(null);
+          }}
         />
       </View>
 
       <View style={[styles.card, { marginBottom: 10, paddingVertical: 12 }]}>
         <Text style={[styles.label, { marginBottom: 4 }]}>Priorità</Text>
-        <Segmented options={priorities} value={priority} onChange={setPriority} />
+        <Segmented options={priorities} value={priority} onChange={(v) => {
+          setPriority(v);
+          setSortBy("name");
+          setSortOrder(null);
+        }} />
 
         <View style={[styles.filterRow, { marginBottom: 0, marginTop: 4 }]}>
           <Text style={styles.bodyText}>Mostra completati</Text>
           <Switch value={showDone} onValueChange={setShowDone} />
         </View>
+      </View>
+
+      {/* Barra di ordinamento */}
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4, marginBottom: 12, flexWrap: "wrap" }}>
+        <Text style={{ fontSize: 13, color: tc.textMuted, fontWeight: "600" }}>Ordina per:</Text>
+        {[
+          { key: "name", label: "Nome" },
+          { key: "course", label: "Corso" }
+        ].map((opt) => {
+          const active = sortBy === opt.key;
+          const activeDir = active ? (sortOrder || "asc") : null;
+          return (
+            <Pressable
+              key={opt.key}
+              onPress={() => handleSortPress(opt.key)}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 4,
+                paddingVertical: 6,
+                paddingHorizontal: 12,
+                borderRadius: 16,
+                backgroundColor: active ? tc.primary + "15" : tc.card,
+                borderWidth: 1.5,
+                borderColor: active ? tc.primary : tc.borderDark,
+              }}
+            >
+              <Text style={{
+                fontSize: 12,
+                fontWeight: "700",
+                color: active ? tc.primary : tc.textBody
+              }}>
+                {opt.label}
+              </Text>
+              {active && (
+                <MaterialIcons
+                  name={activeDir === "asc" ? "arrow-upward" : "arrow-downward"}
+                  size={14}
+                  color={tc.primary}
+                />
+              )}
+            </Pressable>
+          );
+        })}
       </View>
 
       {goals.map((goal) => (
