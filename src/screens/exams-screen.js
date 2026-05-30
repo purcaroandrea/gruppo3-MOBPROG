@@ -11,9 +11,13 @@ import { emptyExam } from "../data/emptyTemplates";
 import { formatDate } from "../helpers/date";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
+const isoToday = new Date().toISOString().slice(0, 10);
+const esitoFilterOptions = ["Tutti", "Da valutare", "Superato", "Non superato"];
+
 export default function ExamsScreen({ data, helpers, upsert, remove, addSuggestedSession }) {
   const { styles, themeColors } = useStyles();
-  const [filter, setFilter] = React.useState("Futuri");
+  const [tab, setTab] = React.useState("Futuri");
+  const [esitoFilter, setEsitoFilter] = React.useState("Tutti");
   const [editing, setEditing] = React.useState(null);
   const [query, setQuery] = React.useState("");
   const [dateFrom, setDateFrom] = React.useState("");
@@ -22,12 +26,30 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
 
   const hasDateFilter = Boolean(dateFrom || dateTo);
 
+  /* ── Auto-categorizzazione ── */
+  const isExamDone = (exam) =>
+    exam.completed || exam.status === "Completato" || exam.status === "Annullato";
+
+  const isExamFuture = (exam) => exam.date >= isoToday && !isExamDone(exam);
+
+  const isExamOverdue = (exam) =>
+    exam.type === "Consegna" && exam.date < isoToday && !isExamDone(exam);
+
+  const isExamPast = (exam) => !isExamFuture(exam) && !isExamOverdue(exam);
+
+  const overdueCount = data.exams.filter(isExamOverdue).length;
+
+  /* ── Filtraggio ── */
   const exams = [...data.exams]
-    .sort((a, b) => a.date.localeCompare(b.date))
+    .sort((a, b) =>
+      tab === "Passati"
+        ? b.date.localeCompare(a.date)   // più recenti prima
+        : a.date.localeCompare(b.date)   // più vicini prima
+    )
     .filter((exam) => {
-      if (filter === "Completati") return exam.status === "Completato";
-      if (filter === "Annullati") return exam.status === "Annullato";
-      return exam.status !== "Completato" && exam.status !== "Annullato";
+      if (tab === "Futuri") return isExamFuture(exam);
+      if (tab === "In ritardo") return isExamOverdue(exam);
+      return isExamPast(exam);
     })
     .filter((exam) => {
       if (!query) return true;
@@ -43,7 +65,21 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
       if (dateFrom && exam.date < dateFrom) return false;
       if (dateTo && exam.date > dateTo) return false;
       return true;
+    })
+    .filter((exam) => {
+      if (tab !== "Passati" || esitoFilter === "Tutti") return true;
+      return (exam.esito || "Da valutare") === esitoFilter;
     });
+
+  /* ── Colori badge esito ── */
+  const esitoBadgeColors = (esito) => {
+    const e = esito || "Da valutare";
+    if (e === "Superato")
+      return { bg: themeColors.badgeLowBg, fg: themeColors.badgeLowText };
+    if (e === "Non superato")
+      return { bg: themeColors.dangerBg, fg: themeColors.dangerText };
+    return { bg: themeColors.badgeMedBg, fg: themeColors.badgeMedText };
+  };
 
   return (
     <View>
@@ -55,6 +91,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
 
       <SearchBox value={query} onChangeText={setQuery} placeholder="Cerca esame, corso o tipo..." />
 
+      {/* ── Filtro date ── */}
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 }}>
         <Pressable
           style={[
@@ -154,51 +191,133 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
         </View>
       )}
 
+      {/* ── Tab principali ── */}
       <Segmented
-        options={["Futuri", "Completati", "Annullati"]}
-        value={filter}
-        onChange={setFilter}
+        options={["Futuri", "In ritardo", "Passati"]}
+        labels={overdueCount > 0 ? { "In ritardo": `In ritardo (${overdueCount})` } : {}}
+        value={tab}
+        onChange={(v) => {
+          setTab(v);
+          if (v !== "Passati") setEsitoFilter("Tutti");
+        }}
       />
 
-      {exams.map((exam) => (
-        <View key={exam.id} style={styles.card}>
-          <View style={styles.cardHeader}>
-            <View style={styles.cardHeaderText}>
-              <Text style={styles.cardTitle}>{exam.title}</Text>
-              <Text style={styles.rowMeta}>
-                {helpers.courseById(exam.courseId)?.name || "Senza corso"} · {exam.type} ·{" "}
-                {formatDate(exam.date)}
-              </Text>
+      {/* ── Sub-filtro esito (solo Passati) ── */}
+      {tab === "Passati" && (
+        <Segmented
+          options={esitoFilterOptions}
+          value={esitoFilter}
+          onChange={setEsitoFilter}
+        />
+      )}
+
+      {/* ── Card esami ── */}
+      {exams.map((exam) => {
+        const badge = esitoBadgeColors(exam.esito);
+        return (
+          <View key={exam.id} style={styles.card}>
+            <View style={styles.cardHeader}>
+              <View style={styles.cardHeaderText}>
+                <Text style={styles.cardTitle}>{exam.title}</Text>
+                <Text style={styles.rowMeta}>
+                  {helpers.courseById(exam.courseId)?.name || "Senza corso"} · {exam.type} ·{" "}
+                  {formatDate(exam.date)}
+                </Text>
+              </View>
+
+              <View style={{ alignItems: "flex-end", gap: 6 }}>
+                <PriorityBadge value={exam.priority} />
+                {tab === "In ritardo" && (
+                  <Text
+                    style={[
+                      styles.badge,
+                      { backgroundColor: themeColors.dangerBg, color: themeColors.dangerText },
+                    ]}
+                  >
+                    In ritardo
+                  </Text>
+                )}
+                {tab === "Passati" && (
+                  <Text
+                    style={[
+                      styles.badge,
+                      { backgroundColor: badge.bg, color: badge.fg },
+                    ]}
+                  >
+                    {exam.esito || "Da valutare"}
+                  </Text>
+                )}
+              </View>
             </View>
-            <PriorityBadge value={exam.priority} />
+
+            {exam.notes ? <Text style={styles.bodyText}>{exam.notes}</Text> : null}
+
+            {/* Bottoni esito rapido per Passati "Da valutare" */}
+            {tab === "Passati" && (!exam.esito || exam.esito === "Da valutare") && (
+              <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
+                <Pressable
+                  style={[
+                    styles.secondaryButton,
+                    { flex: 1, backgroundColor: themeColors.badgeLowBg, flexDirection: "row", gap: 6, justifyContent: "center" },
+                  ]}
+                  onPress={() => upsert("exams", { ...exam, esito: "Superato" })}
+                >
+                  <MaterialIcons name="check-circle" size={16} color={themeColors.badgeLowText} />
+                  <Text style={[styles.secondaryButtonText, { color: themeColors.badgeLowText }]}>
+                    Superato
+                  </Text>
+                </Pressable>
+                <Pressable
+                  style={[
+                    styles.secondaryButton,
+                    { flex: 1, backgroundColor: themeColors.dangerBg, flexDirection: "row", gap: 6, justifyContent: "center" },
+                  ]}
+                  onPress={() => upsert("exams", { ...exam, esito: "Non superato" })}
+                >
+                  <MaterialIcons name="cancel" size={16} color={themeColors.dangerText} />
+                  <Text style={[styles.secondaryButtonText, { color: themeColors.dangerText }]}>
+                    Non superato
+                  </Text>
+                </Pressable>
+              </View>
+            )}
+
+            <View style={[styles.actions, { flexWrap: "wrap" }]}>
+              {/* In ritardo → bottone completamento */}
+              {tab === "In ritardo" && (
+                <Pressable
+                  style={[styles.primaryButton, { flexDirection: "row", gap: 6, alignItems: "center" }]}
+                  onPress={() => upsert("exams", { ...exam, completed: true })}
+                >
+                  <MaterialIcons name="check" size={16} color={themeColors.textOnPrimary} />
+                  <Text style={styles.primaryButtonText}>Completata</Text>
+                </Pressable>
+              )}
+
+              <Pressable
+                style={styles.secondaryButton}
+                onPress={() => addSuggestedSession(exam)}
+              >
+                <Text style={styles.secondaryButtonText}>Vai al Planner</Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.secondaryButton}
+                onPress={() => setEditing(exam)}
+              >
+                <Text style={styles.secondaryButtonText}>Modifica</Text>
+              </Pressable>
+
+              <DangerButton
+                onPress={() => remove("exams", exam.id)}
+                itemName={exam.title}
+                itemType="esame"
+                warningMessage="L'eliminazione di un esame rimuoverà anche tutte le attività del planner ad esso associate."
+              />
+            </View>
           </View>
-
-          <Text style={styles.bodyText}>{exam.notes}</Text>
-
-          <View style={styles.actions}>
-            <Pressable
-              style={styles.secondaryButton}
-              onPress={() => addSuggestedSession(exam)}
-            >
-              <Text style={styles.secondaryButtonText}>Vai al Planner</Text>
-            </Pressable>
-
-            <Pressable
-              style={styles.secondaryButton}
-              onPress={() => setEditing(exam)}
-            >
-              <Text style={styles.secondaryButtonText}>Modifica</Text>
-            </Pressable>
-
-            <DangerButton
-              onPress={() => remove("exams", exam.id)}
-              itemName={exam.title}
-              itemType="esame"
-              warningMessage="L'eliminazione di un esame rimuoverà anche tutte le attività del planner ad esso associate."
-            />
-          </View>
-        </View>
-      ))}
+        );
+      })}
 
       <EntityModal
         visible={Boolean(editing)}
@@ -210,7 +329,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
           { key: "date", label: "Data *", required: true },
           { key: "type", label: "Tipo", options: ["Altro", "Consegna", "Prova intercorso", "Prova orale", "Prova scritta"] },
           { key: "priority", label: "Priorità", options: ["Alta", "Media", "Bassa"] },
-          { key: "status", label: "Stato", options: ["Futuro", "Completato", "Annullato"] },
+          { key: "esito", label: "Esito", options: ["Da valutare", "Superato", "Non superato"] },
           { key: "notes", label: "Note", multiline: true },
         ]}
         onChange={setEditing}
