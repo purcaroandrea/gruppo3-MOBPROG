@@ -1,15 +1,15 @@
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React from "react";
-import { View, Text, Pressable, Platform, TextInput, Modal } from "react-native";
+import { Modal, Platform, Pressable, Text, TextInput, View } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
+import DangerButton from "../components/danger-button";
+import EntityModal from "../components/entity-modal";
+import PriorityBadge from "../components/priority-badge";
 import ScreenTop from "../components/screen-top";
 import SearchBox from "../components/search-box";
 import Segmented from "../components/segmented";
-import PriorityBadge from "../components/priority-badge";
-import DangerButton from "../components/danger-button";
-import EntityModal from "../components/entity-modal";
 import { emptyExam } from "../data/emptyTemplates";
 import { formatDate } from "../helpers/date";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 const isoToday = new Date().toISOString().slice(0, 10);
 const esitoFilterOptions = ["Tutti", "Da valutare", "Superato", "Non superato"];
@@ -416,9 +416,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
   );
 }
 
-/* -------------------------
-   GradeModal — selezione voto
-------------------------- */
+/* Selezione voto*/
 function GradeModal({ visible, tc, styles, onClose, onSave }) {
   const [sel, setSel] = React.useState(null);
   React.useEffect(() => { if (visible) setSel(null); }, [visible]);
@@ -500,9 +498,7 @@ function GradeModal({ visible, tc, styles, onClose, onSave }) {
   );
 }
 
-/* -------------------------
-   CourseGradeModal — voto = voto finale del corso?
-------------------------- */
+/* Il voto dell'esame è anche il voto finale del corso */
 function CourseGradeModal({ visible, tc, voto, courseName, onClose, onYes, onNo }) {
   if (!voto) return null;
   return (
@@ -545,9 +541,7 @@ function CourseGradeModal({ visible, tc, voto, courseName, onClose, onYes, onNo 
   );
 }
 
-/* -------------------------
-   ConflictGradeModal — il corso ha già un voto: tenerlo o sostituirlo?
-------------------------- */
+/* Se il corso ha già un voto*/
 function ConflictGradeModal({ visible, tc, data, onKeepOld, onUseNew, onClose }) {
   if (!data) return null;
   const { voto, course, prevExam } = data;
