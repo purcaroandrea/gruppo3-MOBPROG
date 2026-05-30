@@ -27,6 +27,7 @@ export const emptyExam = {
   status: "Futuro",
   esito: "Da valutare",
   voto: "",
+  isGradeForCourse: false,
   completed: false,
   notes: ""
 };

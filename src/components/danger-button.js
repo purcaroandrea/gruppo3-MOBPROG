@@ -8,6 +8,7 @@ export default function DangerButton({
   itemName = "",
   itemType = "elemento",
   warningMessage = "",
+  extraWarning = "",
 }) {
   const { styles, themeColors } = useStyles();
   const [modalVisible, setModalVisible] = useState(false);
@@ -53,6 +54,17 @@ export default function DangerButton({
             {warningMessage ? (
               <View style={styles.confirmWarningContainer}>
                 <Text style={styles.confirmWarningText}>{warningMessage}</Text>
+              </View>
+            ) : null}
+
+            {extraWarning ? (
+              <View style={[styles.confirmWarningContainer, { backgroundColor: themeColors.dangerBg, marginTop: 8 }]}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <MaterialIcons name="warning" size={16} color={themeColors.dangerText} />
+                  <Text style={[styles.confirmWarningText, { color: themeColors.dangerText, fontWeight: "700" }]}>
+                    {extraWarning}
+                  </Text>
+                </View>
               </View>
             ) : null}
 

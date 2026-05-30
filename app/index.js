@@ -251,6 +251,15 @@ function MainApp() {
       }
 
       if (collection === "exams") {
+        // Se l'esame eliminato era il voto finale del corso, resetta voto e stato del corso
+        const deletedExam = current.exams.find((e) => e.id === id);
+        if (deletedExam?.isGradeForCourse && deletedExam?.courseId) {
+          updated.courses = updated.courses.map((c) =>
+            c.id === deletedExam.courseId
+              ? { ...c, actualGrade: "", status: "In corso" }
+              : c
+          );
+        }
         updated.sessions = updated.sessions.filter((s) => s.examId !== id);
         updated.goals = updated.goals.filter((g) => g.examId !== id);
       }
