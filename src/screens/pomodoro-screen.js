@@ -37,7 +37,7 @@ export default function PomodoroScreen({ data, upsert, pomodoroProps }) {
   // Filtra le attività di oggi che non sono ancora state completate
   const today = new Date().toISOString().slice(0, 10);
   const availableSessions =
-    data?.sessions.filter((s) => s.date === today && !s.completed) || [];
+    data?.sessions.filter((s) => s.date <= today && today <= (s.endDate || s.date) && !s.completed) || [];
 
   // Prepara le etichette per il selettore
   const sessionOptions = ["", ...availableSessions.map((s) => s.id)];

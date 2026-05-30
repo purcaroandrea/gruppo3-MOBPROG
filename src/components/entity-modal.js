@@ -11,25 +11,28 @@ export default function EntityModal({
   onClose,
   onSave,
   helpers,
+  validate,
 }) {
 
-  const { styles } = useStyles();
+  const { styles, themeColors: tc } = useStyles();
 
   if (!value) return null;
 
+  const validationError = validate ? validate(value) : null;
+
   const valid = fields.every((field) => {
-  const v = String(value[field.key] || "").trim();
+    const v = String(value[field.key] || "").trim();
 
-  if (field.required && !v) return false;
+    if (field.required && !v) return false;
 
-  if (field.key === "teacherName" && v && !/^[A-Za-zÀ-ÖØ-öø-ÿ\s'’\-]+$/.test(v))
-    return false;
+    if (field.key === "teacherName" && v && !/^[A-Za-zÀ-ÖØ-öø-ÿ\s'’\-]+$/.test(v))
+      return false;
 
-  if (field.key === "credits" && v && (v < 1 || v > 20))
-    return false;
+    if (field.key === "credits" && v && (v < 1 || v > 20))
+      return false;
 
-  return true;
-  });
+    return true;
+  }) && !validationError;
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -51,6 +54,12 @@ export default function EntityModal({
                 helpers={helpers}
               />
             ))}
+
+            {validationError ? (
+              <Text style={{ color: tc.dangerText || "#C0392B", fontSize: 13, marginTop: 4, marginBottom: 12, fontWeight: "600" }}>
+                ⚠️ {validationError}
+              </Text>
+            ) : null}
 
             <View style={styles.actions}>
               <Pressable

@@ -83,16 +83,20 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
   const markCompletata = (exam) =>
     upsert("exams", { ...exam, completed: true });
 
-  // Dopo GradeModal: se c'è un voto e un corso associato, si apre CourseGradeModal
+  // Dopo GradeModal: se c'è un voto e un corso associato, si apre CourseGradeModal (solo se il corso non è da iniziare o in corso)
   const onGradeSelected = (exam, voto) => {
     setGradeExam(null);
     if (!voto) {
       markSuperato(exam, "");
-    } else if (exam.courseId && helpers.courseById(exam.courseId)) {
+      return;
+    }
+    
+    const course = exam.courseId ? helpers.courseById(exam.courseId) : null;
+    if (course && course.status !== "Da iniziare" && course.status !== "In corso") {
       setCgmVoto(voto);
       setCgmExam(exam);
     } else {
-      markSuperato(exam, voto);
+      markSuperato(exam, voto, false);
     }
   };
 
@@ -134,7 +138,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
   };
 
   // --- Filtraggio e Ordinamento ---
-  const tabFilter = { Futuri: isFuture, "Da consegnare": isToDeliver, "In ritardo": isOverdue, Passati: isPast };
+  const tabFilter = { Tutti: () => true, Futuri: isFuture, "Da consegnare": isToDeliver, "In ritardo": isOverdue, Passati: isPast };
   const exams = [...data.exams]
     .filter(tabFilter[tab] || (() => true))
     .filter((e) => {
@@ -239,7 +243,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
       )}
 
       <Segmented
-        options={["Futuri", "Da consegnare", "In ritardo", "Passati"]}
+        options={["Tutti", "Futuri", "Da consegnare", "In ritardo", "Passati"]}
         labels={tabLabels} value={tab}
         onChange={(v) => {
           setTab(v);

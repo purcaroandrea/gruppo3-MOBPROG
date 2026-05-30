@@ -260,10 +260,8 @@ export default function CoursesScreen(props) {
       ))}
 
       <EntityModal
-      
         visible={Boolean(editing)}
-        title={editing?.id ?
-"Modifica corso" : "Nuovo corso"}
+        title={editing?.id ? "Modifica corso" : "Nuovo corso"}
         value={editing}
         fields={[
           { key: "name", label: "Nome *", required: true },
@@ -277,15 +275,21 @@ export default function CoursesScreen(props) {
 
           // VOTI
           { key: "targetGrade", label: "Voto desiderato", options: ["18","19","20","21","22","23","24","25","26","27","28","29","30","30L"] },
-          { key: "actualGrade", label: "Voto ottenuto", options: ["","18","19","20","21","22","23","24","25","26","27","28","29","30","30L"] },
-
+          ...(editing?.status === "Completato" || editing?.status === "Superato" ? [
+            { key: "actualGrade", label: "Voto ottenuto", options: ["","18","19","20","21","22","23","24","25","26","27","28","29","30","30L"] }
+          ] : []),
 
           { key: "status", label: "Stato", options: ["Da iniziare", "In corso", "Completato", "Superato"] },
 
           { key: "materials", label: "Materiali", multiline: true },
           { key: "notes", label: "Note", multiline: true },
         ]}
-        onChange={setEditing}
+        onChange={(next) => {
+          if (next && next.status !== "Completato" && next.status !== "Superato") {
+            next.actualGrade = "";
+          }
+          setEditing(next);
+        }}
         onClose={() => setEditing(null)}
         onSave={(item) => {
           item.teacher = item.prefix ? `${item.prefix} ${item.teacherName}` : item.teacherName;

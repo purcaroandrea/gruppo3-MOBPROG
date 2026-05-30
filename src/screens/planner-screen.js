@@ -7,13 +7,42 @@ import ScreenTop from "../components/screen-top";
 import SearchBox from "../components/search-box";
 import Segmented from "../components/segmented";
 import { emptySession } from "../data/emptyTemplates";
-import { addDays, formatDate, startOfWeek, weekday } from "../helpers/date";
+import { addDays, formatDate, startOfWeek, weekday, getSessionDaysCount } from "../helpers/date";
 import { minutesToHM } from "../helpers/format";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 export default function PlannerScreen({ data, helpers, upsert, remove }) {
   const { styles, themeColors: tc } = useStyles();
   const [editing, setEditing] = React.useState(null);
+
+  const handleEdit = (session) => {
+    setEditing({
+      ...session,
+      endDate: session.endDate || session.date,
+    });
+  };
+
+  const validateSession = (item) => {
+    if (!item.date || !item.endDate) return null;
+    if (item.endDate < item.date) {
+      return "La data di fine non può essere antecedente alla data di inizio.";
+    }
+
+    const daysCount = getSessionDaysCount(item);
+    const maxMinutes = daysCount * 24 * 60;
+
+    const planned = parseInt(item.plannedHours || "0", 10);
+    const actual = parseInt(item.actualHours || "0", 10);
+
+    if (planned > maxMinutes) {
+      return `Il tempo previsto non può superare 24 ore al giorno (${daysCount * 24} ore in totale per ${daysCount} ${daysCount === 1 ? "giorno" : "giorni"}).`;
+    }
+    if (actual > maxMinutes) {
+      return `Il tempo impiegato non può superare 24 ore al giorno (${daysCount * 24} ore in totale per ${daysCount} ${daysCount === 1 ? "giorno" : "giorni"}).`;
+    }
+
+    return null;
+  };
 
   const handleSortPress = (key) => {
     if (sortBy === key) {
@@ -55,7 +84,11 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
   };
 
   // Filtri e ordinamenti per la vista settimanale
-  let visibleSessions = data.sessions.filter((session) => days.includes(session.date));
+  let visibleSessions = data.sessions.filter((session) => {
+    const start = session.date;
+    const end = session.endDate || session.date;
+    return start <= days[6] && end >= days[0];
+  });
 
   if (searchQuery.trim()) {
     const q = searchQuery.toLowerCase();
@@ -121,7 +154,10 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
               const courseId = exam?.courseId || goal?.courseId;
               return courseId ? helpers.courseById(courseId)?.name || "Senza corso" : "Senza corso";
             })()} ·{" "}
-            {session.kind} · {formatDate(session.date)}
+            {session.kind} ·{" "}
+            {session.endDate && session.endDate !== session.date
+              ? `${formatDate(session.date)} - ${formatDate(session.endDate)}`
+              : formatDate(session.date)}
           </Text>
         </View>
 
@@ -151,7 +187,7 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
       </Text>
 
       <View style={styles.actions}>
-        <Pressable style={styles.secondaryButton} onPress={() => setEditing(session)}>
+        <Pressable style={styles.secondaryButton} onPress={() => handleEdit(session)}>
           <Text style={styles.secondaryButtonText}>Modifica</Text>
         </Pressable>
 
@@ -252,7 +288,11 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
           <View style={styles.calendar}>
             {days.map((day) => {
               const daily = visibleSessions
-                .filter((session) => session.date === day)
+                .filter((session) => {
+                  const start = session.date;
+                  const end = session.endDate || session.date;
+                  return start <= day && day <= end;
+                })
                 .sort((a, b) => (a.startTime || "").localeCompare(b.startTime || ""));
 
               return (
@@ -267,11 +307,17 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
                         styles.miniSession,
                         session.completed && styles.miniSessionDone,
                       ]}
-                      onPress={() => setEditing(session)}
+                      onPress={() => handleEdit(session)}
                     >
                       <Text style={styles.miniSessionText}>{session.title}</Text>
                       <Text style={styles.miniSessionMeta}>
-                        {minutesToHM(session.plannedHours)} 
+                        {(() => {
+                          const daysCount = getSessionDaysCount(session);
+                          if (daysCount > 1) {
+                            return `${minutesToHM(Math.round(parseInt(session.plannedHours || "0", 10) / daysCount))}/g`;
+                          }
+                          return minutesToHM(session.plannedHours);
+                        })()}
                       </Text>
                     </Pressable>
                   ))}
@@ -366,7 +412,8 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
           { key: "title", label: "Nome *", required: true },
           { key: "examId", label: "Esame", type: "exam" },
           { key: "goalId", label: "Obiettivo", type: "goal" },
-          { key: "date", label: "Data *", required: true },
+          { key: "date", label: "Data inizio *", required: true },
+          { key: "endDate", label: "Data fine *", type: "date", required: true },
           { key: "kind", label: "Tipo", options: ["Altro", "Avanzamento sul progetto", "Completamento di consegne", "Esercitazione", "Lettura di materiale", "Ripasso"] },
           { key: "plannedHours", label: "Tempo di studio previsto", numeric: true },
           { key: "actualHours", label: "Tempo di studio impiegato", numeric: true },
@@ -374,9 +421,13 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
           { key: "notes", label: "Note", multiline: true },
         ]}
         onChange={(next) => {
+          if (next.date && (!next.endDate || next.endDate < next.date)) {
+            next.endDate = next.date;
+          }
           setEditing(next);
         }}
         onClose={() => setEditing(null)}
+        validate={validateSession}
         onSave={(item) => {
           const today = new Date().toISOString().slice(0, 10);
           
@@ -385,7 +436,12 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
             return;
           }
 
-          upsert("sessions", item);
+          const finalItem = {
+            ...item,
+            endDate: item.endDate || item.date,
+          };
+
+          upsert("sessions", finalItem);
           setEditing(null);
         }}
         helpers={helpers}

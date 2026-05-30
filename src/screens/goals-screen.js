@@ -10,24 +10,7 @@ import EntityModal from "../components/entity-modal";
 import PriorityBadge from "../components/priority-badge";
 import { emptyGoal } from "../data/emptyTemplates";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-
-const months = [
-  "Gennaio",
-  "Febbraio",
-  "Marzo",
-  "Aprile",
-  "Maggio",
-  "Giugno",
-  "Luglio",
-  "Agosto",
-  "Settembre",
-  "Ottobre",
-  "Novembre",
-  "Dicembre"
-];
-
-
-
+import { formatDate } from "../helpers/date";
 
 const priorities = ["Tutte", "Alta", "Media", "Bassa"];
 
@@ -183,11 +166,18 @@ export default function GoalsScreen({ data, helpers, upsert, remove }) {
               <Text style={styles.cardTitle}>{goal.title}</Text>
               <Text style={styles.rowMeta}>
                 {helpers.courseById(goal.courseId)?.name || "Obiettivo personale"} ·{" "}
-                {goal.periodStart && goal.periodEnd
-             ? `${goal.periodStart} – ${goal.periodEnd}`
-            : "Senza periodo"}
-
-
+                {(() => {
+                  const displayPeriod = (val) => {
+                    if (!val) return "";
+                    if (val.includes("-")) {
+                      return formatDate(val);
+                    }
+                    return val;
+                  };
+                  return goal.periodStart && goal.periodEnd
+                    ? `${displayPeriod(goal.periodStart)} – ${displayPeriod(goal.periodEnd)}`
+                    : "Senza periodo";
+                })()}
               </Text>
             </View>
             <PriorityBadge value={goal.priority} />
@@ -241,16 +231,29 @@ export default function GoalsScreen({ data, helpers, upsert, remove }) {
           { key: "description", label: "Descrizione", multiline: true },
           { key: "courseId", label: "Corso", type: "course" },
 
-          { key: "periodStart", label: "Mese iniziale", type: "select", options: months },
-          { key: "periodEnd", label: "Mese finale", type: "select", options: months },
+          { key: "periodStart", label: "Data inizio", type: "date" },
+          { key: "periodEnd", label: "Data fine", type: "date" },
 
           { key: "priority", label: "Priorità", options: ["Alta", "Media", "Bassa"] },
           { key: "estimatedHours", label: "Tempo stimato", numeric: true },
           { key: "actualHours", label: "Tempo impiegato", numeric: true },
           { key: "notes", label: "Note", multiline: true },
         ]}
-        onChange={setEditing}
+        onChange={(next) => {
+          if (next.periodStart && next.periodStart.includes("-") && (!next.periodEnd || next.periodEnd < next.periodStart)) {
+            next.periodEnd = next.periodStart;
+          }
+          setEditing(next);
+        }}
         onClose={() => setEditing(null)}
+        validate={(item) => {
+          if (item.periodStart && item.periodEnd && item.periodStart.includes("-") && item.periodEnd.includes("-")) {
+            if (item.periodEnd < item.periodStart) {
+              return "La data fine non può essere antecedente alla data inizio.";
+            }
+          }
+          return null;
+        }}
         onSave={(item) => {        
           upsert("goals", item);
           setEditing(null);

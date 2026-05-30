@@ -211,6 +211,10 @@ function MainApp() {
       alert("La data inserita non è valida.");
       return;
     }
+    if (item.endDate && !isValidDateStrict(item.endDate)) {
+      alert("La data di fine inserita non è valida.");
+      return;
+    }
 
 
     setData((current) => {
@@ -271,13 +275,15 @@ function MainApp() {
   const addSuggestedSession = (exam) => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().slice(0, 10);
     
     upsert("sessions", {
       ...emptySession,
       title: `Ripasso per ${exam.title}`,
       courseId: exam.courseId,
       examId: exam.id,
-      date: tomorrow.toISOString().slice(0, 10),
+      date: tomorrowStr,
+      endDate: tomorrowStr,
       plannedHours: "90", 
       kind: "Ripasso",
     });

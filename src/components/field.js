@@ -251,11 +251,10 @@ export default function Field({ field, value, onChange, helpers }) {
     let filteredExams = helpers.examOptions;
     if (value.goalId) {
       const goal = helpers.goalById(value.goalId);
-      if (goal?.courseId) {
-        filteredExams = helpers.examOptions.filter(
-          (e) => helpers.examById(e.id)?.courseId === goal.courseId
-        );
-      }
+      const goalCourseId = goal?.courseId || "";
+      filteredExams = helpers.examOptions.filter(
+        (e) => (helpers.examById(e.id)?.courseId || "") === goalCourseId
+      );
     }
     return (
       <View style={styles.field}>
@@ -273,7 +272,7 @@ export default function Field({ field, value, onChange, helpers }) {
             // Se c'è un obiettivo selezionato e non è compatibile, resettalo
             if (value.goalId && exam) {
               const goal = helpers.goalById(value.goalId);
-              if (goal && goal.courseId !== exam.courseId) {
+              if (goal && (goal.courseId || "") !== (exam.courseId || "")) {
                 updates.goalId = "";
               }
             }
@@ -289,11 +288,10 @@ export default function Field({ field, value, onChange, helpers }) {
     let filteredGoals = helpers.goalOptions;
     if (value.examId) {
       const exam = helpers.examById(value.examId);
-      if (exam?.courseId) {
-        filteredGoals = helpers.goalOptions.filter(
-          (g) => helpers.goalById(g.id)?.courseId === exam.courseId
-        );
-      }
+      const examCourseId = exam?.courseId || "";
+      filteredGoals = helpers.goalOptions.filter(
+        (g) => (helpers.goalById(g.id)?.courseId || "") === examCourseId
+      );
     }
     return (
       <View style={styles.field}>
@@ -311,7 +309,7 @@ export default function Field({ field, value, onChange, helpers }) {
             // Se c'è un esame selezionato e non è compatibile, resettalo
             if (value.examId && goal) {
               const exam = helpers.examById(value.examId);
-              if (exam && exam.courseId !== goal.courseId) {
+              if (exam && (exam.courseId || "") !== (goal.courseId || "")) {
                 updates.examId = "";
               }
             }

@@ -68,3 +68,33 @@ export function isValidTime(timeString) {
   return true;
 }
 
+export function getSessionDaysCount(session) {
+  const start = session.date;
+  const end = session.endDate || session.date;
+  if (!start || !end || start === end) return 1;
+  const [y1, m1, d1] = start.split("-").map(Number);
+  const [y2, m2, d2] = end.split("-").map(Number);
+  const date1 = new Date(y1, m1 - 1, d1);
+  const date2 = new Date(y2, m2 - 1, d2);
+  const diffTime = date2 - date1;
+  if (diffTime < 0) return 1;
+  return Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+}
+
+export function getOverlapDaysCount(session, weekStart, weekEnd) {
+  const start = session.date;
+  const end = session.endDate || session.date;
+  
+  const overlapStart = start > weekStart ? start : weekStart;
+  const overlapEnd = end < weekEnd ? end : weekEnd;
+  
+  if (overlapStart > overlapEnd) return 0;
+  
+  const [y1, m1, d1] = overlapStart.split("-").map(Number);
+  const [y2, m2, d2] = overlapEnd.split("-").map(Number);
+  const date1 = new Date(y1, m1 - 1, d1);
+  const date2 = new Date(y2, m2 - 1, d2);
+  const diffTime = date2 - date1;
+  return Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+}
+

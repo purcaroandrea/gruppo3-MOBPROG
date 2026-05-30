@@ -548,12 +548,15 @@ bottomNavLabelActive: {
   primaryButtonPausa: {
     backgroundColor: themeColors.badgeLowText,
   },
+  primaryButtonTextPausa: {
+    color: themeColors.badgeLowBg,
+  },
   secondaryButtonPausa: {
     backgroundColor: themeColors.badgeLowText,
     opacity: 0.65, 
   },
   secondaryButtonTextPausa: {
-    color: themeColors.textOnPrimary, 
+    color: themeColors.badgeLowBg, 
   },
   timerMode: {
     fontSize: 18,

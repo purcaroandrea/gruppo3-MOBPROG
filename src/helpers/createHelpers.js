@@ -1,4 +1,4 @@
-import { addDays, startOfWeek, weekday } from "./date.js";
+import { addDays, startOfWeek, weekday, getSessionDaysCount, getOverlapDaysCount } from "./date.js";
 import { toNumber, minutesToDecimalHours } from "./format.js";
 
 const today = new Date();
@@ -23,22 +23,28 @@ export function createHelpers(data) {
   const weekStart = startOfWeek(isoToday);
   const weekEnd = addDays(weekStart, 6);
 
-  const weekSessions = data.sessions.filter(
-    (session) => session.date >= weekStart && session.date <= weekEnd
-  );
+  const weekSessions = data.sessions.filter((session) => {
+    const start = session.date;
+    const end = session.endDate || session.date;
+    return start <= weekEnd && end >= weekStart;
+  });
 
   const weekHours = {
     planned: minutesToDecimalHours(
-      weekSessions.reduce(
-        (sum, session) => sum + toNumber(session.plannedHours),
-        0
-      )
+      weekSessions.reduce((sum, session) => {
+        const overlapDays = getOverlapDaysCount(session, weekStart, weekEnd);
+        const totalDays = getSessionDaysCount(session);
+        const portion = overlapDays / totalDays;
+        return sum + (toNumber(session.plannedHours) * portion);
+      }, 0)
     ),
     actual: minutesToDecimalHours(
-      weekSessions.reduce(
-        (sum, session) => sum + toNumber(session.actualHours),
-        0
-      )
+      weekSessions.reduce((sum, session) => {
+        const overlapDays = getOverlapDaysCount(session, weekStart, weekEnd);
+        const totalDays = getSessionDaysCount(session);
+        const portion = overlapDays / totalDays;
+        return sum + (toNumber(session.actualHours) * portion);
+      }, 0)
     ),
   };
 
@@ -61,8 +67,16 @@ export function createHelpers(data) {
     labels: last7Days.map(date => weekday(date)), 
     // Dati asse Y (somma dei minuti studiati per ogni giorno, convertiti in ore)
     data: last7Days.map(date => {
-      const dailySessions = data.sessions.filter(s => s.date === date && s.completed);
-      const totalDailyMinutes = dailySessions.reduce((sum, s) => sum + toNumber(s.actualHours), 0);
+      const dailySessions = data.sessions.filter(s => {
+        const start = s.date;
+        const end = s.endDate || s.date;
+        return start <= date && date <= end && s.completed;
+      });
+      const totalDailyMinutes = dailySessions.reduce((sum, s) => {
+        const totalDays = getSessionDaysCount(s);
+        const actual = toNumber(s.actualHours);
+        return sum + (actual / totalDays);
+      }, 0);
       return minutesToDecimalHours(totalDailyMinutes);
     })
   };
