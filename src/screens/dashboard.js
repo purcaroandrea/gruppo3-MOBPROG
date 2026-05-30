@@ -1,5 +1,5 @@
-import { useContext } from "react";
-import { Dimensions, Pressable, Switch, Text, View } from "react-native";
+import React from "react";
+import { Dimensions, Pressable, Text, View } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import Metric from "../components/metric";
 import Panel from "../components/panel";
@@ -7,11 +7,9 @@ import PriorityBadge from "../components/priority-badge";
 import { formatDate } from "../helpers/date";
 
 import { useStyles } from "../../hooks/useStyles";
-import { ThemeContext } from "../contexts/themeContext";
 
 export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSession }) {
   const { styles, themeColors } = useStyles();
-  const { activeTheme, toggleTheme } = useContext(ThemeContext);
 
   const upcoming = helpers.upcomingExams.slice(0, 3);
   const topCourses = helpers.studyByCourse.slice(0, 4);
@@ -29,17 +27,6 @@ export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSes
   return (
     <View>
       <Text style={styles.sectionTitle}>Panoramica</Text>
-
-      {/* INTERRUTTORE MODALITÀ NOTTURNA */}
-      <View style={[styles.panel, styles.filterRow, { marginBottom: 20 }]}>
-        <Text style={styles.label}>Modalità Notturna 🌙</Text>
-        <Switch 
-          value={activeTheme === 'dark'} 
-          onValueChange={toggleTheme} 
-          trackColor={{ false: themeColors.border, true: themeColors.primary }}
-          thumbColor={themeColors.card}
-        />
-      </View>
 
       {/* METRICHE PRINCIPALI */}
       <View style={styles.metricGrid}>

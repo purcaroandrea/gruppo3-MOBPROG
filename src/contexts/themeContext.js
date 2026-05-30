@@ -23,8 +23,13 @@ export function ThemeProvider({ children }) {
     AsyncStorage.setItem('app-theme-preference', nextTheme);
   };
 
+  const selectTheme = (newTheme) => {
+    setTheme(newTheme);
+    AsyncStorage.setItem('app-theme-preference', newTheme);
+  };
+
   return (
-    <ThemeContext.Provider value={{ activeTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ activeTheme, theme, selectTheme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

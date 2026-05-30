@@ -4,9 +4,6 @@ import Svg, { Circle } from "react-native-svg";
 import { useStyles } from "../../hooks/useStyles";
 import Segmented from "../components/segmented";
 
-const STUDY_DURATION = 25 * 60;
-const BREAK_DURATION = 5 * 60;
-
 export default function PomodoroScreen({ data, upsert, pomodoroProps }) {
   const { styles } = useStyles();
   const {
@@ -20,6 +17,16 @@ export default function PomodoroScreen({ data, upsert, pomodoroProps }) {
     selectedSessionId,
     setSelectedSessionId,
   } = pomodoroProps;
+
+  const defaultSettings = {
+    pomodoroStudyTime: "25",
+    pomodoroBreakTime: "5",
+    hapticsEnabled: true,
+  };
+
+  const settings = data?.settings || defaultSettings;
+  const STUDY_DURATION = (parseInt(settings.pomodoroStudyTime, 10) || 25) * 60;
+  const BREAK_DURATION = (parseInt(settings.pomodoroBreakTime, 10) || 5) * 60;
 
   const [isResetModalVisible, setIsResetModalVisible] = useState(false);
   const [minutesStudied, setMinutesStudied] = useState(0);
@@ -265,10 +272,13 @@ export default function PomodoroScreen({ data, upsert, pomodoroProps }) {
       <View style={styles.panel}>
         <Text style={styles.panelTitle}>Che cos&apos;è il Pomodoro Timer?</Text>
         <Text style={styles.bodyText}>
-          Il Pomodoro Timer alterna continuativamente sessioni da 25 minuti di
-          studio a pause da 5 minuti. Se selezioni un&apos;attività prima di
-          iniziare, verranno aggiunti automaticamente 25 minuti allo &quot;svolto&quot; al
-          termine di ogni timer di studio.
+          {"Il Pomodoro Timer alterna continuativamente sessioni da "}
+          <Text style={{ fontWeight: "700" }}>{settings.pomodoroStudyTime || "25"}</Text>
+          {" minuti di studio a pause da "}
+          <Text style={{ fontWeight: "700" }}>{settings.pomodoroBreakTime || "5"}</Text>
+          {" minuti. Se selezioni un'attività prima di iniziare, verranno aggiunti automaticamente "}
+          <Text style={{ fontWeight: "700" }}>{settings.pomodoroStudyTime || "25"}</Text>
+          {" minuti allo \"svolto\" al termine di ogni timer di studio."}
         </Text>
       </View>
 

@@ -11,12 +11,19 @@ import { seedData } from "../src/data/seedData";
 import { createHelpers } from "../src/helpers/createHelpers";
 import { isValidDateStrict } from "../src/helpers/date";
 
+import SettingsModal from "../src/components/settings-modal";
 import CoursesScreen from "../src/screens/courses-screen";
 import Dashboard from "../src/screens/dashboard";
 import ExamsScreen from "../src/screens/exams-screen";
 import GoalsScreen from "../src/screens/goals-screen";
 import PlannerScreen from "../src/screens/planner-screen";
 import PomodoroScreen from "../src/screens/pomodoro-screen";
+
+const defaultSettings = {
+  pomodoroStudyTime: "25",
+  pomodoroBreakTime: "5",
+  hapticsEnabled: true,
+};
 
 function MainApp() {
   const { styles, themeColors } = useStyles();
@@ -25,15 +32,46 @@ function MainApp() {
   const [selectedCourseId, setSelectedCourseId] = useState(null);
   const [loaded, setLoaded] = useState(false);
 
+  const settings = data.settings || defaultSettings;
+
   // Timer Pomodoro
-  const STUDY_DURATION = 25 * 60;
-  const BREAK_DURATION = 5 * 60;
+  const STUDY_DURATION = (parseInt(settings.pomodoroStudyTime, 10) || 25) * 60;
+  const BREAK_DURATION = (parseInt(settings.pomodoroBreakTime, 10) || 5) * 60;
 
   const [pomodoroMode, setPomodoroMode] = useState("Studio");
   const [pomodoroSecondsLeft, setPomodoroSecondsLeft] = useState(STUDY_DURATION);
   const [pomodoroRunning, setPomodoroRunning] = useState(false);
   const [completedPomodoros, setCompletedPomodoros] = useState(0);
   const [selectedSessionId, setSelectedSessionId] = useState("");
+  const [settingsVisible, setSettingsVisible] = useState(false);
+
+  // Aggiorna il timer se cambiano i settaggi e il timer è fermo
+  useEffect(() => {
+    if (!pomodoroRunning) {
+      setPomodoroSecondsLeft(pomodoroMode === "Studio" ? STUDY_DURATION : BREAK_DURATION);
+    }
+  }, [STUDY_DURATION, BREAK_DURATION, pomodoroMode, pomodoroRunning]);
+
+  const updateSetting = (key, value) => {
+    setData((current) => ({
+      ...current,
+      settings: {
+        ...(current.settings || defaultSettings),
+        [key]: value,
+      },
+    }));
+  };
+
+  const resetAllData = () => {
+    const freshData = {
+      ...seedData,
+      settings: defaultSettings,
+    };
+    setData(freshData);
+    AsyncStorage.setItem("study-planner-v1", JSON.stringify(freshData)).catch((error) => {
+      console.error("Errore durante il reset dei dati:", error);
+    });
+  };
 
   const pomodoroSoundRef = useRef(null);
   const targetEndTimeRef = useRef(null);
@@ -83,7 +121,9 @@ function MainApp() {
       } else {
         // Timer scaduto
         playPomodoroSound();
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        if (settings.hapticsEnabled) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
 
         const nextMode = pomodoroMode === "Studio" ? "Pausa" : "Studio";
         const nextDuration = nextMode === "Studio" ? STUDY_DURATION : BREAK_DURATION;
@@ -102,18 +142,19 @@ function MainApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pomodoroRunning, pomodoroMode]);
 
-  // Salva 25 minuti in automatico sull'attività selezionata
+  // Salva il tempo impostato in automatico sull'attività selezionata
   useEffect(() => {
     if (completedPomodoros > 0 && selectedSessionId) {
       const session = data?.sessions?.find((s) => s.id === selectedSessionId);
 
       if (session) {
         const currentActual = parseInt(session.actualHours || "0", 10);
-        const newActual = currentActual + 25;
+        const pomodoroMins = parseInt(settings.pomodoroStudyTime, 10) || 25;
+        const newActual = currentActual + pomodoroMins;
         upsert("sessions", { ...session, actualHours: String(newActual) });
       }
     }
-  }, [completedPomodoros, selectedSessionId, data?.sessions]);
+  }, [completedPomodoros, selectedSessionId, data?.sessions, settings.pomodoroStudyTime]);
 
   const TABS_ORDER = ["Dashboard", "Corsi", "Esami", "Planner", "Obiettivi", "Pomodoro"];
   const scrollViewRef = useRef(null);
@@ -285,33 +326,46 @@ function MainApp() {
   resizeMode="contain"
 />
 
-  <Pressable
-    style={[
-      styles.headerIconButton,
-      activeTab === "Pomodoro" && styles.headerIconButtonActive,
-    ]}
-    onPress={() => goToTab("Pomodoro")}
-  >
-    <MaterialIcons
-      name="timer"
-      size={22}
-      color={
-        activeTab === "Pomodoro"
-          ? themeColors.textOnPrimary
-          : themeColors.textTitle
-      }
-    />
-    <Text
+  <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+    <Pressable
       style={[
-        styles.headerIconLabel,
-        activeTab === "Pomodoro" && styles.headerIconLabelActive,
+        styles.headerIconButton,
+        activeTab === "Pomodoro" && styles.headerIconButtonActive,
       ]}
+      onPress={() => goToTab("Pomodoro")}
     >
-      {pomodoroRunning
-        ? `Pomodoro (${Math.floor(pomodoroSecondsLeft / 60)}:${(pomodoroSecondsLeft % 60).toString().padStart(2, "0")})`
-        : "Pomodoro"}
-    </Text>
-  </Pressable>
+      <MaterialIcons
+        name="timer"
+        size={22}
+        color={
+          activeTab === "Pomodoro"
+            ? themeColors.textOnPrimary
+            : themeColors.textTitle
+        }
+      />
+      <Text
+        style={[
+          styles.headerIconLabel,
+          activeTab === "Pomodoro" && styles.headerIconLabelActive,
+        ]}
+      >
+        {pomodoroRunning
+          ? `Pomodoro (${Math.floor(pomodoroSecondsLeft / 60)}:${(pomodoroSecondsLeft % 60).toString().padStart(2, "0")})`
+          : "Pomodoro"}
+      </Text>
+    </Pressable>
+
+    <Pressable
+      style={styles.iconButton}
+      onPress={() => setSettingsVisible(true)}
+    >
+      <MaterialIcons
+        name="settings"
+        size={22}
+        color={themeColors.textTitle}
+      />
+    </Pressable>
+  </View>
 </View>
 
 
@@ -451,6 +505,13 @@ function MainApp() {
     </Text>
   </Pressable>
 </View>
+      <SettingsModal
+        visible={settingsVisible}
+        onClose={() => setSettingsVisible(false)}
+        settings={settings}
+        updateSetting={updateSetting}
+        resetAllData={resetAllData}
+      />
     </SafeAreaView>
   );
 }
