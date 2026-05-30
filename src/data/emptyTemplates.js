@@ -34,6 +34,7 @@ export const emptySession = {
   title: "",
   courseId: "",
   examId: "",
+  goalId: "",
   date: isoToday,
   kind: "Altro",
   plannedHours: "",

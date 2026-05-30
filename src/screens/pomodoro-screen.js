@@ -63,6 +63,17 @@ export default function PomodoroScreen({ data, upsert, pomodoroProps }) {
         const currentActual = parseInt(session.actualHours || "0", 10);
         const newActual = currentActual + minutesStudied;
         upsert("sessions", { ...session, actualHours: String(newActual) });
+
+        // Aggiorna anche l'obiettivo collegato direttamente all'attività
+        if (session.goalId) {
+          const linkedGoal = data?.goals?.find(
+            (g) => g.id === session.goalId && !g.completed
+          );
+          if (linkedGoal) {
+            const goalActual = parseInt(linkedGoal.actualHours || "0", 10);
+            upsert("goals", { ...linkedGoal, actualHours: String(goalActual + minutesStudied) });
+          }
+        }
       }
     }
     studyStartTimeRef.current = null;

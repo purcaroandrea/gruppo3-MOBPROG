@@ -142,7 +142,7 @@ function MainApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pomodoroRunning, pomodoroMode]);
 
-  // Salva il tempo impostato in automatico sull'attività selezionata
+  // Salva il tempo impostato in automatico sull'attività selezionata e sugli obiettivi collegati
   useEffect(() => {
     if (completedPomodoros > 0 && selectedSessionId) {
       const session = data?.sessions?.find((s) => s.id === selectedSessionId);
@@ -152,6 +152,17 @@ function MainApp() {
         const pomodoroMins = parseInt(settings.pomodoroStudyTime, 10) || 25;
         const newActual = currentActual + pomodoroMins;
         upsert("sessions", { ...session, actualHours: String(newActual) });
+
+        // Aggiorna anche l'obiettivo collegato direttamente all'attività
+        if (session.goalId) {
+          const linkedGoal = data?.goals?.find(
+            (g) => g.id === session.goalId && !g.completed
+          );
+          if (linkedGoal) {
+            const goalActual = parseInt(linkedGoal.actualHours || "0", 10);
+            upsert("goals", { ...linkedGoal, actualHours: String(goalActual + pomodoroMins) });
+          }
+        }
       }
     }
   }, [completedPomodoros, selectedSessionId, data?.sessions, settings.pomodoroStudyTime]);
