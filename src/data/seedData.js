@@ -96,6 +96,7 @@ export const seedData = {
       startTime: "", // Lasciato vuoto
       endTime: "",   // Lasciato vuoto
       kind: "Avanzamento sul progetto",
+      priority: "Alta",
       plannedHours: "0", // Ometto le ore (imposto a 0 minuti)
       actualHours: "0",  // Ometto le ore
       completed: false,
@@ -110,6 +111,7 @@ export const seedData = {
       startTime: "",
       endTime: "",
       kind: "Ripasso",
+      priority: "Media",
       plannedHours: "0",
       actualHours: "0",
       completed: false,
@@ -124,6 +126,7 @@ export const seedData = {
       startTime: "",
       endTime: "",
       kind: "Completamento di consegne",
+      priority: "Bassa",
       plannedHours: "0",
       actualHours: "0",
       completed: false,

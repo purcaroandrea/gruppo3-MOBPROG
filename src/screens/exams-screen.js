@@ -24,7 +24,7 @@ const esitoBadge = (tc, esito) => {
 export default function ExamsScreen({ data, helpers, upsert, remove, addSuggestedSession }) {
   const { styles, themeColors: tc } = useStyles();
 
-  const [tab, setTab]                   = React.useState("Futuri");
+  const [tab, setTab]                   = React.useState("Da svolgere");
   const [esitoFilter, setEsitoFilter]   = React.useState("Tutti");
   const [editing, setEditing]           = React.useState(null);
   const [query, setQuery]               = React.useState("");
@@ -46,7 +46,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
 
   const handleSortPress = (key) => {
     if (sortBy === key) {
-      const currentDir = sortOrder || (tab === "Passati" ? "desc" : "asc");
+      const currentDir = sortOrder || (tab === "Svolti" ? "desc" : "asc");
       setSortOrder(currentDir === "asc" ? "desc" : "asc");
     } else {
       setSortBy(key);
@@ -63,7 +63,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
   const isToDeliver  = (e) => isConsegna(e) && e.date >= isoToday && !isDone(e);
   const isOverdue    = (e) => isConsegna(e) && e.date <  isoToday && !isDone(e);
   const isFuture     = (e) => e.date >= isoToday && !isDone(e) && !isConsegna(e);
-  const isPast       = (e) => !isFuture(e) && !isOverdue(e) && !isToDeliver(e);
+  const isDoneOrPast = (e) => !isFuture(e) && !isOverdue(e) && !isToDeliver(e);
 
   const overdueCount   = data.exams.filter(isOverdue).length;
   const deliverCount   = data.exams.filter(isToDeliver).length;
@@ -138,7 +138,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
   };
 
   // --- Filtraggio e Ordinamento ---
-  const tabFilter = { Tutti: () => true, Futuri: isFuture, "Da consegnare": isToDeliver, "In ritardo": isOverdue, Passati: isPast };
+  const tabFilter = { Tutti: () => true, "Da svolgere": isFuture, "Da consegnare": isToDeliver, "In ritardo": isOverdue, Svolti: isDoneOrPast };
   const exams = [...data.exams]
     .filter(tabFilter[tab] || (() => true))
     .filter((e) => {
@@ -151,10 +151,10 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
       );
     })
     .filter((e) => (!dateFrom || e.date >= dateFrom) && (!dateTo || e.date <= dateTo))
-    .filter((e) => tab !== "Passati" || esitoFilter === "Tutti" || (e.esito || "Da valutare") === esitoFilter)
+    .filter((e) => tab !== "Svolti" || esitoFilter === "Tutti" || (e.esito || "Da valutare") === esitoFilter)
     .sort((a, b) => {
       const field = sortBy || "date";
-      const direction = sortOrder || (tab === "Passati" ? "desc" : "asc");
+      const direction = sortOrder || (tab === "Svolti" ? "desc" : "asc");
 
       let comparison = 0;
       if (field === "date") {
@@ -174,7 +174,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
   if (deliverCount > 0) tabLabels["Da consegnare"] = `Da consegnare (${deliverCount})`;
   if (overdueCount > 0) tabLabels["In ritardo"]    = `In ritardo (${overdueCount})`;
 
-  // Campi del form: negli esami futuri non ha senso scegliere esito o voto
+  // Campi del form: negli esami da svolgere non ha senso scegliere esito o voto
   const editingIsFuture = editing && !isDone(editing) && (editing.date || "") >= isoToday;
   const examFields = [
     { key: "title",    label: "Titolo *",          required: true },
@@ -243,16 +243,16 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
       )}
 
       <Segmented
-        options={["Tutti", "Futuri", "Da consegnare", "In ritardo", "Passati"]}
+        options={["Tutti", "Da svolgere", "Da consegnare", "In ritardo", "Svolti"]}
         labels={tabLabels} value={tab}
         onChange={(v) => {
           setTab(v);
-          if (v !== "Passati") setEsitoFilter("Tutti");
+          if (v !== "Svolti") setEsitoFilter("Tutti");
           setSortBy("date");
           setSortOrder(null);
         }}
       />
-      {tab === "Passati" && (
+      {tab === "Svolti" && (
         <Segmented options={esitoFilterOptions} value={esitoFilter} onChange={setEsitoFilter} />
       )}
 
@@ -265,7 +265,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
           { key: "course", label: "Corso" }
         ].map((opt) => {
           const active = sortBy === opt.key;
-          const activeDir = active ? (sortOrder || (tab === "Passati" ? "desc" : "asc")) : null;
+          const activeDir = active ? (sortOrder || (tab === "Svolti" ? "desc" : "asc")) : null;
           return (
             <Pressable
               key={opt.key}
@@ -305,9 +305,9 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
         const courseName    = helpers.courseById(exam.courseId)?.name;
         const badge         = esitoBadge(tc, exam.esito);
         const isDeliveryTab = tab === "Da consegnare" || tab === "In ritardo";
-        const showEsito     = isDeliveryTab || (tab === "Passati" && (!exam.esito || exam.esito === "Da valutare"));
+        const showEsito     = isDeliveryTab || (tab === "Svolti" && (!exam.esito || exam.esito === "Da valutare"));
         const extraWarn     = (exam.isGradeForCourse && exam.voto)
-          ? `Questo esame è il voto finale del corso "${courseName || ""}". Eliminandolo, il voto verrà rimosso e il corso tornerà in corso.`
+          ? `Questo esame è il voto finale del corso "${courseName || ""}". Eliminandolo, il voto verrà rimosso e il corso verrà segnato come completato.`
           : "";
 
         return (
@@ -324,7 +324,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
                 <PriorityBadge value={exam.priority} />
                 {tab === "Da consegnare" && <Text style={[styles.badge, { backgroundColor: tc.badgeMedBg, color: tc.badgeMedText }]}>Da consegnare</Text>}
                 {tab === "In ritardo"    && <Text style={[styles.badge, { backgroundColor: tc.dangerBg,   color: tc.dangerText   }]}>In ritardo</Text>}
-                {tab === "Passati"       && <Text style={[styles.badge, { backgroundColor: badge.bg,       color: badge.fg        }]}>{exam.esito || "Da valutare"}</Text>}
+                {tab === "Svolti"        && <Text style={[styles.badge, { backgroundColor: badge.bg,       color: badge.fg        }]}>{exam.esito || "Da valutare"}</Text>}
                 {exam.esito === "Superato" && exam.voto && (
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 4,
                     backgroundColor: tc.badgeLowBg, paddingVertical: 3, paddingHorizontal: 8, borderRadius: 8 }}>

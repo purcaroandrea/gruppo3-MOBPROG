@@ -2,7 +2,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Audio } from "expo-av";
 import * as Haptics from "expo-haptics";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Image, Pressable, SafeAreaView, ScrollView, Text, View, useWindowDimensions } from "react-native";
 import { useStyles } from "../hooks/useStyles";
 import { ThemeProvider } from "../src/contexts/themeContext";
@@ -45,12 +45,105 @@ function MainApp() {
   const [selectedSessionId, setSelectedSessionId] = useState("");
   const [settingsVisible, setSettingsVisible] = useState(false);
 
-  // Aggiorna il timer se cambiano i settaggi e il timer è fermo
-  useEffect(() => {
-    if (!pomodoroRunning) {
-      setPomodoroSecondsLeft(pomodoroMode === "Studio" ? STUDY_DURATION : BREAK_DURATION);
+  const TABS_ORDER = ["Dashboard", "Corsi", "Esami", "Planner", "Obiettivi", "Pomodoro"];
+  const scrollViewRef = useRef(null);
+  const { width: screenWidth } = useWindowDimensions();
+
+  const goToTab = (tabName) => {
+    setActiveTab(tabName);
+    const index = TABS_ORDER.indexOf(tabName);
+    if (index !== -1 && scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({ x: index * screenWidth, animated: true });
     }
-  }, [STUDY_DURATION, BREAK_DURATION, pomodoroMode, pomodoroRunning]);
+  };
+
+  const helpers = useMemo(() => createHelpers(data), [data]);
+
+  const upsert = useCallback((collection, item) => {
+    // Validazione data 
+    if (item.date && !isValidDateStrict(item.date)) {
+      alert("La data inserita non è valida.");
+      return;
+    }
+    if (item.endDate && !isValidDateStrict(item.endDate)) {
+      alert("La data di fine inserita non è valida.");
+      return;
+    }
+
+
+    setData((current) => {
+      const exists = current[collection].some((e) => e.id === item.id);
+
+      // Normalizzazione ID
+      let newItem = exists
+        ? item
+        : { ...item, id: `${collection}-${Date.now()}` };
+
+      return {
+        ...current,
+        [collection]: exists
+          ? current[collection].map((e) => (e.id === item.id ? newItem : e))
+          : [newItem, ...current[collection]],
+      };
+    });
+  }, []);
+
+  const remove = (collection, id) => {
+    setData((current) => {
+      let updated = { ...current };
+
+      updated[collection] = updated[collection].filter((e) => e.id !== id);
+
+      if (collection === "courses") {
+        const examIds = updated.exams
+          .filter((ex) => ex.courseId === id)
+          .map((ex) => ex.id);
+
+        updated.exams = updated.exams.filter((ex) => ex.courseId !== id);
+        updated.goals = updated.goals.filter((g) => g.courseId !== id);
+
+        // Rimuove le sessioni associate sia al corso che agli esami eliminati
+        updated.sessions = updated.sessions.filter(
+          (s) => s.courseId !== id && !examIds.includes(s.examId)
+        );
+      }
+
+      if (collection === "exams") {
+        // Se l'esame eliminato era il voto finale del corso, resetta voto e stato del corso
+        const deletedExam = current.exams.find((e) => e.id === id);
+        if (deletedExam?.isGradeForCourse && deletedExam?.courseId) {
+          updated.courses = updated.courses.map((c) =>
+            c.id === deletedExam.courseId
+              ? { ...c, actualGrade: "", status: "Completato" }
+              : c
+          );
+        }
+        updated.sessions = updated.sessions.filter((s) => s.examId !== id);
+        updated.goals = updated.goals.filter((g) => g.examId !== id);
+      }
+
+      return updated;
+    });
+  };
+
+  const addSuggestedSession = (exam) => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+    
+    upsert("sessions", {
+      ...emptySession,
+      title: `Ripasso per ${exam.title}`,
+      courseId: exam.courseId,
+      examId: exam.id,
+      date: tomorrowStr,
+      endDate: tomorrowStr,
+      plannedHours: "90", 
+      kind: "Ripasso",
+    });
+    
+    goToTab("Planner");
+  };
 
   const updateSetting = (key, value) => {
     setData((current) => ({
@@ -91,6 +184,13 @@ function MainApp() {
     }
   }
 
+  // Aggiorna il timer se cambiano i settaggi e il timer è fermo
+  useEffect(() => {
+    if (!pomodoroRunning) {
+      setPomodoroSecondsLeft(pomodoroMode === "Studio" ? STUDY_DURATION : BREAK_DURATION);
+    }
+  }, [STUDY_DURATION, BREAK_DURATION, pomodoroMode, pomodoroRunning]);
+
   // Sincronizza il tempo di fine target quando si avvia/ferma il timer
   useEffect(() => {
     if (pomodoroRunning) {
@@ -98,6 +198,7 @@ function MainApp() {
     } else {
       targetEndTimeRef.current = null;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pomodoroRunning]);
 
   // Sincronizza il tempo di fine target se cambia la modalità mentre è in esecuzione
@@ -105,6 +206,7 @@ function MainApp() {
     if (pomodoroRunning) {
       targetEndTimeRef.current = Date.now() + pomodoroSecondsLeft * 1000;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pomodoroMode]);
 
   // Gestione principale del conto alla rovescia globale (timestamp-based)
@@ -165,19 +267,7 @@ function MainApp() {
         }
       }
     }
-  }, [completedPomodoros, selectedSessionId, data?.sessions, settings.pomodoroStudyTime]);
-
-  const TABS_ORDER = ["Dashboard", "Corsi", "Esami", "Planner", "Obiettivi", "Pomodoro"];
-  const scrollViewRef = useRef(null);
-  const { width: screenWidth } = useWindowDimensions();
-
-  const goToTab = (tabName) => {
-    setActiveTab(tabName);
-    const index = TABS_ORDER.indexOf(tabName);
-    if (index !== -1 && scrollViewRef.current) {
-      scrollViewRef.current.scrollTo({ x: index * screenWidth, animated: true });
-    }
-  };
+  }, [completedPomodoros, selectedSessionId, data?.sessions, data?.goals, settings.pomodoroStudyTime, upsert]);
 
   // Caricamento dei dati con gestione degli errori ottimizzata
   useEffect(() => {
@@ -202,94 +292,6 @@ function MainApp() {
       });
     }
   }, [data, loaded]);
-
-  const helpers = useMemo(() => createHelpers(data), [data]);
-  
-  const upsert = (collection, item) => {
-    // Validazione data 
-    if (item.date && !isValidDateStrict(item.date)) {
-      alert("La data inserita non è valida.");
-      return;
-    }
-    if (item.endDate && !isValidDateStrict(item.endDate)) {
-      alert("La data di fine inserita non è valida.");
-      return;
-    }
-
-
-    setData((current) => {
-      const exists = current[collection].some((e) => e.id === item.id);
-
-      // Normalizzazione ID
-      let newItem = exists
-        ? item
-        : { ...item, id: `${collection}-${Date.now()}` };
-
-      return {
-        ...current,
-        [collection]: exists
-          ? current[collection].map((e) => (e.id === item.id ? newItem : e))
-          : [newItem, ...current[collection]],
-      };
-    });
-  };
-
-  const remove = (collection, id) => {
-    setData((current) => {
-      let updated = { ...current };
-
-      updated[collection] = updated[collection].filter((e) => e.id !== id);
-
-      if (collection === "courses") {
-        const examIds = updated.exams
-          .filter((ex) => ex.courseId === id)
-          .map((ex) => ex.id);
-
-        updated.exams = updated.exams.filter((ex) => ex.courseId !== id);
-        updated.goals = updated.goals.filter((g) => g.courseId !== id);
-
-        // Rimuove le sessioni associate sia al corso che agli esami eliminati
-        updated.sessions = updated.sessions.filter(
-          (s) => s.courseId !== id && !examIds.includes(s.examId)
-        );
-      }
-
-      if (collection === "exams") {
-        // Se l'esame eliminato era il voto finale del corso, resetta voto e stato del corso
-        const deletedExam = current.exams.find((e) => e.id === id);
-        if (deletedExam?.isGradeForCourse && deletedExam?.courseId) {
-          updated.courses = updated.courses.map((c) =>
-            c.id === deletedExam.courseId
-              ? { ...c, actualGrade: "", status: "In corso" }
-              : c
-          );
-        }
-        updated.sessions = updated.sessions.filter((s) => s.examId !== id);
-        updated.goals = updated.goals.filter((g) => g.examId !== id);
-      }
-
-      return updated;
-    });
-  };
-
-  const addSuggestedSession = (exam) => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().slice(0, 10);
-    
-    upsert("sessions", {
-      ...emptySession,
-      title: `Ripasso per ${exam.title}`,
-      courseId: exam.courseId,
-      examId: exam.id,
-      date: tomorrowStr,
-      endDate: tomorrowStr,
-      plannedHours: "90", 
-      kind: "Ripasso",
-    });
-    
-    goToTab("Planner");
-  };
 
   const screenProps = {
     data,

@@ -9,6 +9,20 @@ export function createHelpers(data) {
   const examById = (id) => data.exams.find((exam) => exam.id === id);
   const goalById = (id) => data.goals.find((goal) => goal.id === id);
 
+  // Risolve il courseId di una sessione risalendo tramite esame o obiettivo
+  const courseIdForSession = (session) => {
+    if (session.courseId) return session.courseId;
+    if (session.examId) {
+      const exam = examById(session.examId);
+      if (exam?.courseId) return exam.courseId;
+    }
+    if (session.goalId) {
+      const goal = goalById(session.goalId);
+      if (goal?.courseId) return goal.courseId;
+    }
+    return null;
+  };
+
   const futureExams = data.exams.filter(
     (exam) =>
       exam.status !== "Completato" &&
@@ -48,16 +62,22 @@ export function createHelpers(data) {
     ),
   };
 
-  const hoursForCourse = (courseId) =>
-    minutesToDecimalHours(
-      data.sessions
-        .filter((session) => session.courseId === courseId)
-        .reduce((sum, session) => sum + toNumber(session.plannedHours), 0)
+  // Ore settimanali pianificate per corso (con sovrapposizione proporzionale sulla settimana corrente)
+  const weekHoursForCourse = (courseId) => {
+    return minutesToDecimalHours(
+      weekSessions.reduce((sum, session) => {
+        if (courseIdForSession(session) !== courseId) return sum;
+        const overlapDays = getOverlapDaysCount(session, weekStart, weekEnd);
+        const totalDays = getSessionDaysCount(session);
+        const portion = overlapDays / totalDays;
+        return sum + (toNumber(session.plannedHours) * portion);
+      }, 0)
     );
+  };
 
-  const maxCourseHours = Math.max(
+  const maxWeekCourseHours = Math.max(
     1,
-    ...data.courses.map((course) => hoursForCourse(course.id))
+    ...data.courses.map((course) => weekHoursForCourse(course.id))
   );
 
   const last7Days = Array.from({ length: 7 }, (_, i) => addDays(isoToday, -6 + i));
@@ -80,6 +100,31 @@ export function createHelpers(data) {
       return minutesToDecimalHours(totalDailyMinutes);
     })
   };
+
+  // Attività aperte = sessioni non completate che NON sono interamente future
+  // (cioè la data di fine è <= oggi, oppure la sessione è in corso oggi)
+  const openSessions = data.sessions.filter((s) => {
+    if (s.completed) return false;
+    const end = s.endDate || s.date;
+    return end <= isoToday; // scadute o in corso oggi
+  }).length;
+
+  // Helper: esame completato (superato, non superato, completato, annullato)
+  const isExamDone = (e) =>
+    e.completed || e.status === "Completato" || e.status === "Annullato" ||
+    e.esito === "Superato" || e.esito === "Non superato";
+
+  // Contatori per dashboard: esami da svolgere (non consegne), progetti in scadenza, progetti in ritardo
+  const isConsegna = (e) => e.type === "Consegna";
+  const futureExamsCount = data.exams.filter(
+    (e) => !isConsegna(e) && e.date >= isoToday && !isExamDone(e)
+  ).length;
+  const deliverCount = data.exams.filter(
+    (e) => isConsegna(e) && e.date >= isoToday && !isExamDone(e)
+  ).length;
+  const overdueCount = data.exams.filter(
+    (e) => isConsegna(e) && e.date < isoToday && !isExamDone(e)
+  ).length;
 
   return {
     courseById,
@@ -105,27 +150,32 @@ export function createHelpers(data) {
     })),
     
     // Contatori per attività e obiettivi aperti
-    openSessions: data.sessions.filter((s) => !s.completed).length,
+    openSessions,
     openGoals: data.goals.filter((g) => !g.completed).length,
+    futureExamsCount,
+    deliverCount,
+    overdueCount,
     
     // Esportazione dei dati calcolati e del grafico
     weekHours,
-    hoursForCourse,
+    weekHoursForCourse,
     studyChartData,
     
+    // Distribuzione ore pianificate per corso NELLA SETTIMANA CORRENTE (con overlap proporzionale)
     studyByCourse: data.courses
       .map((course) => {
-        const hours = hoursForCourse(course.id);
+        const hours = weekHoursForCourse(course.id);
         return {
           courseId: course.id,
           name: course.name,
           hours,
           percent: Math.max(
             5,
-            Math.round((hours / maxCourseHours) * 100)
+            Math.round((hours / maxWeekCourseHours) * 100)
           ),
         };
       })
-      .sort((a, b) => b.hours - a.hours), // Ordina i corsi dal più studiato al meno studiato
+      .filter((entry) => entry.hours > 0)
+      .sort((a, b) => b.hours - a.hours),
   };
 }

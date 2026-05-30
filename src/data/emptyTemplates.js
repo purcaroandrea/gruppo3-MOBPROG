@@ -43,6 +43,7 @@ export const emptySession = {
   date: isoToday,
   endDate: isoToday,
   kind: "Altro",
+  priority: "Media",
   plannedHours: "",
   actualHours: "",
   completed: false,

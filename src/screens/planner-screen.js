@@ -6,6 +6,7 @@ import EntityModal from "../components/entity-modal";
 import ScreenTop from "../components/screen-top";
 import SearchBox from "../components/search-box";
 import Segmented from "../components/segmented";
+import PriorityBadge from "../components/priority-badge";
 import { emptySession } from "../data/emptyTemplates";
 import { addDays, formatDate, startOfWeek, weekday, getSessionDaysCount } from "../helpers/date";
 import { minutesToHM } from "../helpers/format";
@@ -63,6 +64,7 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
   const [sortBy, setSortBy] = React.useState("Nome");
   const [sortOrder, setSortOrder] = React.useState("Crescente");
   const [periodFilter, setPeriodFilter] = React.useState("Tutte");
+  const [priorityFilter, setPriorityFilter] = React.useState("Tutte");
 
   // Helper per l'ordinamento
   const sortSessions = (sessionsList) => {
@@ -90,6 +92,10 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
     return start <= days[6] && end >= days[0];
   });
 
+  if (priorityFilter !== "Tutte") {
+    visibleSessions = visibleSessions.filter((s) => (s.priority || "Media") === priorityFilter);
+  }
+
   if (searchQuery.trim()) {
     const q = searchQuery.toLowerCase();
     visibleSessions = visibleSessions.filter((s) => {
@@ -106,6 +112,10 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
   // Filtri e ordinamenti per la lista completa
   const todayDate = new Date().toISOString().slice(0, 10);
   let allSessions = [...data.sessions];
+
+  if (priorityFilter !== "Tutte") {
+    allSessions = allSessions.filter((s) => (s.priority || "Media") === priorityFilter);
+  }
 
   if (searchQuery.trim()) {
     const q = searchQuery.toLowerCase();
@@ -146,7 +156,10 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
     <View key={session.id} style={styles.card}>
       <View style={styles.cardHeader}>
         <View style={styles.cardHeaderText}>
-          <Text style={styles.cardTitle}>{session.title}</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
+            <Text style={[styles.cardTitle, { marginBottom: 0 }]}>{session.title}</Text>
+            <PriorityBadge value={session.priority || "Media"} />
+          </View>
           <Text style={styles.rowMeta}>
             {(() => {
               const exam = session.examId ? helpers.examById(session.examId) : null;
@@ -224,7 +237,14 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
               onChangeText={setSearchQuery}
             />
 
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+            <Text style={[styles.label, { marginTop: 8, marginBottom: 4 }]}>Priorità</Text>
+            <Segmented
+              options={["Tutte", "Alta", "Media", "Bassa"]}
+              value={priorityFilter}
+              onChange={setPriorityFilter}
+            />
+
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
               <Text style={{ fontSize: 13, color: tc.textMuted, fontWeight: "600" }}>Ordina per:</Text>
               {[
                 { key: "Nome", label: "Nome" },
@@ -350,6 +370,13 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
               onChange={setPeriodFilter}
             />
 
+            <Text style={[styles.label, { marginTop: 10, marginBottom: 6 }]}>Priorità</Text>
+            <Segmented
+              options={["Tutte", "Alta", "Media", "Bassa"]}
+              value={priorityFilter}
+              onChange={setPriorityFilter}
+            />
+
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
               <Text style={{ fontSize: 13, color: tc.textMuted, fontWeight: "600" }}>Ordina per:</Text>
               {[
@@ -414,7 +441,8 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
           { key: "goalId", label: "Obiettivo", type: "goal" },
           { key: "date", label: "Data inizio *", required: true },
           { key: "endDate", label: "Data fine *", type: "date", required: true },
-          { key: "kind", label: "Tipo", options: ["Altro", "Avanzamento sul progetto", "Completamento di consegne", "Esercitazione", "Lettura di materiale", "Ripasso"] },
+          { key: "kind", label: "Tipo", options: ["Studio", "Ripasso", "Esercitazione", "Preparazione esame", "Lettura di materiale", "Completamento di consegne", "Altro"] },
+          { key: "priority", label: "Priorità", options: ["Alta", "Media", "Bassa"] },
           { key: "plannedHours", label: "Tempo di studio previsto", numeric: true },
           { key: "actualHours", label: "Tempo di studio impiegato", numeric: true },
           { key: "completed", label: "Completata", type: "boolean" },

@@ -12,7 +12,6 @@ export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSes
   const { styles, themeColors } = useStyles();
 
   const upcoming = helpers.upcomingExams.slice(0, 3);
-  const topCourses = helpers.studyByCourse.slice(0, 4);
   const screenWidth = Dimensions.get("window").width;
 
   const chartData = {
@@ -30,14 +29,28 @@ export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSes
 
       {/* METRICHE PRINCIPALI */}
       <View style={styles.metricGrid}>
-  <Metric label="Corsi inseriti" value={data.courses.length} />
-  <Metric label="Esami futuri" value={helpers.futureExams.length} />
-  <Metric label="Attività e Obiettivi da completare" value={helpers.openGoals + helpers.openSessions} />
-  <Metric
-    label="Ore svolte settimana"
-    value={`${helpers.weekHours?.actual ?? 0}h`}
-  />
-</View>
+        <Metric label="Corsi inseriti" value={data.courses.length} />
+        <Metric label="Esami superati" value={data.exams.filter(e => e.esito === "Superato").length} />
+        <Metric label="Esami da svolgere" value={helpers.futureExamsCount} />
+        <Metric label="Progetti in scadenza" value={helpers.deliverCount} />
+        <Metric
+          label="Progetti in ritardo"
+          value={helpers.overdueCount}
+          valueColor={helpers.overdueCount > 0 ? themeColors.dangerText : undefined}
+        />
+        <Metric
+          label="Obiettivi completati"
+          value={`${data.goals.filter(g => g.completed).length} / ${data.goals.length}`}
+        />
+        <Metric
+          label="Ore svolte (Settimana)"
+          value={`${helpers.weekHours?.actual ?? 0}h`}
+        />
+        <Metric
+          label="Ore previste (Settimana)"
+          value={`${helpers.weekHours?.planned ?? 0}h`}
+        />
+      </View>
 
       {/* GRAFICO ANDAMENTO STUDIO */}
       <Panel title="Andamento ultimi 7 giorni">
@@ -88,17 +101,21 @@ export default function Dashboard({ data, helpers, setActiveTab, addSuggestedSes
         ))}
       </Panel>
 
-      {/* DISTRIBUZIONE ORE PER CORSO */}
+      {/* DISTRIBUZIONE ORE PER CORSO (settimana corrente) */}
       <Panel title="Distribuzione settimanale per corso">
-        {topCourses.map((entry) => (
-          <View key={entry.courseId} style={styles.chartRow}>
-            <Text style={styles.chartLabel}>{entry.name}</Text>
-            <View style={styles.chartTrack}>
-              <View style={[styles.chartFill, { width: `${entry.percent}%` }]} />
+        {helpers.studyByCourse.length > 0 ? (
+          helpers.studyByCourse.slice(0, 4).map((entry) => (
+            <View key={entry.courseId} style={styles.chartRow}>
+              <Text style={styles.chartLabel}>{entry.name}</Text>
+              <View style={styles.chartTrack}>
+                <View style={[styles.chartFill, { width: `${entry.percent}%` }]} />
+              </View>
+              <Text style={styles.chartValue}>{entry.hours}h</Text>
             </View>
-            <Text style={styles.chartValue}>{entry.hours}h</Text>
-          </View>
-        ))}
+          ))
+        ) : (
+          <Text style={styles.bodyText}>Nessuna attività pianificata questa settimana.</Text>
+        )}
       </Panel>
 
       {/* SUGGERIMENTO AUTOMATICO */}
