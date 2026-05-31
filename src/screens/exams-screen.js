@@ -1,7 +1,7 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import React from "react";
 import { Modal, Platform, Pressable, Text, View } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { useStyles } from "../../hooks/useStyles";
 import DangerButton from "../components/danger-button";
 import DropdownFilter from "../components/dropdown-filter";
@@ -211,7 +211,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
     { key: "title",    label: "Titolo *",       required: true },
     { key: "courseId", label: "Corso associato", type: "course" },
     { key: "date",     label: "Data *",          required: true },
-    { key: "type",     label: "Tipo",            options: ["Altro","Consegna","Prova intercorso","Prova orale","Prova scritta","Idoneità"] },
+    { key: "type",     label: "Tipo",            options: ["Altro","Consegna","Prova intracorso","Prova orale","Prova scritta","Idoneità"] },
     { key: "priority", label: "Priorità",        options: ["Alta","Media","Bassa"] },
     ...(!editingIsFuture ? [
       ...(editingHasVoto ? [] : [{ key: "esito", label: "Esito", options: ["Da valutare","Superato","Non superato"] }]),

@@ -12,6 +12,7 @@ import { createHelpers } from "../src/helpers/createHelpers";
 import { isValidDateStrict } from "../src/helpers/date";
 
 import SettingsModal from "../src/components/settings-modal";
+import TutorialModal from "../src/components/tutorial-modal";
 import CoursesScreen from "../src/screens/courses-screen";
 import Dashboard from "../src/screens/dashboard";
 import ExamsScreen from "../src/screens/exams-screen";
@@ -46,6 +47,7 @@ function MainApp() {
   const [completedPomodoros, setCompletedPomodoros] = useState(0);
   const [selectedSessionId, setSelectedSessionId] = useState("");
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [tutorialVisible, setTutorialVisible] = useState(false);
   const [prefilledSession, setPrefilledSession] = useState(null);
 
   const scrollViewRef = useRef(null);
@@ -355,8 +357,37 @@ function MainApp() {
     </View>
   </View>
 
-  {/* Destra: Il bottone Impostazioni */}
-  <View style={{ flexDirection: "row", gap: 6, alignItems: "center", flexShrink: 0 }}>
+  {/* Destra: I bottoni Aiuto e Impostazioni */}
+  <View style={{ flexDirection: "row", gap: 8, alignItems: "center", flexShrink: 0 }}>
+    {/* Aiuto / Tutorial */}
+    <Pressable
+      style={[
+        isLargeScreen ? styles.headerIconButton : styles.iconButton,
+        tutorialVisible && styles.headerIconButtonActive,
+      ]}
+      onPress={() => setTutorialVisible(true)}
+    >
+      <MaterialIcons
+        name="help-outline"
+        size={isLargeScreen ? 22 : 20}
+        color={
+          tutorialVisible
+            ? themeColors.textOnPrimary
+            : themeColors.textTitle
+        }
+      />
+      {isLargeScreen && (
+        <Text
+          style={[
+            styles.headerIconLabel,
+            tutorialVisible && styles.headerIconLabelActive,
+          ]}
+        >
+          Aiuto
+        </Text>
+      )}
+    </Pressable>
+
     {/* Impostazioni */}
     <Pressable
       style={[
@@ -574,6 +605,11 @@ function MainApp() {
         settings={settings}
         updateSetting={updateSetting}
         resetAllData={resetAllData}
+      />
+      <TutorialModal
+        visible={tutorialVisible}
+        onClose={() => setTutorialVisible(false)}
+        activeTab={activeTab}
       />
     </SafeAreaView>
   );
