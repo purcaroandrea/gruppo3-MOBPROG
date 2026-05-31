@@ -562,9 +562,10 @@ function MainApp() {
       >
         <MaterialIcons
           name="timer"
-          size={28}
+          size={24}
           color={themeColors.textOnPrimary}
         />
+        <Text style={styles.fabText}>Pomodoro</Text>
       </Pressable>
 
       <SettingsModal
