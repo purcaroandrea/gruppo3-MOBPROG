@@ -275,6 +275,27 @@ export default function GoalsScreen({ data, helpers, upsert, remove }) {
             if (item.periodEnd < item.periodStart) {
               return "La data fine non può essere antecedente alla data inizio.";
             }
+
+            const [y1, m1, d1] = item.periodStart.split("-").map(Number);
+            const [y2, m2, d2] = item.periodEnd.split("-").map(Number);
+            const date1 = new Date(y1, m1 - 1, d1);
+            const date2 = new Date(y2, m2 - 1, d2);
+            const diffTime = date2 - date1;
+            
+            if (diffTime >= 0) {
+              const daysCount = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+              const maxMinutes = daysCount * 24 * 60;
+              
+              const estimated = parseInt(item.estimatedHours || "0", 10);
+              const actual = parseInt(item.actualHours || "0", 10);
+              
+              if (estimated > maxMinutes) {
+                return `Il tempo stimato non può superare 24 ore al giorno (${daysCount * 24} ore in totale per ${daysCount} ${daysCount === 1 ? "giorno" : "giorni"}).`;
+              }
+              if (actual > maxMinutes) {
+                return `Il tempo impiegato non può superare 24 ore al giorno (${daysCount * 24} ore in totale per ${daysCount} ${daysCount === 1 ? "giorno" : "giorni"}).`;
+              }
+            }
           }
           return null;
         }}
