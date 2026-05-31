@@ -119,7 +119,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
     setGradeExam(null);
     if (!voto) { markSuperato(exam, ""); return; }
     const course = exam.courseId ? helpers.courseById(exam.courseId) : null;
-    if (course && course.status !== "Da iniziare" && course.status !== "In corso" && course.status !== "Completato") {
+    if (course && course.status !== "Da iniziare" && course.status !== "In corso") {
       setCgmVoto(voto);
       setCgmExam(exam);
     } else {
