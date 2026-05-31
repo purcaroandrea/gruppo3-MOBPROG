@@ -9,5 +9,5 @@ export function useStyles() {
   const themeColors = colors[activeTheme] || colors.light;
   const styles = useMemo(() => getStyles(themeColors), [themeColors]);
 
-  return { styles, themeColors };
+  return { styles, themeColors, activeTheme };
 }

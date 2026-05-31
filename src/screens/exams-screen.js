@@ -1,6 +1,7 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import React from "react";
-import { Modal, Platform, Pressable, Text, TextInput, View } from "react-native";
+import { Modal, Platform, Pressable, Text, View } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useStyles } from "../../hooks/useStyles";
 import DangerButton from "../components/danger-button";
 import DropdownFilter from "../components/dropdown-filter";
@@ -24,7 +25,7 @@ const esitoBadge = (tc, esito) => {
 };
 
 export default function ExamsScreen({ data, helpers, upsert, remove, addSuggestedSession }) {
-  const { styles, themeColors: tc } = useStyles();
+  const { styles, themeColors: tc, activeTheme } = useStyles();
 
   const [tab, setTab]                   = React.useState("Da svolgere");
   const [esitoFilter, setEsitoFilter]   = React.useState("Tutti");
@@ -33,6 +34,8 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
   const [dateFrom, setDateFrom]         = React.useState("");
   const [dateTo, setDateTo]             = React.useState("");
   const [showDateFilter, setShowDateFilter] = React.useState(false);
+  const [showPickerFrom, setShowPickerFrom] = React.useState(false);
+  const [showPickerTo, setShowPickerTo] = React.useState(false);
 
   // Step 1: GradeModal — quale esame sta per essere valutato
   const [gradeExam, setGradeExam]       = React.useState(null);
@@ -300,16 +303,61 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
           <View style={[styles.card, { marginTop: 4, borderWidth: 1.5, borderColor: tc.borderDark }]}>
             <Text style={[styles.label, { marginBottom: 8 }]}>Periodo</Text>
             <View style={{ flexDirection: "row", gap: 12 }}>
-              {[["Da", dateFrom, setDateFrom], ["A", dateTo, setDateTo]].map(([lbl, val, setVal]) => (
-                <View key={lbl} style={{ flex: 1 }}>
-                  <Text style={[styles.rowMeta, { marginBottom: 4 }]}>{lbl}</Text>
-                  {Platform.OS === "web"
-                    ? <input type="date" value={val} onChange={(e) => setVal(e.target.value)} style={dateInputStyle} />
-                    : <TextInput style={[styles.input, { marginBottom: 0 }]} value={val}
-                        onChangeText={setVal} placeholder="YYYY-MM-DD" placeholderTextColor={tc.textMuted} />
-                  }
-                </View>
-              ))}
+              {[
+                { label: "Da", value: dateFrom, set: setDateFrom, show: showPickerFrom, setShow: setShowPickerFrom },
+                { label: "A", value: dateTo, set: setDateTo, show: showPickerTo, setShow: setShowPickerTo }
+              ].map(({ label, value, set, show, setShow }) => {
+                const parsed = value ? new Date(value) : new Date();
+                const display = value
+                  ? new Date(value).toLocaleDateString("it-IT", {
+                      day: "2-digit", month: "2-digit", year: "numeric",
+                    })
+                  : "Seleziona...";
+                
+                return (
+                  <View key={label} style={{ flex: 1 }}>
+                    <Text style={[styles.rowMeta, { marginBottom: 4 }]}>{label}</Text>
+                    {Platform.OS === "web" ? (
+                      <input
+                        type="date"
+                        value={value}
+                        onChange={(e) => set(e.target.value)}
+                        style={dateInputStyle}
+                      />
+                    ) : (
+                      <>
+                        <Pressable
+                          style={[styles.input, { marginBottom: 0, justifyContent: "center" }]}
+                          onPress={() => setShow(true)}
+                        >
+                          <Text style={{ color: value ? tc.textTitle : tc.textMuted, fontSize: 14 }}>
+                            {display}
+                          </Text>
+                        </Pressable>
+                        {show && (
+                          <DateTimePicker
+                            value={parsed}
+                            mode="date"
+                            display={Platform.OS === "ios" ? "inline" : "default"}
+                            themeVariant={activeTheme}
+                            onChange={(event, selectedDate) => {
+                              if (Platform.OS === "android") {
+                                setShow(false);
+                              }
+                              if (selectedDate) {
+                                const year = selectedDate.getFullYear();
+                                const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+                                const day = String(selectedDate.getDate()).padStart(2, "0");
+                                set(`${year}-${month}-${day}`);
+                              }
+                            }}
+                          />
+                        )}
+                      </>
+                    )}
+                  </View>
+                );
+              })}
             </View>
           </View>
         )}

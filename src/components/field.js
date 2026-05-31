@@ -146,7 +146,7 @@ const MobileSelect = ({ field, current, set, styles, themeColors }) => {
   );
 };
 
-const DatePickerField = ({ field, current, set, styles }) => {
+const DatePickerField = ({ field, current, set, styles, activeTheme }) => {
   const [showPicker, setShowPicker] = useState(false);
 
   const parsed = current ? new Date(current) : new Date();
@@ -191,6 +191,7 @@ const DatePickerField = ({ field, current, set, styles }) => {
           value={parsed}
           mode="date"
           display={Platform.OS === "ios" ? "inline" : "default"}
+          themeVariant={activeTheme}
           onChange={(event, selectedDate) => {
             // Su Android l'utente clicca OK/Annulla, quindi possiamo chiudere la modale
             if (Platform.OS === "android") {
@@ -212,7 +213,7 @@ const DatePickerField = ({ field, current, set, styles }) => {
 };
 
 export default function Field({ field, value, onChange, helpers }) {
-  const { styles, themeColors } = useStyles();
+  const { styles, themeColors, activeTheme } = useStyles();
   const current = value[field.key];
   const set = (next) => onChange({ ...value, [field.key]: next });
 
@@ -224,6 +225,7 @@ export default function Field({ field, value, onChange, helpers }) {
         current={current}
         set={set}
         styles={styles}
+        activeTheme={activeTheme}
       />
     );
   }

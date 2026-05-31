@@ -25,6 +25,8 @@ const defaultSettings = {
   hapticsEnabled: true,
 };
 
+const TABS_ORDER = ["Dashboard", "Corsi", "Esami", "Planner", "Obiettivi", "Pomodoro"];
+
 function MainApp() {
   const { styles, themeColors } = useStyles();
   const [data, setData] = useState(seedData);
@@ -45,17 +47,16 @@ function MainApp() {
   const [selectedSessionId, setSelectedSessionId] = useState("");
   const [settingsVisible, setSettingsVisible] = useState(false);
 
-  const TABS_ORDER = ["Dashboard", "Corsi", "Esami", "Planner", "Obiettivi", "Pomodoro"];
   const scrollViewRef = useRef(null);
   const { width: screenWidth } = useWindowDimensions();
 
-  const goToTab = (tabName) => {
+  const goToTab = useCallback((tabName) => {
     setActiveTab(tabName);
     const index = TABS_ORDER.indexOf(tabName);
     if (index !== -1 && scrollViewRef.current) {
       scrollViewRef.current.scrollTo({ x: index * screenWidth, animated: true });
     }
-  };
+  }, [screenWidth]);
 
   const helpers = useMemo(() => createHelpers(data), [data]);
 
@@ -293,6 +294,14 @@ function MainApp() {
     }
   }, [data, loaded]);
 
+  useEffect(() => {
+    if (loaded) {
+      setTimeout(() => {
+        goToTab("Dashboard");
+      }, 150);
+    }
+  }, [loaded, goToTab]);
+
   const screenProps = {
     data,
     helpers,
@@ -316,82 +325,92 @@ function MainApp() {
     },
   };
 
+  const isLargeScreen = screenWidth > 768;
+
   return (
     <SafeAreaView style={styles.safe}>
 
-<View style={styles.header}>
-
-  <Pressable
-    style={[
-      styles.headerIconButton,
-      activeTab === "Dashboard" && styles.headerIconButtonActive,
-    ]}
-    onPress={() => goToTab("Dashboard")}
-  >
-    <MaterialIcons
-      name="home"
-      size={22}
-      color={
-        activeTab === "Dashboard"
-          ? themeColors.textOnPrimary
-          : themeColors.textTitle
-      }
+<View style={[styles.header, { paddingHorizontal: isLargeScreen ? 20 : 10 }]}>
+  {/* Sinistra: Logo + Nome App e Data */}
+  <View style={{ flexDirection: "row", alignItems: "center", gap: isLargeScreen ? 10 : 6, flex: 1, marginRight: 8, minWidth: 0 }}>
+    <Image
+      source={require("../assets/images/logo-mobile.png")}
+      style={{ height: isLargeScreen ? 50 : 38, width: isLargeScreen ? 50 : 38 }}
+      resizeMode="contain"
     />
-    <Text
-      style={[
-        styles.headerIconLabel,
-        activeTab === "Dashboard" && styles.headerIconLabelActive,
-      ]}
-    >
-      Dashboard
-    </Text>
-  </Pressable>
+    <View style={{ flex: 1, minWidth: 0 }}>
+      <Text
+        numberOfLines={1}
+        style={{ fontSize: isLargeScreen ? 18 : 13, fontWeight: "800", color: themeColors.textTitle }}
+      >
+        Study Planner & Exam Tracker
+      </Text>
+      <Text style={{ fontSize: isLargeScreen ? 12 : 9, color: themeColors.textMuted, textTransform: "lowercase" }}>
+        {new Date().toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" })}
+      </Text>
+    </View>
+  </View>
 
-
-  <Image
-  source={require("../assets/images/logo-mobile.png")}
-  style={{ height: 60, width: 60 }}
-  resizeMode="contain"
-/>
-
-  <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+  {/* Destra: I due bottoni */}
+  <View style={{ flexDirection: "row", gap: 6, alignItems: "center", flexShrink: 0 }}>
+    {/* Pomodoro */}
     <Pressable
       style={[
-        styles.headerIconButton,
+        isLargeScreen ? styles.headerIconButton : styles.iconButton,
         activeTab === "Pomodoro" && styles.headerIconButtonActive,
       ]}
       onPress={() => goToTab("Pomodoro")}
     >
       <MaterialIcons
         name="timer"
-        size={22}
+        size={isLargeScreen ? 22 : 20}
         color={
           activeTab === "Pomodoro"
             ? themeColors.textOnPrimary
             : themeColors.textTitle
         }
       />
-      <Text
-        style={[
-          styles.headerIconLabel,
-          activeTab === "Pomodoro" && styles.headerIconLabelActive,
-        ]}
-      >
-        {pomodoroRunning
-          ? `Pomodoro (${Math.floor(pomodoroSecondsLeft / 60)}:${(pomodoroSecondsLeft % 60).toString().padStart(2, "0")})`
-          : "Pomodoro"}
-      </Text>
+      {isLargeScreen && (
+        <Text
+          style={[
+            styles.headerIconLabel,
+            activeTab === "Pomodoro" && styles.headerIconLabelActive,
+          ]}
+        >
+          {pomodoroRunning
+            ? `Pomodoro (${Math.floor(pomodoroSecondsLeft / 60)}:${(pomodoroSecondsLeft % 60).toString().padStart(2, "0")})`
+            : "Pomodoro"}
+        </Text>
+      )}
     </Pressable>
 
+    {/* Impostazioni */}
     <Pressable
-      style={styles.iconButton}
+      style={[
+        isLargeScreen ? styles.headerIconButton : styles.iconButton,
+        settingsVisible && styles.headerIconButtonActive,
+      ]}
       onPress={() => setSettingsVisible(true)}
     >
       <MaterialIcons
         name="settings"
-        size={22}
-        color={themeColors.textTitle}
+        size={isLargeScreen ? 22 : 20}
+        color={
+          settingsVisible
+            ? themeColors.textOnPrimary
+            : themeColors.textTitle
+        }
       />
+      {isLargeScreen && (
+        <Text
+          style={[
+            styles.headerIconLabel,
+            settingsVisible && styles.headerIconLabelActive,
+          ]}
+        >
+          Impostazioni
+        </Text>
+      )}
     </Pressable>
   </View>
 </View>
@@ -429,6 +448,32 @@ function MainApp() {
       </ScrollView>
 
 <View style={styles.bottomNav}>
+  <Pressable
+    style={[
+      styles.bottomNavItem,
+      activeTab === "Dashboard" && styles.bottomNavItemActive,
+    ]}
+    onPress={() => goToTab("Dashboard")}
+  >
+    <MaterialIcons
+      name="home"
+      size={22}
+      color={
+        activeTab === "Dashboard"
+          ? themeColors.textOnPrimary
+          : themeColors.textTitle
+      }
+    />
+    <Text
+      style={[
+        styles.bottomNavLabel,
+        activeTab === "Dashboard" && styles.bottomNavLabelActive,
+      ]}
+    >
+      Dashboard
+    </Text>
+  </Pressable>
+
   <Pressable
     style={[
       styles.bottomNavItem,
