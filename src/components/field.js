@@ -147,6 +147,7 @@ const MobileSelect = ({ field, current, set, styles, themeColors }) => {
 };
 
 const DatePickerField = ({ field, current, set, styles, activeTheme }) => {
+  const { themeColors: tc } = useStyles();
   const [showPicker, setShowPicker] = useState(false);
 
   const parsed = current ? new Date(current) : new Date();
@@ -187,26 +188,56 @@ const DatePickerField = ({ field, current, set, styles, activeTheme }) => {
         <Text style={styles.inputText}>{display || "Seleziona data"}</Text>
       </Pressable>
       {showPicker && (
-        <DateTimePicker
-          value={parsed}
-          mode="date"
-          display="default"
-          themeVariant={activeTheme}
-          onChange={(event, selectedDate) => {
-            // Su Android l'utente clicca OK/Annulla, quindi possiamo chiudere la modale
-            if (Platform.OS === "android") {
+        Platform.OS === "ios" ? (
+          <Modal transparent visible={showPicker} animationType="fade" onRequestClose={() => setShowPicker(false)}>
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0,0,0,0.4)" }}>
+              <View style={{ backgroundColor: tc.card, borderRadius: 20, padding: 16, alignItems: "center", width: 320, borderWidth: 1, borderColor: tc.border }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", width: "100%", marginBottom: 8, alignItems: "center" }}>
+                  <Pressable onPress={() => setShowPicker(false)} style={{ padding: 4 }}>
+                    <Text style={{ fontSize: 18, fontWeight: "bold", color: tc.textTitle }}>✕</Text>
+                  </Pressable>
+                  <Text style={{ fontSize: 16, fontWeight: "700", color: tc.textTitle }}>Seleziona Data</Text>
+                  <View style={{ width: 24 }} />
+                </View>
+                <DateTimePicker
+                  value={parsed}
+                  mode="date"
+                  display="inline"
+                  themeVariant={activeTheme}
+                  onChange={(event, selectedDate) => {
+                    if (selectedDate) {
+                      const year = selectedDate.getFullYear();
+                      const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+                      const day = String(selectedDate.getDate()).padStart(2, "0");
+                      set(`${year}-${month}-${day}`);
+                    }
+                  }}
+                />
+                <Pressable
+                  style={[styles.primaryButton, { width: "100%", marginTop: 12 }]}
+                  onPress={() => setShowPicker(false)}
+                >
+                  <Text style={styles.primaryButtonText}>Conferma</Text>
+                </Pressable>
+              </View>
+            </View>
+          </Modal>
+        ) : (
+          <DateTimePicker
+            value={parsed}
+            mode="date"
+            display="default"
+            onChange={(event, selectedDate) => {
               setShowPicker(false);
-            }
-
-            if (selectedDate) {
-              // Estraiamo la data LOCALE per evitare il bug del fuso orario
-              const year = selectedDate.getFullYear();
-              const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
-              const day = String(selectedDate.getDate()).padStart(2, "0");
-              set(`${year}-${month}-${day}`);
-            }
-          }}
-        />
+              if (selectedDate) {
+                const year = selectedDate.getFullYear();
+                const month = String(selectedDate.getMonth() + 1).padStart(2, "0");
+                const day = String(selectedDate.getDate()).padStart(2, "0");
+                set(`${year}-${month}-${day}`);
+              }
+            }}
+          />
+        )
       )}
     </View>
   );

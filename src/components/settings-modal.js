@@ -1,6 +1,6 @@
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useContext } from "react";
-import { Modal, Pressable, ScrollView, Switch, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
 import { ThemeContext } from "../contexts/themeContext";
 import DangerButton from "./danger-button";
@@ -62,8 +62,34 @@ export default function SettingsModal({
                 value={settings.pomodoroStudyTime || "25"}
                 onChange={(val) => updateSetting("pomodoroStudyTime", val)}
               />
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: 4, marginBottom: 12 }}>
+                <Text style={[styles.bodyText, { fontSize: 13, marginBottom: 0, flex: 1 }]}>Minuti personalizzati (max 60m):</Text>
+                <TextInput
+                  style={[styles.input, { marginBottom: 0, paddingVertical: 6, paddingHorizontal: 12, fontSize: 14, minWidth: 60, textAlign: "center" }]}
+                  keyboardType="numeric"
+                  maxLength={2}
+                  placeholder="25"
+                  placeholderTextColor={themeColors.textMuted}
+                  value={settings.pomodoroStudyTime || ""}
+                  onChangeText={(val) => {
+                    const clean = val.replace(/[^0-9]/g, "");
+                    if (clean === "") {
+                      updateSetting("pomodoroStudyTime", "");
+                    } else {
+                      const num = parseInt(clean, 10);
+                      if (num > 60) {
+                        updateSetting("pomodoroStudyTime", "60");
+                      } else if (num >= 1) {
+                        updateSetting("pomodoroStudyTime", String(num));
+                      } else {
+                        updateSetting("pomodoroStudyTime", clean);
+                      }
+                    }
+                  }}
+                />
+              </View>
 
-              <Text style={[styles.label, { fontSize: 13, marginTop: 12, marginBottom: 6 }]}>Tempo di Pausa</Text>
+              <Text style={[styles.label, { fontSize: 13, marginTop: 6, marginBottom: 6 }]}>Tempo di Pausa</Text>
               <Segmented
                 options={["3", "5", "10", "15"]}
                 labels={{
@@ -75,6 +101,32 @@ export default function SettingsModal({
                 value={settings.pomodoroBreakTime || "5"}
                 onChange={(val) => updateSetting("pomodoroBreakTime", val)}
               />
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: 4, marginBottom: 4 }}>
+                <Text style={[styles.bodyText, { fontSize: 13, marginBottom: 0, flex: 1 }]}>Minuti personalizzati (max 60m):</Text>
+                <TextInput
+                  style={[styles.input, { marginBottom: 0, paddingVertical: 6, paddingHorizontal: 12, fontSize: 14, minWidth: 60, textAlign: "center" }]}
+                  keyboardType="numeric"
+                  maxLength={2}
+                  placeholder="5"
+                  placeholderTextColor={themeColors.textMuted}
+                  value={settings.pomodoroBreakTime || ""}
+                  onChangeText={(val) => {
+                    const clean = val.replace(/[^0-9]/g, "");
+                    if (clean === "") {
+                      updateSetting("pomodoroBreakTime", "");
+                    } else {
+                      const num = parseInt(clean, 10);
+                      if (num > 60) {
+                        updateSetting("pomodoroBreakTime", "60");
+                      } else if (num >= 1) {
+                        updateSetting("pomodoroBreakTime", String(num));
+                      } else {
+                        updateSetting("pomodoroBreakTime", clean);
+                      }
+                    }
+                  }}
+                />
+              </View>
             </View>
 
             {/* FEEDBACK */}
