@@ -83,7 +83,29 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
   const markCompletata = (exam) =>
     upsert("exams", { ...exam, completed: true });
 
-  // Dopo GradeModal: se c'è un voto e un corso associato, si apre CourseGradeModal (solo se il corso non è da iniziare o in corso)
+  // Gestisce il click su "Superato" in base al tipo di esame
+  const onSuperatoPressed = (exam) => {
+    if (exam.type === "Idoneità") {
+      // Per Idoneità, chiedi direttamente se il corso deve passare a Superato
+      const course = exam.courseId ? helpers.courseById(exam.courseId) : null;
+      if (course && course.status !== "Da iniziare" && course.status !== "In corso") {
+        // Se il corso è in completato, non chiedi voto, metti direttamente superato
+        if (course.status === "Completato") {
+          markSuperato(exam, "Idoneità", true);
+        } else {
+          setCgmVoto("Idoneità");
+          setCgmExam(exam);
+        }
+      } else {
+        markSuperato(exam, "Idoneità", false);
+      }
+    } else {
+      // Per altri tipi, apri GradeModal
+      setGradeExam(exam);
+    }
+  };
+
+  // Dopo GradeModal: se c'è un voto e un corso associato, si apre CourseGradeModal (solo se il corso non è da iniziare, in corso o completato)
   const onGradeSelected = (exam, voto) => {
     setGradeExam(null);
     if (!voto) {
@@ -92,7 +114,8 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
     }
     
     const course = exam.courseId ? helpers.courseById(exam.courseId) : null;
-    if (course && course.status !== "Da iniziare" && course.status !== "In corso") {
+    // Non chiedere il voto se il corso è "Completato" (il quale non deve avere voto)
+    if (course && course.status !== "Da iniziare" && course.status !== "In corso" && course.status !== "Completato") {
       setCgmVoto(voto);
       setCgmExam(exam);
     } else {
@@ -137,6 +160,30 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
     setConflictData(null);
   };
 
+  // Salvataggio esame da form
+  const handleSaveExam = (item) => {
+    // Se il voto è presente, metti automaticamente a "Superato"
+    if (item.voto) {
+      const examToSave = { ...item, esito: "Superato", completed: true };
+      
+      // Apri CourseGradeModal per chiedere se il voto è del corso
+      const course = item.courseId ? helpers.courseById(item.courseId) : null;
+      if (course && course.status !== "Da iniziare" && course.status !== "In corso") {
+        // Non salvare ancora, attendi la risposta del modal
+        setCgmVoto(item.voto);
+        setCgmExam(examToSave);
+      } else {
+        // Nessun modal, salva direttamente
+        upsert("exams", examToSave);
+      }
+      setEditing(null);
+    } else {
+      // Se non c'è voto, salva normalmente
+      upsert("exams", item);
+      setEditing(null);
+    }
+  };
+
   // --- Filtraggio e Ordinamento ---
   const tabFilter = { Tutti: () => true, "Da svolgere": isFuture, "Da consegnare": isToDeliver, "In ritardo": isOverdue, Svolti: isDoneOrPast };
   const exams = [...data.exams]
@@ -176,14 +223,16 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
 
   // Campi del form: negli esami da svolgere non ha senso scegliere esito o voto
   const editingIsFuture = editing && !isDone(editing) && (editing.date || "") >= isoToday;
+  // Se c'è un voto, non mostrare il campo esito (andrà automaticamente a "Superato")
+  const editingHasVoto = editing?.voto;
   const examFields = [
     { key: "title",    label: "Titolo *",          required: true },
     { key: "courseId", label: "Corso associato",    type: "course" },
     { key: "date",     label: "Data *",             required: true },
-    { key: "type",     label: "Tipo",               options: ["Altro","Consegna","Prova intercorso","Prova orale","Prova scritta"] },
+    { key: "type",     label: "Tipo",               options: ["Altro","Consegna","Prova intercorso","Prova orale","Prova scritta","Idoneità"] },
     { key: "priority", label: "Priorità",           options: ["Alta","Media","Bassa"] },
     ...(!editingIsFuture ? [
-      { key: "esito",  label: "Esito",              options: ["Da valutare","Superato","Non superato"] },
+      ...(editingHasVoto ? [] : [{ key: "esito",  label: "Esito",              options: ["Da valutare","Superato","Non superato"] }]),
       { key: "voto",   label: "Voto",               options: ["", ...gradeOptions] },
     ] : []),
     { key: "notes",    label: "Note",               multiline: true },
@@ -325,7 +374,10 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
                 {tab === "Da consegnare" && <Text style={[styles.badge, { backgroundColor: tc.badgeMedBg, color: tc.badgeMedText }]}>Da consegnare</Text>}
                 {tab === "In ritardo"    && <Text style={[styles.badge, { backgroundColor: tc.dangerBg,   color: tc.dangerText   }]}>In ritardo</Text>}
                 {tab === "Svolti"        && <Text style={[styles.badge, { backgroundColor: badge.bg,       color: badge.fg        }]}>{exam.esito || "Da valutare"}</Text>}
-                {exam.esito === "Superato" && exam.voto && (
+                {exam.esito === "Superato" && exam.voto === "Idoneità" && (
+                  <Text style={[styles.badge, { backgroundColor: tc.primary + "22", color: tc.primary, fontSize: 11 }]}>✓ Idoneità</Text>
+                )}
+                {exam.esito === "Superato" && exam.voto && exam.voto !== "Idoneità" && (
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 4,
                     backgroundColor: tc.badgeLowBg, paddingVertical: 3, paddingHorizontal: 8, borderRadius: 8 }}>
                     <Text style={{ fontSize: 14 }}>🏅</Text>
@@ -343,7 +395,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
             {showEsito && (
               <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
                 <Pressable style={[styles.secondaryButton, { flex: 1, backgroundColor: tc.badgeLowBg, flexDirection: "row", gap: 6, justifyContent: "center" }]}
-                  onPress={() => setGradeExam(exam)}>
+                  onPress={() => onSuperatoPressed(exam)}>
                   <MaterialIcons name="check-circle" size={16} color={tc.badgeLowText} />
                   <Text style={[styles.secondaryButtonText, { color: tc.badgeLowText }]}>Superato</Text>
                 </Pressable>
@@ -409,7 +461,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
         value={editing} fields={examFields}
         onChange={setEditing}
         onClose={() => setEditing(null)}
-        onSave={(item) => { upsert("exams", item); setEditing(null); }}
+        onSave={handleSaveExam}
         helpers={helpers}
       />
     </View>
