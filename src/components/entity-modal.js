@@ -40,9 +40,6 @@ export default function EntityModal({
         <View style={styles.modalSheet}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>{title}</Text>
-            <Pressable style={styles.modalCloseButton} onPress={onClose}>
-              <Text style={styles.modalCloseIcon}>✕</Text>
-            </Pressable>
           </View>
           <ScrollView keyboardShouldPersistTaps="handled">
             {fields.map((field) => (

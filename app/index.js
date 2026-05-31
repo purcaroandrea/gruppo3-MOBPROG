@@ -55,7 +55,7 @@ function MainApp() {
     setActiveTab(tabName);
     const index = TABS_ORDER.indexOf(tabName);
     if (index !== -1 && scrollViewRef.current) {
-      scrollViewRef.current.scrollTo({ x: index * screenWidth, animated: true });
+      scrollViewRef.current.scrollTo({ x: index * screenWidth, animated: false });
     }
   }, [screenWidth]);
 

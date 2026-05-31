@@ -585,6 +585,8 @@ bottomNavLabelActive: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
+    paddingTop: Platform.OS === "ios" ? 30 : 20,
+    marginTop: Platform.OS === "ios" ? 50 : 30,
     maxHeight: "85%",
     borderWidth: 1,
     borderColor: themeColors.border,
@@ -608,6 +610,7 @@ bottomNavLabelActive: {
     width: 40,
     height: 40,
     borderRadius: 20,
+    marginRight: 10,
   },
   modalCloseIcon: {
     fontSize: 16,

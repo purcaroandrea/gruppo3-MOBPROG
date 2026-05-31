@@ -190,7 +190,7 @@ const DatePickerField = ({ field, current, set, styles, activeTheme }) => {
         <DateTimePicker
           value={parsed}
           mode="date"
-          display={Platform.OS === "ios" ? "inline" : "default"}
+          display="default"
           themeVariant={activeTheme}
           onChange={(event, selectedDate) => {
             // Su Android l'utente clicca OK/Annulla, quindi possiamo chiudere la modale

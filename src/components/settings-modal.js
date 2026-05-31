@@ -19,15 +19,12 @@ export default function SettingsModal({
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.modalBackdrop}>
-        <View style={[styles.modalSheet, { maxHeight: "90%" }]}>
+        <View style={[styles.modalSheet, { maxHeight: "80%" }]}>
           <View style={styles.modalHeader}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               <MaterialIcons name="settings" size={24} color={themeColors.primary} />
               <Text style={styles.modalTitle}>Impostazioni</Text>
             </View>
-            <Pressable style={styles.modalCloseButton} onPress={onClose}>
-              <Text style={styles.modalCloseIcon}>✕</Text>
-            </Pressable>
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
@@ -125,6 +122,13 @@ export default function SettingsModal({
             </View>
 
           </ScrollView>
+
+          <Pressable 
+            style={[styles.primaryButton, { marginTop: 16 }]} 
+            onPress={onClose}
+          >
+            <Text style={styles.primaryButtonText}>Chiudi</Text>
+          </Pressable>
         </View>
       </View>
     </Modal>

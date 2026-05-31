@@ -338,7 +338,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
                           <DateTimePicker
                             value={parsed}
                             mode="date"
-                            display={Platform.OS === "ios" ? "inline" : "default"}
+                            display="default"
                             themeVariant={activeTheme}
                             onChange={(event, selectedDate) => {
                               if (Platform.OS === "android") {
