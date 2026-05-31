@@ -10,7 +10,7 @@ export default function TutorialModal({ visible, onClose, activeTab }) {
     switch (activeTab) {
       case "Dashboard":
         return {
-          title: "Guida Dashboard 📊",
+          title: "Guida Dashboard",
           subtitle: "La tua panoramica accademica attuale.",
           steps: [
             {
@@ -42,7 +42,7 @@ export default function TutorialModal({ visible, onClose, activeTab }) {
         };
       case "Corsi":
         return {
-          title: "Guida Corsi 📚",
+          title: "Guida Corsi",
           subtitle: "Pianifica e controlla il tuo piano di studi.",
           steps: [
             {
@@ -69,7 +69,7 @@ export default function TutorialModal({ visible, onClose, activeTab }) {
         };
       case "Esami":
         return {
-          title: "Guida Esami 📝",
+          title: "Guida Esami",
           subtitle: "Gestisci esami, consegne e voti.",
           steps: [
             {
@@ -101,7 +101,7 @@ export default function TutorialModal({ visible, onClose, activeTab }) {
         };
       case "Planner":
         return {
-          title: "Guida Planner 📅",
+          title: "Guida Planner",
           subtitle: "Programma le sessioni di studio nel tempo.",
           steps: [
             {
@@ -128,7 +128,7 @@ export default function TutorialModal({ visible, onClose, activeTab }) {
         };
       case "Obiettivi":
         return {
-          title: "Guida Obiettivi 🎯",
+          title: "Guida Obiettivi",
           subtitle: "Fissa traguardi orari per i tuoi corsi.",
           steps: [
             {
