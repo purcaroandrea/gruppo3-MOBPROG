@@ -4,13 +4,14 @@ import { useStyles } from "../../hooks/useStyles";
 import DangerButton from "../components/danger-button";
 import EntityModal from "../components/entity-modal";
 import ScreenTop from "../components/screen-top";
-import SearchBox from "../components/search-box";
+import SearchBar from "../components/search-bar";
 import Segmented from "../components/segmented";
 import PriorityBadge from "../components/priority-badge";
 import { emptySession } from "../data/emptyTemplates";
 import { addDays, formatDate, startOfWeek, weekday, getSessionDaysCount } from "../helpers/date";
 import { minutesToHM } from "../helpers/format";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import DropdownFilter from "../components/dropdown-filter";
 
 export default function PlannerScreen({ data, helpers, upsert, remove }) {
   const { styles, themeColors: tc } = useStyles();
@@ -213,6 +214,92 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
     </View>
   );
 
+  const filtersActive = priorityFilter !== "Tutte" || periodFilter !== "Tutte";
+
+  const clearFilters = () => {
+    setPriorityFilter("Tutte");
+    setPeriodFilter("Tutte");
+    setSortBy("Nome");
+    setSortOrder("Crescente");
+  };
+
+  // Pannello filtri condiviso tra le due viste
+  const filterPanel = (showPeriod = false) => (
+    <SearchBar
+      value={searchQuery}
+      onChangeText={setSearchQuery}
+      placeholder="Cerca per titolo o corso..."
+      filtersActive={filtersActive}
+      onClearFilters={clearFilters}
+    >
+      {/* Periodo (solo vista Lista) */}
+      {showPeriod && (
+        <View>
+          <Text style={[styles.label, { marginBottom: 6 }]}>Periodo</Text>
+          <Segmented
+            options={["Tutte", "Future", "Passate"]}
+            value={periodFilter}
+            onChange={setPeriodFilter}
+          />
+        </View>
+      )}
+
+      {/* Priorità */}
+      <View style={{ alignItems: "flex-start" }}>
+        <Text style={[styles.label, { marginBottom: 6 }]}>Priorità</Text>
+        <DropdownFilter
+          label="Priorità"
+          value={priorityFilter}
+          options={["Tutte", "Alta", "Media", "Bassa"]}
+          onChange={setPriorityFilter}
+        />
+      </View>
+
+      {/* Ordinamento */}
+      <View>
+        <Text style={[styles.label, { marginBottom: 6 }]}>Ordina per</Text>
+        <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+          {[
+            { key: "Nome", label: "Nome" },
+            { key: "Data di inserimento", label: "Data" },
+            { key: "Corso", label: "Corso" },
+          ].map((opt) => {
+            const active = sortBy === opt.key;
+            const activeDir = active ? sortOrder : null;
+            return (
+              <Pressable
+                key={opt.key}
+                onPress={() => handleSortPress(opt.key)}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 4,
+                  paddingVertical: 6,
+                  paddingHorizontal: 12,
+                  borderRadius: 16,
+                  backgroundColor: active ? tc.primary + "15" : tc.card,
+                  borderWidth: 1.5,
+                  borderColor: active ? tc.primary : tc.borderDark,
+                }}
+              >
+                <Text style={{ fontSize: 12, fontWeight: "700", color: active ? tc.primary : tc.textBody }}>
+                  {opt.label}
+                </Text>
+                {active && (
+                  <MaterialIcons
+                    name={activeDir === "Crescente" ? "arrow-upward" : "arrow-downward"}
+                    size={14}
+                    color={tc.primary}
+                  />
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+    </SearchBar>
+  );
+
   return (
     <View>
       <ScreenTop
@@ -231,62 +318,7 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
         <>
           {/* FILTRI E ORDINAMENTO SETTIMANALE */}
           <View style={styles.panel}>
-            <SearchBox
-              placeholder="Cerca per titolo o corso..."
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-
-            <Text style={[styles.label, { marginTop: 8, marginBottom: 4 }]}>Priorità</Text>
-            <Segmented
-              options={["Tutte", "Alta", "Media", "Bassa"]}
-              value={priorityFilter}
-              onChange={setPriorityFilter}
-            />
-
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
-              <Text style={{ fontSize: 13, color: tc.textMuted, fontWeight: "600" }}>Ordina per:</Text>
-              {[
-                { key: "Nome", label: "Nome" },
-                { key: "Data di inserimento", label: "Data" },
-                { key: "Corso", label: "Corso" }
-              ].map((opt) => {
-                const active = sortBy === opt.key;
-                const activeDir = active ? sortOrder : null;
-                return (
-                  <Pressable
-                    key={opt.key}
-                    onPress={() => handleSortPress(opt.key)}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 4,
-                      paddingVertical: 6,
-                      paddingHorizontal: 12,
-                      borderRadius: 16,
-                      backgroundColor: active ? tc.primary + "15" : tc.card,
-                      borderWidth: 1.5,
-                      borderColor: active ? tc.primary : tc.borderDark,
-                    }}
-                  >
-                    <Text style={{
-                      fontSize: 12,
-                      fontWeight: "700",
-                      color: active ? tc.primary : tc.textBody
-                    }}>
-                      {opt.label}
-                    </Text>
-                    {active && (
-                      <MaterialIcons
-                        name={activeDir === "Crescente" ? "arrow-upward" : "arrow-downward"}
-                        size={14}
-                        color={tc.primary}
-                      />
-                    )}
-                  </Pressable>
-                );
-              })}
-            </View>
+            {filterPanel(false)}
           </View>
 
           {/* BARRA NAVIGAZIONE SETTIMANA */}
@@ -357,69 +389,7 @@ export default function PlannerScreen({ data, helpers, upsert, remove }) {
         <>
           {/* VISTA LISTA COMPLETA */}
           <View style={styles.panel}>
-            <SearchBox
-              placeholder="Cerca per titolo o corso..."
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            
-            <Text style={[styles.label, { marginTop: 10, marginBottom: 6 }]}>Periodo</Text>
-            <Segmented
-              options={["Tutte", "Future", "Passate"]}
-              value={periodFilter}
-              onChange={setPeriodFilter}
-            />
-
-            <Text style={[styles.label, { marginTop: 10, marginBottom: 6 }]}>Priorità</Text>
-            <Segmented
-              options={["Tutte", "Alta", "Media", "Bassa"]}
-              value={priorityFilter}
-              onChange={setPriorityFilter}
-            />
-
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
-              <Text style={{ fontSize: 13, color: tc.textMuted, fontWeight: "600" }}>Ordina per:</Text>
-              {[
-                { key: "Nome", label: "Nome" },
-                { key: "Data di inserimento", label: "Data" },
-                { key: "Corso", label: "Corso" }
-              ].map((opt) => {
-                const active = sortBy === opt.key;
-                const activeDir = active ? sortOrder : null;
-                return (
-                  <Pressable
-                    key={opt.key}
-                    onPress={() => handleSortPress(opt.key)}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 4,
-                      paddingVertical: 6,
-                      paddingHorizontal: 12,
-                      borderRadius: 16,
-                      backgroundColor: active ? tc.primary + "15" : tc.card,
-                      borderWidth: 1.5,
-                      borderColor: active ? tc.primary : tc.borderDark,
-                    }}
-                  >
-                    <Text style={{
-                      fontSize: 12,
-                      fontWeight: "700",
-                      color: active ? tc.primary : tc.textBody
-                    }}>
-                      {opt.label}
-                    </Text>
-                    {active && (
-                      <MaterialIcons
-                        name={activeDir === "Crescente" ? "arrow-upward" : "arrow-downward"}
-                        size={14}
-                        color={tc.primary}
-                      />
-                    )}
-                  </Pressable>
-                );
-              })}
-            </View>
+            {filterPanel(true)}
           </View>
 
           {allSessions.map(renderSessionCard)}

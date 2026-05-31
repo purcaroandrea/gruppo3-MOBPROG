@@ -107,10 +107,10 @@ export default function SettingsModal({
             {/* ZONA DI PERICOLO */}
             <View style={[styles.panel, { borderColor: themeColors.dangerText + "40", borderWidth: 1.5 }]}>
               <Text style={[styles.panelTitle, { color: themeColors.dangerText, marginBottom: 6 }]}>
-                Zona di Pericolo ⚠️
+                Attenzione ⚠️
               </Text>
               <Text style={[styles.bodyText, { fontSize: 13, marginBottom: 14 }]}>
-                {"Ripristina l'applicazione allo stato iniziale, eliminando tutti i dati inseriti (corsi, esami, planner e obiettivi)."}
+                {"Questa opzione ripristina l'applicazione allo stato iniziale, eliminando tutti i dati inseriti (corsi, esami, planner e obiettivi)."}
               </Text>
               <View style={{ alignItems: "flex-start" }}>
                 <DangerButton
@@ -118,6 +118,8 @@ export default function SettingsModal({
                   itemName="Tutti i dati dell'applicazione"
                   itemType="database"
                   warningMessage="Questa azione eliminerà permanentemente tutti i tuoi corsi, esami, obiettivi e sessioni di studio, ripristinando il database ai dati di fabbrica."
+                  label="Ripristina"
+                  confirmLabel="Ripristina"
                 />
               </View>
             </View>

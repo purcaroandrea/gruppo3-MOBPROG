@@ -5,7 +5,7 @@ import { useStyles } from "../../hooks/useStyles";
 import Segmented from "../components/segmented";
 
 export default function PomodoroScreen({ data, upsert, pomodoroProps }) {
-  const { styles } = useStyles();
+  const { styles, themeColors: tc } = useStyles();
   const {
     mode,
     setMode,
@@ -158,8 +158,8 @@ export default function PomodoroScreen({ data, upsert, pomodoroProps }) {
           style={[
             styles.secondaryButton,
             mode === "Studio"
-              ? styles.switchButtonStudio
-              : styles.switchButtonPausa,
+              ? { backgroundColor: tc.badgeLowBg }
+              : { backgroundColor: tc.primary },
           ]}
           onPress={() => reset(mode === "Studio" ? "Pausa" : "Studio")}
         >
@@ -167,8 +167,8 @@ export default function PomodoroScreen({ data, upsert, pomodoroProps }) {
             style={[
               styles.secondaryButtonText,
               mode === "Studio"
-                ? styles.switchButtonTextStudio
-                : styles.switchButtonTextPausa,
+                ? { color: tc.badgeLowText, fontWeight: "700" }
+                : { color: tc.textOnPrimary, fontWeight: "700" },
             ]}
           >
             {mode === "Studio" ? "Pausa pomodoro" : "Studio"}

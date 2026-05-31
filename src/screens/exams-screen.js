@@ -3,17 +3,19 @@ import React from "react";
 import { Modal, Platform, Pressable, Text, TextInput, View } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
 import DangerButton from "../components/danger-button";
+import DropdownFilter from "../components/dropdown-filter";
 import EntityModal from "../components/entity-modal";
 import PriorityBadge from "../components/priority-badge";
 import ScreenTop from "../components/screen-top";
-import SearchBox from "../components/search-box";
+import SearchBar from "../components/search-bar";
 import Segmented from "../components/segmented";
 import { emptyExam } from "../data/emptyTemplates";
 import { formatDate } from "../helpers/date";
 
-const isoToday = new Date().toISOString().slice(0, 10);
+const isoToday         = new Date().toISOString().slice(0, 10);
 const esitoFilterOptions = ["Tutti", "Da valutare", "Superato", "Non superato"];
-const gradeOptions = ["18","19","20","21","22","23","24","25","26","27","28","29","30","30L"];
+const gradeOptions     = ["18","19","20","21","22","23","24","25","26","27","28","29","30","30L"];
+const tabOptions       = ["Tutti", "Da svolgere", "Da consegnare", "In ritardo", "Svolti"];
 
 const esitoBadge = (tc, esito) => {
   if (esito === "Superato")     return { bg: tc.badgeLowBg, fg: tc.badgeLowText };
@@ -65,8 +67,17 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
   const isFuture     = (e) => e.date >= isoToday && !isDone(e) && !isConsegna(e);
   const isDoneOrPast = (e) => !isFuture(e) && !isOverdue(e) && !isToDeliver(e);
 
-  const overdueCount   = data.exams.filter(isOverdue).length;
-  const deliverCount   = data.exams.filter(isToDeliver).length;
+  const overdueCount = data.exams.filter(isOverdue).length;
+  const deliverCount = data.exams.filter(isToDeliver).length;
+
+  // Etichette arricchite per il dropdown Categoria
+  const tabDropdownLabels = Object.fromEntries(
+    tabOptions.map((opt) => {
+      if (opt === "Da consegnare" && deliverCount > 0) return [opt, `Da consegnare (${deliverCount})`];
+      if (opt === "In ritardo"    && overdueCount > 0) return [opt, `In ritardo (${overdueCount})`];
+      return [opt, opt];
+    })
+  );
 
   // --- Azioni sugli esami ---
   const markSuperato = (exam, voto, isForCourse = false) => {
@@ -83,13 +94,10 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
   const markCompletata = (exam) =>
     upsert("exams", { ...exam, completed: true });
 
-  // Gestisce il click su "Superato" in base al tipo di esame
   const onSuperatoPressed = (exam) => {
     if (exam.type === "Idoneità") {
-      // Per Idoneità, chiedi direttamente se il corso deve passare a Superato
       const course = exam.courseId ? helpers.courseById(exam.courseId) : null;
       if (course && course.status !== "Da iniziare" && course.status !== "In corso") {
-        // Se il corso è in completato, non chiedi voto, metti direttamente superato
         if (course.status === "Completato") {
           markSuperato(exam, "Idoneità", true);
         } else {
@@ -100,21 +108,14 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
         markSuperato(exam, "Idoneità", false);
       }
     } else {
-      // Per altri tipi, apri GradeModal
       setGradeExam(exam);
     }
   };
 
-  // Dopo GradeModal: se c'è un voto e un corso associato, si apre CourseGradeModal (solo se il corso non è da iniziare, in corso o completato)
   const onGradeSelected = (exam, voto) => {
     setGradeExam(null);
-    if (!voto) {
-      markSuperato(exam, "");
-      return;
-    }
-    
+    if (!voto) { markSuperato(exam, ""); return; }
     const course = exam.courseId ? helpers.courseById(exam.courseId) : null;
-    // Non chiedere il voto se il corso è "Completato" (il quale non deve avere voto)
     if (course && course.status !== "Da iniziare" && course.status !== "In corso" && course.status !== "Completato") {
       setCgmVoto(voto);
       setCgmExam(exam);
@@ -123,12 +124,10 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
     }
   };
 
-  // Risposta al CourseGradeModal
   const onCourseGradeAnswer = (isForCourse) => {
     if (!cgmExam) return;
     if (isForCourse) {
       const course = helpers.courseById(cgmExam.courseId);
-      // Se il corso ha già un voto (assegnato da un altro esame), chiedi cosa fare
       if (course?.actualGrade) {
         const prevExam = data.exams.find(
           (e) => e.courseId === cgmExam.courseId && e.isGradeForCourse && e.id !== cgmExam.id
@@ -144,41 +143,31 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
     setCgmVoto(null);
   };
 
-  // Risoluzione conflitto voto corso
   const onConflictResolve = (useNew) => {
     if (!conflictData) return;
     if (useNew) {
-      // Toglie il badge "voto corso" all'esame precedente
       if (conflictData.prevExam) {
         upsert("exams", { ...conflictData.prevExam, isGradeForCourse: false });
       }
       markSuperato(conflictData.exam, conflictData.voto, true);
     } else {
-      // Mantiene il vecchio, salva il nuovo solo come voto esame
       markSuperato(conflictData.exam, conflictData.voto, false);
     }
     setConflictData(null);
   };
 
-  // Salvataggio esame da form
   const handleSaveExam = (item) => {
-    // Se il voto è presente, metti automaticamente a "Superato"
     if (item.voto) {
       const examToSave = { ...item, esito: "Superato", completed: true };
-      
-      // Apri CourseGradeModal per chiedere se il voto è del corso
       const course = item.courseId ? helpers.courseById(item.courseId) : null;
       if (course && course.status !== "Da iniziare" && course.status !== "In corso") {
-        // Non salvare ancora, attendi la risposta del modal
         setCgmVoto(item.voto);
         setCgmExam(examToSave);
       } else {
-        // Nessun modal, salva direttamente
         upsert("exams", examToSave);
       }
       setEditing(null);
     } else {
-      // Se non c'è voto, salva normalmente
       upsert("exams", item);
       setEditing(null);
     }
@@ -200,42 +189,32 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
     .filter((e) => (!dateFrom || e.date >= dateFrom) && (!dateTo || e.date <= dateTo))
     .filter((e) => tab !== "Svolti" || esitoFilter === "Tutti" || (e.esito || "Da valutare") === esitoFilter)
     .sort((a, b) => {
-      const field = sortBy || "date";
+      const field     = sortBy || "date";
       const direction = sortOrder || (tab === "Svolti" ? "desc" : "asc");
-
-      let comparison = 0;
-      if (field === "date") {
-        comparison = a.date.localeCompare(b.date);
-      } else if (field === "title") {
-        comparison = a.title.localeCompare(b.title);
-      } else if (field === "course") {
+      let comparison  = 0;
+      if (field === "date")   comparison = a.date.localeCompare(b.date);
+      else if (field === "title")  comparison = a.title.localeCompare(b.title);
+      else if (field === "course") {
         const aCourse = helpers.courseById(a.courseId)?.name || "";
         const bCourse = helpers.courseById(b.courseId)?.name || "";
         comparison = aCourse.localeCompare(bCourse);
       }
-
       return direction === "asc" ? comparison : -comparison;
     });
 
-  const tabLabels = {};
-  if (deliverCount > 0) tabLabels["Da consegnare"] = `Da consegnare (${deliverCount})`;
-  if (overdueCount > 0) tabLabels["In ritardo"]    = `In ritardo (${overdueCount})`;
-
-  // Campi del form: negli esami da svolgere non ha senso scegliere esito o voto
   const editingIsFuture = editing && !isDone(editing) && (editing.date || "") >= isoToday;
-  // Se c'è un voto, non mostrare il campo esito (andrà automaticamente a "Superato")
-  const editingHasVoto = editing?.voto;
+  const editingHasVoto  = editing?.voto;
   const examFields = [
-    { key: "title",    label: "Titolo *",          required: true },
-    { key: "courseId", label: "Corso associato",    type: "course" },
-    { key: "date",     label: "Data *",             required: true },
-    { key: "type",     label: "Tipo",               options: ["Altro","Consegna","Prova intercorso","Prova orale","Prova scritta","Idoneità"] },
-    { key: "priority", label: "Priorità",           options: ["Alta","Media","Bassa"] },
+    { key: "title",    label: "Titolo *",       required: true },
+    { key: "courseId", label: "Corso associato", type: "course" },
+    { key: "date",     label: "Data *",          required: true },
+    { key: "type",     label: "Tipo",            options: ["Altro","Consegna","Prova intercorso","Prova orale","Prova scritta","Idoneità"] },
+    { key: "priority", label: "Priorità",        options: ["Alta","Media","Bassa"] },
     ...(!editingIsFuture ? [
-      ...(editingHasVoto ? [] : [{ key: "esito",  label: "Esito",              options: ["Da valutare","Superato","Non superato"] }]),
-      { key: "voto",   label: "Voto",               options: ["", ...gradeOptions] },
+      ...(editingHasVoto ? [] : [{ key: "esito", label: "Esito", options: ["Da valutare","Superato","Non superato"] }]),
+      { key: "voto", label: "Voto", options: ["", ...gradeOptions] },
     ] : []),
-    { key: "notes",    label: "Note",               multiline: true },
+    { key: "notes", label: "Note", multiline: true },
   ];
 
   const dateInputStyle = {
@@ -243,77 +222,113 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
     border: `1px solid ${tc.borderDark}`, backgroundColor: tc.card, color: tc.textTitle,
   };
 
+  const dateFiltersActive = Boolean(dateFrom || dateTo);
+  const filtersActive = tab !== "Da svolgere" || dateFiltersActive;
+
+  const clearFilters = () => {
+    setTab("Da svolgere");
+    setEsitoFilter("Tutti");
+    setDateFrom("");
+    setDateTo("");
+    setSortBy("date");
+    setSortOrder(null);
+  };
+
   return (
     <View>
       <ScreenTop title="Esami e scadenze" button="Nuovo esame" onPress={() => setEditing({ ...emptyExam })} />
-      <SearchBox value={query} onChangeText={setQuery} placeholder="Cerca esame, corso o tipo..." />
 
-      {/* Barra filtro data */}
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 }}>
-        <Pressable
-          style={[
-            styles.secondaryButton,
-            { flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 8, paddingHorizontal: 12 },
-            (showDateFilter || dateFrom || dateTo) && { backgroundColor: tc.primary },
-          ]}
-          onPress={() => setShowDateFilter(!showDateFilter)}
-        >
-          <MaterialIcons name="date-range" size={16}
-            color={(showDateFilter || dateFrom || dateTo) ? tc.textOnPrimary : tc.textBody} />
-          <Text style={[styles.secondaryButtonText, { fontSize: 13 },
-            (showDateFilter || dateFrom || dateTo) && { color: tc.textOnPrimary }]}>
-            {(dateFrom || dateTo) ? "Filtro date attivo" : "Filtra per data"}
-          </Text>
-        </Pressable>
-        {(dateFrom || dateTo) && (
-          <Pressable style={[styles.secondaryButton, { paddingVertical: 8, paddingHorizontal: 12 }]}
-            onPress={() => { setDateFrom(""); setDateTo(""); }}>
-            <Text style={[styles.secondaryButtonText, { fontSize: 13 }]}>Rimuovi filtro</Text>
-          </Pressable>
-        )}
-      </View>
-
-      {showDateFilter && (
-        <View style={[styles.card, { marginBottom: 14 }]}>
-          <Text style={[styles.label, { marginBottom: 8 }]}>Periodo</Text>
-          <View style={{ flexDirection: "row", gap: 12 }}>
-            {[["Da", dateFrom, setDateFrom], ["A", dateTo, setDateTo]].map(([label, val, setVal]) => (
-              <View key={label} style={{ flex: 1 }}>
-                <Text style={[styles.rowMeta, { marginBottom: 4 }]}>{label}</Text>
-                {Platform.OS === "web"
-                  ? <input type="date" value={val} onChange={(e) => setVal(e.target.value)} style={dateInputStyle} />
-                  : <TextInput style={[styles.input, { marginBottom: 0 }]} value={val}
-                      onChangeText={setVal} placeholder="YYYY-MM-DD" placeholderTextColor={tc.textMuted} />
-                }
-              </View>
-            ))}
-          </View>
+      {/* Barra di ricerca con filtri integrati */}
+      <SearchBar
+        value={query}
+        onChangeText={setQuery}
+        placeholder="Cerca esame, corso o tipo..."
+        filtersActive={filtersActive}
+        onClearFilters={clearFilters}
+      >
+        {/* Categoria */}
+        <View style={{ alignItems: "flex-start" }}>
+          <Text style={[styles.label, { marginBottom: 6 }]}>Categoria</Text>
+          <DropdownFilter
+            label="Categoria"
+            value={tab}
+            options={tabOptions}
+            labels={tabDropdownLabels}
+            onChange={(v) => {
+              setTab(v);
+              if (v !== "Svolti") setEsitoFilter("Tutti");
+              setSortBy("date");
+              setSortOrder(null);
+            }}
+          />
         </View>
-      )}
 
-      <Segmented
-        options={["Tutti", "Da svolgere", "Da consegnare", "In ritardo", "Svolti"]}
-        labels={tabLabels} value={tab}
-        onChange={(v) => {
-          setTab(v);
-          if (v !== "Svolti") setEsitoFilter("Tutti");
-          setSortBy("date");
-          setSortOrder(null);
-        }}
-      />
+        {/* Filtro data */}
+        <View style={{ alignItems: "flex-start" }}>
+          <Text style={[styles.label, { marginBottom: 6 }]}>Data</Text>
+          <Pressable
+            onPress={() => setShowDateFilter(!showDateFilter)}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 4,
+              paddingVertical: 8,
+              paddingHorizontal: 13,
+              borderRadius: 20,
+              backgroundColor: (showDateFilter || dateFiltersActive) ? tc.primary : tc.card,
+              borderWidth: 1.5,
+              borderColor: (showDateFilter || dateFiltersActive) ? tc.primary : tc.borderDark,
+            }}
+          >
+            <Text style={{
+              fontSize: 13,
+              fontWeight: "600",
+              color: (showDateFilter || dateFiltersActive) ? tc.textOnPrimary : tc.textBody,
+            }}>
+              {dateFiltersActive ? "Date attive" : "Data"}
+            </Text>
+            <MaterialIcons
+              name="keyboard-arrow-down"
+              size={17}
+              color={(showDateFilter || dateFiltersActive) ? tc.textOnPrimary : tc.textBody}
+            />
+          </Pressable>
+        </View>
+
+        {/* Periodo di date espandibile */}
+        {showDateFilter && (
+          <View style={[styles.card, { marginTop: 4, borderWidth: 1.5, borderColor: tc.borderDark }]}>
+            <Text style={[styles.label, { marginBottom: 8 }]}>Periodo</Text>
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              {[["Da", dateFrom, setDateFrom], ["A", dateTo, setDateTo]].map(([lbl, val, setVal]) => (
+                <View key={lbl} style={{ flex: 1 }}>
+                  <Text style={[styles.rowMeta, { marginBottom: 4 }]}>{lbl}</Text>
+                  {Platform.OS === "web"
+                    ? <input type="date" value={val} onChange={(e) => setVal(e.target.value)} style={dateInputStyle} />
+                    : <TextInput style={[styles.input, { marginBottom: 0 }]} value={val}
+                        onChangeText={setVal} placeholder="YYYY-MM-DD" placeholderTextColor={tc.textMuted} />
+                  }
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+      </SearchBar>
+
+      {/* Esito (solo tab Svolti) */}
       {tab === "Svolti" && (
         <Segmented options={esitoFilterOptions} value={esitoFilter} onChange={setEsitoFilter} />
       )}
 
       {/* Barra di ordinamento */}
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 10, marginBottom: 14, flexWrap: "wrap" }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4, marginBottom: 14, flexWrap: "wrap" }}>
         <Text style={{ fontSize: 13, color: tc.textMuted, fontWeight: "600" }}>Ordina per:</Text>
         {[
-          { key: "date", label: "Data" },
-          { key: "title", label: "Titolo" },
-          { key: "course", label: "Corso" }
+          { key: "date",   label: "Data" },
+          { key: "title",  label: "Titolo" },
+          { key: "course", label: "Corso" },
         ].map((opt) => {
-          const active = sortBy === opt.key;
+          const active    = sortBy === opt.key;
           const activeDir = active ? (sortOrder || (tab === "Svolti" ? "desc" : "asc")) : null;
           return (
             <Pressable
@@ -331,11 +346,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
                 borderColor: active ? tc.primary : tc.borderDark,
               }}
             >
-              <Text style={{
-                fontSize: 12,
-                fontWeight: "700",
-                color: active ? tc.primary : tc.textBody
-              }}>
+              <Text style={{ fontSize: 12, fontWeight: "700", color: active ? tc.primary : tc.textBody }}>
                 {opt.label}
               </Text>
               {active && (
@@ -350,6 +361,7 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
         })}
       </View>
 
+      {/* Lista esami */}
       {exams.map((exam) => {
         const courseName    = helpers.courseById(exam.courseId)?.name;
         const badge         = esitoBadge(tc, exam.esito);
@@ -468,13 +480,13 @@ export default function ExamsScreen({ data, helpers, upsert, remove, addSuggeste
   );
 }
 
-/* Selezione voto*/
+/* Selezione voto */
 function GradeModal({ visible, tc, styles, onClose, onSave }) {
   const [sel, setSel] = React.useState(null);
   React.useEffect(() => { if (visible) setSel(null); }, [visible]);
 
-  const label    = sel === "" ? "Nessun voto" : sel ? `(${sel})` : "";
-  const canSave  = sel !== null;
+  const label   = sel === "" ? "Nessun voto" : sel ? `(${sel})` : "";
+  const canSave = sel !== null;
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -593,7 +605,7 @@ function CourseGradeModal({ visible, tc, voto, courseName, onClose, onYes, onNo 
   );
 }
 
-/* Se il corso ha già un voto*/
+/* Se il corso ha già un voto */
 function ConflictGradeModal({ visible, tc, data, onKeepOld, onUseNew, onClose }) {
   if (!data) return null;
   const { voto, course, prevExam } = data;

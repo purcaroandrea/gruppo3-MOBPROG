@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { Pressable, Text, Modal, View } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useState } from "react";
+import { Modal, Pressable, Text, View } from "react-native";
 import { useStyles } from "../../hooks/useStyles";
 
 export default function DangerButton({
@@ -9,6 +9,8 @@ export default function DangerButton({
   itemType = "elemento",
   warningMessage = "",
   extraWarning = "",
+  label = "Elimina",
+  confirmLabel = "Elimina",
 }) {
   const { styles, themeColors } = useStyles();
   const [modalVisible, setModalVisible] = useState(false);
@@ -18,10 +20,12 @@ export default function DangerButton({
     onPress();
   };
 
+  const isReset = label === "Ripristina";
+
   return (
     <>
       <Pressable style={styles.dangerButton} onPress={() => setModalVisible(true)}>
-        <Text style={styles.dangerButtonText}>Elimina</Text>
+        <Text style={styles.dangerButtonText}>{label}</Text>
       </Pressable>
 
       <Modal
@@ -33,22 +37,37 @@ export default function DangerButton({
         <View style={styles.confirmBackdrop}>
           <View style={styles.confirmCard}>
             <View style={styles.confirmIconContainer}>
-              <MaterialIcons name="delete-forever" size={32} color={themeColors.dangerText} />
+              <MaterialIcons
+                name={isReset ? "settings-backup-restore" : "delete-forever"}
+                size={32}
+                color={themeColors.dangerText}
+              />
             </View>
 
-            <Text style={styles.confirmTitle}>Conferma eliminazione</Text>
+            <Text style={styles.confirmTitle}>
+              {isReset ? "Conferma ripristino" : "Conferma eliminazione"}
+            </Text>
             
             <Text style={styles.confirmMessage}>
-              Sei sicuro di voler eliminare questo{" "}
-              <Text style={{ fontWeight: "700" }}>{itemType}</Text>
-              {itemName ? (
+              {isReset ? (
                 <>
-                  : <Text style={{ fontWeight: "700" }}>{itemName}</Text>
+                  Sei sicuro di voler ripristinare il{" "}
+                  <Text style={{ fontWeight: "700" }}>{itemType}</Text>?
                 </>
               ) : (
-                ""
+                <>
+                  Sei sicuro di voler eliminare questo{" "}
+                  <Text style={{ fontWeight: "700" }}>{itemType}</Text>
+                  {itemName ? (
+                    <>
+                      : <Text style={{ fontWeight: "700" }}>{itemName}</Text>
+                    </>
+                  ) : (
+                    ""
+                  )}
+                  ?
+                </>
               )}
-              ?
             </Text>
 
             {warningMessage ? (
@@ -77,7 +96,7 @@ export default function DangerButton({
               </Pressable>
 
               <Pressable style={styles.confirmButtonDelete} onPress={handleConfirm}>
-                <Text style={styles.confirmButtonDeleteText}>Elimina</Text>
+                <Text style={styles.confirmButtonDeleteText}>{confirmLabel}</Text>
               </Pressable>
             </View>
           </View>
