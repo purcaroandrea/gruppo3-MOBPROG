@@ -46,6 +46,7 @@ function MainApp() {
   const [completedPomodoros, setCompletedPomodoros] = useState(0);
   const [selectedSessionId, setSelectedSessionId] = useState("");
   const [settingsVisible, setSettingsVisible] = useState(false);
+  const [prefilledSession, setPrefilledSession] = useState(null);
 
   const scrollViewRef = useRef(null);
   const { width: screenWidth } = useWindowDimensions();
@@ -132,11 +133,12 @@ function MainApp() {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = tomorrow.toISOString().slice(0, 10);
     
-    upsert("sessions", {
+    setPrefilledSession({
       ...emptySession,
       title: `Ripasso per ${exam.title}`,
       courseId: exam.courseId,
       examId: exam.id,
+      priority: exam.priority || "Media",
       date: tomorrowStr,
       endDate: tomorrowStr,
       plannedHours: "90", 
@@ -311,6 +313,8 @@ function MainApp() {
     selectedCourseId,
     setSelectedCourseId,
     addSuggestedSession,
+    prefilledSession,
+    setPrefilledSession,
     pomodoroProps: {
       mode: pomodoroMode,
       setMode: setPomodoroMode,
@@ -351,39 +355,8 @@ function MainApp() {
     </View>
   </View>
 
-  {/* Destra: I due bottoni */}
+  {/* Destra: Il bottone Impostazioni */}
   <View style={{ flexDirection: "row", gap: 6, alignItems: "center", flexShrink: 0 }}>
-    {/* Pomodoro */}
-    <Pressable
-      style={[
-        isLargeScreen ? styles.headerIconButton : styles.iconButton,
-        activeTab === "Pomodoro" && styles.headerIconButtonActive,
-      ]}
-      onPress={() => goToTab("Pomodoro")}
-    >
-      <MaterialIcons
-        name="timer"
-        size={isLargeScreen ? 22 : 20}
-        color={
-          activeTab === "Pomodoro"
-            ? themeColors.textOnPrimary
-            : themeColors.textTitle
-        }
-      />
-      {isLargeScreen && (
-        <Text
-          style={[
-            styles.headerIconLabel,
-            activeTab === "Pomodoro" && styles.headerIconLabelActive,
-          ]}
-        >
-          {pomodoroRunning
-            ? `Pomodoro (${Math.floor(pomodoroSecondsLeft / 60)}:${(pomodoroSecondsLeft % 60).toString().padStart(2, "0")})`
-            : "Pomodoro"}
-        </Text>
-      )}
-    </Pressable>
-
     {/* Impostazioni */}
     <Pressable
       style={[
@@ -578,6 +551,22 @@ function MainApp() {
     </Text>
   </Pressable>
 </View>
+
+      {/* Pomodoro Timer FAB */}
+      <Pressable
+        style={[
+          styles.fab,
+          activeTab === "Pomodoro" && styles.fabActive,
+        ]}
+        onPress={() => goToTab("Pomodoro")}
+      >
+        <MaterialIcons
+          name="timer"
+          size={28}
+          color={themeColors.textOnPrimary}
+        />
+      </Pressable>
+
       <SettingsModal
         visible={settingsVisible}
         onClose={() => setSettingsVisible(false)}

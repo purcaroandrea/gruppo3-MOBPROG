@@ -13,9 +13,16 @@ import { minutesToHM } from "../helpers/format";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import DropdownFilter from "../components/dropdown-filter";
 
-export default function PlannerScreen({ data, helpers, upsert, remove }) {
+export default function PlannerScreen({ data, helpers, upsert, remove, prefilledSession, setPrefilledSession }) {
   const { styles, themeColors: tc } = useStyles();
   const [editing, setEditing] = React.useState(null);
+
+  React.useEffect(() => {
+    if (prefilledSession) {
+      setEditing(prefilledSession);
+      setPrefilledSession(null);
+    }
+  }, [prefilledSession, setPrefilledSession]);
 
   const handleEdit = (session) => {
     setEditing({
