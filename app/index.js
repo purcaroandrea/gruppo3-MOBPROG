@@ -249,28 +249,36 @@ function MainApp() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pomodoroRunning, pomodoroMode]);
 
+  const lastProcessedPomodoroRef = useRef(0);
+
   // Salva il tempo impostato in automatico sull'attività selezionata e sugli obiettivi collegati
   useEffect(() => {
-    if (completedPomodoros > 0 && selectedSessionId) {
-      const session = data?.sessions?.find((s) => s.id === selectedSessionId);
+    if (completedPomodoros > lastProcessedPomodoroRef.current) {
+      lastProcessedPomodoroRef.current = completedPomodoros;
+      
+      if (selectedSessionId) {
+        const session = data?.sessions?.find((s) => s.id === selectedSessionId);
 
-      if (session) {
-        const currentActual = parseInt(session.actualHours || "0", 10);
-        const pomodoroMins = parseInt(settings.pomodoroStudyTime, 10) || 25;
-        const newActual = currentActual + pomodoroMins;
-        upsert("sessions", { ...session, actualHours: String(newActual) });
+        if (session) {
+          const currentActual = parseInt(session.actualHours || "0", 10);
+          const pomodoroMins = parseInt(settings.pomodoroStudyTime, 10) || 25;
+          const newActual = currentActual + pomodoroMins;
+          upsert("sessions", { ...session, actualHours: String(newActual) });
 
-        // Aggiorna anche l'obiettivo collegato direttamente all'attività
-        if (session.goalId) {
-          const linkedGoal = data?.goals?.find(
-            (g) => g.id === session.goalId && !g.completed
-          );
-          if (linkedGoal) {
-            const goalActual = parseInt(linkedGoal.actualHours || "0", 10);
-            upsert("goals", { ...linkedGoal, actualHours: String(goalActual + pomodoroMins) });
+          // Aggiorna anche l'obiettivo collegato direttamente all'attività
+          if (session.goalId) {
+            const linkedGoal = data?.goals?.find(
+              (g) => g.id === session.goalId && !g.completed
+            );
+            if (linkedGoal) {
+              const goalActual = parseInt(linkedGoal.actualHours || "0", 10);
+              upsert("goals", { ...linkedGoal, actualHours: String(goalActual + pomodoroMins) });
+            }
           }
         }
       }
+    } else if (completedPomodoros === 0) {
+      lastProcessedPomodoroRef.current = 0;
     }
   }, [completedPomodoros, selectedSessionId, data?.sessions, data?.goals, settings.pomodoroStudyTime, upsert]);
 

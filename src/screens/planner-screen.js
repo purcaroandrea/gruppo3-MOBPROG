@@ -80,13 +80,19 @@ export default function PlannerScreen({ data, helpers, upsert, remove, prefilled
       let res = 0;
       if (sortBy === "Nome") {
         res = (a.title || "").localeCompare(b.title || "");
-      } else if (sortBy === "Data di inserimento") {
-        const timeA = parseInt(a.id?.match(/\d+/)?.[0] || "0", 10);
-        const timeB = parseInt(b.id?.match(/\d+/)?.[0] || "0", 10);
-        res = timeA - timeB;
+      } else if (sortBy === "Data") {
+        res = (a.date || "").localeCompare(b.date || "") || (a.title || "").localeCompare(b.title || "");
       } else if (sortBy === "Corso") {
-        const courseA = helpers.courseById(a.courseId)?.name || "Z";
-        const courseB = helpers.courseById(b.courseId)?.name || "Z";
+        const examA = a.examId ? helpers.examById(a.examId) : null;
+        const goalA = a.goalId ? helpers.goalById(a.goalId) : null;
+        const courseIdA = examA?.courseId || goalA?.courseId;
+        const courseA = courseIdA ? helpers.courseById(courseIdA)?.name || "Z" : "Z";
+
+        const examB = b.examId ? helpers.examById(b.examId) : null;
+        const goalB = b.goalId ? helpers.goalById(b.goalId) : null;
+        const courseIdB = examB?.courseId || goalB?.courseId;
+        const courseB = courseIdB ? helpers.courseById(courseIdB)?.name || "Z" : "Z";
+
         res = courseA.localeCompare(courseB) || (a.title || "").localeCompare(b.title || "");
       }
       return sortOrder === "Crescente" ? res : -res;
@@ -268,7 +274,7 @@ export default function PlannerScreen({ data, helpers, upsert, remove, prefilled
         <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
           {[
             { key: "Nome", label: "Nome" },
-            { key: "Data di inserimento", label: "Data" },
+            { key: "Data", label: "Data" },
             { key: "Corso", label: "Corso" },
           ].map((opt) => {
             const active = sortBy === opt.key;
