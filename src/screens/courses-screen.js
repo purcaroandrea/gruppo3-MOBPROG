@@ -158,7 +158,7 @@ export default function CoursesScreen(props) {
             <View style={styles.cardHeaderText}>
               <Text style={styles.cardTitle}>{course.name}</Text>
               <Text style={styles.rowMeta}>
-                {course.teacher} · {course.year ? `${course.year} · ` : ""}{course.semester} · {course.credits} CFU{course.endDate ? ` · Fine: ${formatDate(course.endDate)}` : ""}
+                {course.teacher ? `${course.teacher} · ` : ""}{course.year ? `${course.year} · ` : ""}{course.semester} · {course.credits} CFU{course.endDate ? ` · Fine: ${formatDate(course.endDate)}` : ""}
               </Text>
 
               <Text style={styles.bodyText}>{course.notes}</Text>
@@ -213,7 +213,7 @@ export default function CoursesScreen(props) {
         fields={[
           { key: "name",       label: "Nome *",       required: true },
           { key: "prefix",     label: "Titolo docente", options: ["Prof.", "Prof.ssa"] },
-          { key: "teacherName", label: "Nome docente *", placeholder: "Es. Rossi", required: true },
+          { key: "teacherName", label: "Nome docente", placeholder: "Es. Rossi" },
           { key: "semester",   label: "Semestre",     options: ["1 semestre", "2 semestre"] },
           { key: "year",       label: "Anno",         options: ["1° anno", "2° anno", "3° anno", "4° anno", "5° anno", "6° anno"] },
           { key: "credits",    label: "Crediti * (min 1 - max 20)", numeric: true, required: true },
@@ -234,7 +234,11 @@ export default function CoursesScreen(props) {
         }}
         onClose={() => setEditing(null)}
         onSave={(item) => {
-          item.teacher = item.prefix ? `${item.prefix} ${item.teacherName}` : item.teacherName;
+          if (item.teacherName && item.teacherName.trim()) {
+            item.teacher = item.prefix ? `${item.prefix} ${item.teacherName}` : item.teacherName;
+          } else {
+            item.teacher = "";
+          }
 
           if (item.actualGrade) {
             item.status = "Superato";
