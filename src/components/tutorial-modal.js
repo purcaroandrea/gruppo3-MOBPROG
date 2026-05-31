@@ -207,8 +207,10 @@ export default function TutorialModal({ visible, onClose, activeTab }) {
       <View style={styles.modalBackdrop}>
         <View style={[styles.modalSheet, { maxHeight: "85%" }]}>
           <View style={styles.modalHeader}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.modalTitle}>{content.title}</Text>
+            <View style={{ flex: 1, marginRight: 8 }}>
+              <Text style={{ fontSize: 20, fontWeight: "bold", color: themeColors.textTitle, flexShrink: 1 }}>
+                {content.title}
+              </Text>
               <Text style={[styles.bodyText, { fontSize: 13, color: themeColors.textMuted, marginBottom: 0, marginTop: 2 }]}>
                 {content.subtitle}
               </Text>
